@@ -4,12 +4,12 @@
   "main": "app.js",
   "scripts": {
     "lint": "eslint --ext .js,.ts --ignore-path .gitignore .",
-    "clean-node-modules": "find node_modules/@matter -type f \\( -name '*.d.ts' -o -name '*.map' -o -name '*.ts' \\) -delete; find node_modules/@matter -type d \\( -name 'src' -o -name 'cjs' \\) -exec rm -rf {} +",
+    "tools:clean-node-modules": "find node_modules/@matter -type f \\( -name '*.d.ts' -o -name '*.map' -o -name '*.ts' \\) -delete; find node_modules/@matter -type d \\( -name 'src' -o -name 'cjs' \\) -exec rm -rf {} +",
     "standalone": "bash -c 'while true; do node --max-old-space-size=128 standalone.mjs; code=$?; if [ $code -ne 42 ]; then exit $code; fi; done'"
   },
   "dependencies": {
-    "@matter/main": "^0.15.5",
-    "homey-api": "^3.14.6",
+    "@matter/main": "^0.15.6",
+    "homey-api": "github:athombv/node-homey-api#feature/changed-keys",
     "p-queue": "^9.0.0"
   },
   "devDependencies": {
