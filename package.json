@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@matter/main": "^0.15.6",
-    "homey-api": "github:athombv/node-homey-api#feature/changed-keys",
+    "homey-api": "^3.15.0",
     "p-queue": "^9.0.0"
   },
   "devDependencies": {
