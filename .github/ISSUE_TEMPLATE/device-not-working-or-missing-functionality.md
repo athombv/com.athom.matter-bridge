@@ -1,5 +1,5 @@
 ---
-name: device-not-working
+name: Device not working or missing functionality
 about: A specific device is missing functionality, or is not working correctly.
 title: ''
 labels: ''
