@@ -58,5 +58,8 @@
   },
   "0.5.0": {
     "en": "Fixed an issue where devices would lose their room in Apple Home."
+  },
+  "0.6.0": {
+    "en": "Fixed Light color & added humidity to Thermostats"
   }
 }
