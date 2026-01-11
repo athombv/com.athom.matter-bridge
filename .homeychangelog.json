@@ -64,5 +64,8 @@
   },
   "0.6.1": {
     "en": "Fixed an issue with Motion & Occupancy sensors."
+  },
+  "0.7.0": {
+    "en": "Added support for illuminance measurements."
   }
 }
