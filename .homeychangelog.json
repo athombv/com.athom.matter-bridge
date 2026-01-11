@@ -67,5 +67,8 @@
   },
   "0.7.0": {
     "en": "Added support for illuminance measurements."
+  },
+  "0.7.1": {
+    "en": "Improved the Light Temperature scale to be more like Homey's."
   }
 }
