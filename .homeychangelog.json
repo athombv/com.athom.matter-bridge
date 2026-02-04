@@ -70,5 +70,8 @@
   },
   "0.7.1": {
     "en": "Improved the Light Temperature scale to be more like Homey's."
+  },
+  "0.8.0": {
+    "en": "Added support for air conditioners."
   }
 }
