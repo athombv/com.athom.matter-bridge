@@ -16,13 +16,25 @@ function fixture(t, state) {
   return { dom, document, tabs, devices: tabs.tabs[0], pairing: tabs.tabs[1] };
 }
 
-test('initial setup disables Devices and opens Pairing', (t) => {
+test('initial setup hides the tabs and only shows Pairing', (t) => {
   const { document, devices, pairing } = fixture(t, { commissioned: false });
+  assert.equal(document.querySelector('[role="tablist"]').hidden, true);
   assert.equal(devices.disabled, true);
   devices.click();
   assert.equal(pairing.getAttribute('aria-selected'), 'true');
   assert.equal(document.querySelector('#devices-panel').hidden, true);
   assert.equal(document.querySelector('#pairing-panel').hidden, false);
+});
+
+test('completed initial pairing reveals the tabs with Devices selected', (t) => {
+  const { document, tabs, devices } = fixture(t, { commissioned: false });
+  tabs.initialize({ commissioned: true, pairing: { status: 'completed' } });
+
+  assert.equal(document.querySelector('[role="tablist"]').hidden, false);
+  assert.equal(devices.disabled, false);
+  assert.equal(devices.getAttribute('aria-selected'), 'true');
+  assert.equal(document.querySelector('#devices-panel').hidden, false);
+  assert.equal(document.querySelector('#pairing-panel').hidden, true);
 });
 
 test('paired users see Devices, but refreshing an active attempt restores Pairing', (t) => {

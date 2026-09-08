@@ -1,5 +1,6 @@
 export class SettingsTabs {
   constructor(container) {
+    this.tabList = container.querySelector('[role="tablist"]');
     this.tabs = [...container.querySelectorAll('[role="tab"]')];
     this.panels = [...container.querySelectorAll('[role="tabpanel"]')];
 
@@ -12,6 +13,7 @@ export class SettingsTabs {
   initialize(state) {
     const [devices, pairing] = this.tabs;
     devices.disabled = state.commissioned !== true;
+    this.tabList.hidden = devices.disabled;
     const pairingActive = ['open', 'external', 'busy'].includes(state.pairing?.status);
     this.select(devices.disabled || pairingActive ? pairing : devices);
   }

@@ -4,9 +4,10 @@ This app exposes Homey Pro's devices to Matter, so users can include them in App
 
 ## Pairing platforms
 
-Open the app's settings and scan the initial QR code on the **Pairing** tab in your
-first Matter platform. The initial code has no five-minute countdown. After pairing,
-choose the Homey devices to share on the **Devices** tab, using the existing room
+Open the app's settings and scan the initial QR code in your first Matter platform.
+Initial setup shows only pairing, without tabs or a five-minute countdown. After pairing,
+the **Devices** and **Pairing** tabs appear and **Devices** opens automatically.
+Choose the Homey devices to share there, using the existing room
 groups and device tiles. Every connected platform receives the same selection.
 
 To connect or re-pair a platform, open **Pairing** and select **Add another platform**. Scan the new QR
