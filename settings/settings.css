@@ -1,19 +1,35 @@
 [hidden] { display: none !important; }
 
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body { box-sizing: border-box; }
+
 .settings-page {
   --settings-muted: var(--homey-color-mono-60, #626264);
   --settings-line: var(--homey-color-mono-10, #dddee2);
   --settings-blue: var(--homey-color-blue, #0082fa);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
 .settings-tabs {
   display: flex;
-  position: sticky;
-  top: 0;
-  z-index: 1;
+  flex-shrink: 0;
   margin-bottom: 28px;
   border-bottom: 1px solid var(--settings-line);
   background: var(--homey-color-component, #fff);
+}
+
+.settings-page > [role="tabpanel"] {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .settings-tab {
