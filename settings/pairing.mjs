@@ -17,7 +17,7 @@ export class PairingPanel {
         <p class="pairing-status" data-pairing-status role="status"></p>
         <p class="pairing-message" data-pairing-message aria-live="polite"></p>
         <p class="pairing-error" data-pairing-error role="alert" hidden></p>
-        <button type="button" class="homey-button-primary pairing-start" data-pairing-start>Add another platform</button>
+        <button type="button" class="homey-button-primary pairing-start" data-pairing-start>Start pairing</button>
         <div class="pairing-card" data-pairing-card hidden>
           <div data-pairing-qr hidden>
             <div class="qr-logo" role="img" aria-label="Matter"></div>
@@ -127,8 +127,8 @@ export class PairingPanel {
       idle: 'Connect another platform, or re-pair one you already use.',
       open: 'Scan this temporary code in the platform you want to connect.',
       completed: 'Platform connected. Your existing connections are still available.',
-      expired: 'Pairing expired. Select Add another platform to try again.',
-      cancelled: 'Pairing stopped. Select Add another platform when you are ready.',
+      expired: 'Pairing expired. Select Start pairing to try again.',
+      cancelled: 'Pairing stopped. Select Start pairing when you are ready.',
       external: 'Pairing was opened by another platform. Continue there or wait for it to finish.',
       busy: 'Pairing is in progress. Please wait for it to finish.',
     };

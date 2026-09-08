@@ -10,7 +10,7 @@ the **Devices** and **Pairing** tabs appear and **Devices** opens automatically.
 Choose the Homey devices to share there, using the existing room
 groups and device tiles. Every connected platform receives the same selection.
 
-To connect or re-pair a platform, open **Pairing** and select **Add another platform**. Scan the new QR
+To connect or re-pair a platform, open **Pairing** and select **Start pairing**. Scan the new QR
 code or copy its numeric code into that platform within five minutes. Each attempt
 has fresh temporary credentials; existing connections and device identities stay
 intact. **Stop pairing** cancels the attempt, including unfinished commissioning.
