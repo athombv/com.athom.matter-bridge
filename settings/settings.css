@@ -1,5 +1,10 @@
 [hidden] { display: none !important; }
 
+.matter-settings, .matter-settings * {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 html, body {
   height: 100%;
   overflow: hidden;
