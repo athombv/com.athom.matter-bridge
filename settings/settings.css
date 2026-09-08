@@ -5,7 +5,11 @@ html, body {
   overflow: hidden;
 }
 
-body { box-sizing: border-box; }
+html > body.matter-settings {
+  /* Homey's shared settings stylesheet applies body padding with !important. */
+  padding: 0 !important;
+  box-sizing: border-box;
+}
 
 .settings-page {
   --settings-muted: var(--homey-color-mono-60, #626264);
@@ -20,7 +24,7 @@ body { box-sizing: border-box; }
 .settings-tabs {
   display: flex;
   flex-shrink: 0;
-  margin-bottom: 28px;
+  margin: 16px 16px 0;
   border-bottom: 1px solid var(--settings-line);
   background: var(--homey-color-component, #fff);
 }
@@ -28,9 +32,13 @@ body { box-sizing: border-box; }
 .settings-page > [role="tabpanel"] {
   flex: 1;
   min-height: 0;
+  padding: 28px 16px 16px;
+  box-sizing: border-box;
   overflow-y: auto;
   scrollbar-gutter: stable;
 }
+
+.settings-tabs[hidden] ~ [role="tabpanel"] { padding-top: 16px; }
 
 .settings-tab {
   position: relative;
