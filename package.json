@@ -3,16 +3,19 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
+    "test": "node --test tests/*.test.mjs",
     "lint": "eslint --ext .js,.ts --ignore-path .gitignore .",
     "tools:clean-node-modules": "find node_modules/@matter -type f \\( -name '*.d.ts' -o -name '*.map' -o -name '*.ts' \\) -delete; find node_modules/@matter -type d \\( -name 'src' -o -name 'cjs' \\) -exec rm -rf {} +",
     "standalone": "bash -c 'while true; do node --max-old-space-size=128 standalone.mjs; code=$?; if [ $code -ne 42 ]; then exit $code; fi; done'"
   },
   "dependencies": {
     "@matter/main": "^0.15.6",
-    "homey-api": "^3.15.0",
+    "homey-api": "3.19.4",
     "p-queue": "^9.0.0"
   },
   "devDependencies": {
-    "@inquirer/prompts": "^7.8.6"
+    "@inquirer/prompts": "^7.8.6",
+    "jsdom": "26.1.0",
+    "socket.io": "4.8.1"
   }
 }

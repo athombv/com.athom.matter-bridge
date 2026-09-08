@@ -166,20 +166,25 @@
       }
     }
 
+    [hidden] { display: none !important; }
+    .pairing-panel { margin-bottom: var(--homey-su-4); }
+    [data-pairing-error] { color: var(--homey-color-red, #b00); }
     .qr {
-      width: 60vw;
-      padding: 5vw;
+      width: min(60vw, 360px);
+      max-width: 100%;
+      background: white;
+      padding: min(5vw, 24px);
       box-sizing: border-box;
       border: 4px solid black;
-      border-radius: 4vw;
+      border-radius: 16px;
       margin: var(--homey-su-2) auto;
 
       >.qr-logo {
         width: 100%;
-        height: 12vw;
+        height: min(12vw, 64px);
         background: url(./logo.svg) no-repeat center center;
         background-size: contain;
-        margin-bottom: 5vw;
+        margin-bottom: min(5vw, 24px);
       }
 
       >.qr-image {
@@ -193,10 +198,15 @@
 
       >.qr-text {
         text-align: center;
-        font-size: 6vw;
+        font-size: clamp(16px, 5vw, 28px);
+        display: block;
+        width: 100%;
+        padding: 0;
+        border: 0;
+        background: transparent;
         font-family: monospace;
-        color: #aaa;
-        margin-top: 5vw;
+        color: #333;
+        margin-top: min(5vw, 24px);
         cursor: pointer;
         user-select: all;
       }
@@ -259,13 +269,24 @@
   </template>
 
   <script type="text/javascript">
-    function onHomeyReady(Homey) {
+    async function onHomeyReady(Homey) {
       const $subtitle = document.getElementById('subtitle');
       const $content = document.getElementById('content');
       const $templateDevice = document.getElementById('template-device');
 
-      Promise.resolve().then(async () => {
+      try {
+        const { PairingPanel } = await import('./pairing.mjs');
         const state = await Homey.api('GET', '/state');
+        const $pairing = document.createElement('div');
+        $content.appendChild($pairing);
+        const pairingPanel = new PairingPanel({
+          Homey,
+          container: $pairing,
+          onCommissionedChanged: () => { window.location.reload(); },
+        });
+        pairingPanel.update(state);
+        pairingPanel.start();
+        window.addEventListener('pagehide', () => { pairingPanel.dispose(); }, { once: true });
 
         if (state.commissioned === true) {
           $subtitle.textContent = 'Select which devices to bridge with Matter.';
@@ -362,57 +383,14 @@
             $zone_devices_by_name[device.zoneName].appendChild($device);
           }
         } else {
-          $subtitle.textContent = 'Scan the QR code with your Matter controller app, or take a screenshot if you\'re on the same device.';
-
-          // Show QR code if not yet paired
-          const $qr = document.createElement('div');
-          $qr.className = 'qr';
-          $content.appendChild($qr);
-
-          const $qrLogo = document.createElement('div');
-          $qrLogo.className = 'qr-logo';
-          $qr.appendChild($qrLogo);
-
-          const $qrImage = document.createElement('div');
-          $qrImage.className = 'qr-image';
-          $qrImage.addEventListener('click', () => {
-            // Can we deeplink to another app?
-          });
-          $qr.appendChild($qrImage);
-
-          new QRCode($qrImage, {
-            text: state.qrPairingCode,
-            width: 1024,
-            height: 1024,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H,
-          });
-
-          const $qrText = document.createElement('div');
-          $qrText.className = 'qr-text';
-          $qrText.textContent = state.manualPairingCode;
-          $qrText.addEventListener('click', () => {
-            // Copy to Clipboard
-            navigator.clipboard.writeText(state.manualPairingCode);
-            Homey.alert('The security code has been copied to your clipboard!');
-          });
-          $qr.appendChild($qrText);
-
-          // Poll for commissioned state
-          setInterval(async () => {
-            const state = await Homey.api('GET', '/state');
-            if (state.commissioned === true) {
-              window.location.reload();
-            }
-          }, 2000);
+          $subtitle.textContent = 'Connect your first platform.';
         }
 
         Homey.ready();
-      }).catch(err => {
+      } catch (err) {
         console.error(err);
         Homey.error(err);
-      });
+      }
     }
   </script>
 
