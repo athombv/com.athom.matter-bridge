@@ -63,8 +63,8 @@ html > body.matter-settings {
   content: '';
   position: absolute;
   bottom: -1px;
-  left: 8px;
-  right: 8px;
+  left: 0;
+  right: 0;
   height: 3px;
   border-radius: 3px 3px 0 0;
   background: var(--settings-blue);
