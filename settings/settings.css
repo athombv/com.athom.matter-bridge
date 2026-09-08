@@ -29,7 +29,7 @@ html > body.matter-settings {
 .settings-tabs {
   display: flex;
   flex-shrink: 0;
-  margin: 16px 16px 0;
+  margin: 16px 0 0;
   border-bottom: 1px solid var(--settings-line);
   background: var(--homey-color-component, #fff);
 }
