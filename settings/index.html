@@ -2,6 +2,7 @@
 <html>
 
 <head>
+  <meta charset="utf-8">
   <title>Matter Bridge Settings</title>
   <script
     type="text/javascript"
@@ -166,61 +167,30 @@
       }
     }
 
-    [hidden] { display: none !important; }
-    .pairing-panel { margin-bottom: var(--homey-su-4); }
-    [data-pairing-error] { color: var(--homey-color-red, #b00); }
-    .qr {
-      width: min(60vw, 360px);
-      max-width: 100%;
-      background: white;
-      padding: min(5vw, 24px);
-      box-sizing: border-box;
-      border: 4px solid black;
-      border-radius: 16px;
-      margin: var(--homey-su-2) auto;
-
-      >.qr-logo {
-        width: 100%;
-        height: min(12vw, 64px);
-        background: url(./logo.svg) no-repeat center center;
-        background-size: contain;
-        margin-bottom: min(5vw, 24px);
-      }
-
-      >.qr-image {
-        width: 100%;
-
-        >img, >canvas {
-          width: 100%;
-          height: auto;
-        }
-      }
-
-      >.qr-text {
-        text-align: center;
-        font-size: clamp(16px, 5vw, 28px);
-        display: block;
-        width: 100%;
-        padding: 0;
-        border: 0;
-        background: transparent;
-        font-family: monospace;
-        color: #333;
-        margin-top: min(5vw, 24px);
-        cursor: pointer;
-        user-select: all;
-      }
-    }
   </style>
+  <link rel="stylesheet" href="./settings.css">
 </head>
 
 <body>
-  <p
-    id="subtitle"
-    class="homey-subtitle"
-  >Select the devices that should be bridged to the Matter network.</p>
-
-  <div id="content"> </div>
+  <div id="content" class="settings-page">
+    <div class="settings-tabs" role="tablist" aria-label="Matter Bridge settings">
+      <button id="devices-tab" class="settings-tab hy-nostyle" type="button" role="tab"
+        aria-controls="devices-panel" aria-selected="false" tabindex="-1" disabled>Devices</button>
+      <button id="pairing-tab" class="settings-tab hy-nostyle" type="button" role="tab"
+        aria-controls="pairing-panel" aria-selected="true">Pairing</button>
+    </div>
+    <section id="devices-panel" role="tabpanel" aria-labelledby="devices-tab" hidden>
+      <div class="settings-heading">
+        <h1>Devices to share</h1>
+        <span id="selected-count" class="selected-count" aria-live="polite"></span>
+      </div>
+      <p class="settings-description">All connected platforms share these devices.</p>
+      <div id="devices-content"></div>
+    </section>
+    <section id="pairing-panel" role="tabpanel" aria-labelledby="pairing-tab">
+      <div id="pairing-content"></div>
+    </section>
+  </div>
 
   <template id="template-device">
     <label
@@ -270,15 +240,18 @@
 
   <script type="text/javascript">
     async function onHomeyReady(Homey) {
-      const $subtitle = document.getElementById('subtitle');
       const $content = document.getElementById('content');
+      const $devicesContent = document.getElementById('devices-content');
+      const $selectedCount = document.getElementById('selected-count');
       const $templateDevice = document.getElementById('template-device');
 
       try {
         const { PairingPanel } = await import('./pairing.mjs');
+        const { SettingsTabs } = await import('./tabs.mjs');
         const state = await Homey.api('GET', '/state');
-        const $pairing = document.createElement('div');
-        $content.appendChild($pairing);
+        const tabs = new SettingsTabs($content);
+        tabs.initialize(state);
+        const $pairing = document.getElementById('pairing-content');
         const pairingPanel = new PairingPanel({
           Homey,
           container: $pairing,
@@ -289,15 +262,34 @@
         window.addEventListener('pagehide', () => { pairingPanel.dispose(); }, { once: true });
 
         if (state.commissioned === true) {
-          $subtitle.textContent = 'Select which devices to bridge with Matter.';
-
           // Get Devices
           const devices = await Homey.api('GET', '/devices');
+          const updateSelectedCount = () => {
+            const selected = devices.filter((device) => { return device.isSelected; }).length;
+            $selectedCount.textContent = `${selected} selected`;
+          };
+          updateSelectedCount();
+
+          async function updateDeviceSelection(device, input) {
+            const selected = input.checked;
+            input.disabled = true;
+            try {
+              const path = selected ? '/devices/enable' : '/devices/disable';
+              await Homey.api('POST', path, { deviceId: device.id });
+              device.isSelected = selected;
+            } catch (error) {
+              input.checked = device.isSelected;
+              throw error;
+            } finally {
+              input.disabled = false;
+              updateSelectedCount();
+            }
+          }
 
           // Create Zones
           const $zones = document.createElement('div');
           $zones.className = 'zones';
-          $content.appendChild($zones);
+          $devicesContent.appendChild($zones);
 
           const $zone_devices_by_name = {};
 
@@ -336,21 +328,8 @@
             const $name = $device.querySelector('[data-template-device-name]');
             const $icon = $device.querySelector('[data-template-device-icon]');
 
-            $input.addEventListener('change', function () {
-              switch ($input.checked) {
-                case true: {
-                  Homey.api('POST', `/devices/enable`, {
-                    deviceId: device.id
-                  }).catch(err => Homey.error(err));
-                  break;
-                }
-                case false: {
-                  Homey.api('POST', `/devices/disable`, {
-                    deviceId: device.id,
-                  }).catch(err => Homey.error(err));
-                  break;
-                }
-              }
+            $input.addEventListener('change', () => {
+              updateDeviceSelection(device, $input).catch((error) => { Homey.error(error); });
             });
 
             $name.setAttribute('title', device.name);
@@ -382,8 +361,6 @@
 
             $zone_devices_by_name[device.zoneName].appendChild($device);
           }
-        } else {
-          $subtitle.textContent = 'Connect your first platform.';
         }
 
         Homey.ready();

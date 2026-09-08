@@ -39,6 +39,8 @@ function state(status, expiresAt = Date.now() + 300000) {
 test('refresh restores the active code without rebuilding device selections', (t) => {
   const { panel, dom, codes } = fixture(t, state('open'));
   assert.equal(panel.qr.hidden, false);
+  assert.equal(panel.startButton.hidden, true);
+  assert.equal(panel.status.textContent, 'Pairing open');
   assert.equal(panel.stopButton.hidden, false);
   assert.match(panel.countdown.textContent, /5:00/);
   panel.update(state('open'));
@@ -48,6 +50,8 @@ test('refresh restores the active code without rebuilding device selections', (t
   assert.equal(panel.qr.hidden, true);
   assert.equal(panel.code.textContent, '');
   assert.equal(panel.qrImage.textContent, '');
+  assert.equal(panel.card.hidden, true);
+  assert.equal(panel.windowControls.hidden, true);
   assert.match(panel.message.textContent, /Platform connected/);
 });
 
@@ -104,9 +108,38 @@ test('initial setup remains visible and completion reloads the device list once'
   });
   assert.equal(panel.qr.hidden, false);
   assert.equal(panel.startButton.hidden, true);
+  assert.equal(panel.title.textContent, 'Connect your first platform');
+  assert.equal(panel.status.textContent, 'Ready to pair');
+  assert.equal(panel.windowControls.hidden, true);
+  assert.equal(panel.countdown.textContent, '');
   panel.update(state('idle'));
   panel.update(state('idle'));
   assert.equal(reloads(), 1);
+});
+
+test('copy uses the unformatted code and gives inline feedback', async (t) => {
+  const { panel, dom } = fixture(t, state('open'));
+  assert.equal(panel.code.textContent, '1234 567 8901');
+  const selection = dom.window.getSelection();
+  selection.selectAllChildren(panel.code);
+  panel.render();
+  assert.equal(selection.toString(), '1234 567 8901');
+  const copied = [];
+  const navigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  Object.defineProperty(globalThis, 'navigator', {
+    configurable: true,
+    value: { clipboard: { writeText: async (code) => { copied.push(code); } } },
+  });
+  t.after(() => { Object.defineProperty(globalThis, 'navigator', navigatorDescriptor); });
+
+  await panel.copyCode();
+  assert.deepEqual(copied, ['12345678901']);
+  assert.equal(panel.copyLabel.textContent, 'Copied');
+  panel.update(state('cancelled'));
+  await panel.copyCode();
+  assert.equal(copied.length, 1);
+  assert.equal(panel.manualPairingCode, null);
+  assert.equal(panel.copiedCode, null);
 });
 
 test('leaving settings stops polling without closing pairing', async (t) => {
