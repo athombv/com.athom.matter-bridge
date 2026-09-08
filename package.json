@@ -9,7 +9,7 @@
     "standalone": "bash -c 'while true; do node --max-old-space-size=128 standalone.mjs; code=$?; if [ $code -ne 42 ]; then exit $code; fi; done'"
   },
   "dependencies": {
-    "@matter/main": "^0.15.6",
+    "@matter/main": "0.17.9",
     "homey-api": "3.19.4",
     "p-queue": "^9.0.0"
   },

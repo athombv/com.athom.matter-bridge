@@ -1,11 +1,9 @@
 import assert from 'node:assert/strict';
-import { createSocket } from 'node:dgram';
-import { once } from 'node:events';
 import { after, test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
-import { ControllerBehavior, Crypto, Endpoint, Environment, Logger, ServerNode, StorageBackendMemory, StorageService, Time, TransportInterfaceSet } from '@matter/main';
+import { ControllerBehavior, Crypto, Endpoint, Environment, Logger, ServerNode, MemoryStorageDriver, MockStorageService, Time } from '@matter/main';
 import { ManualPairingCodeCodec, QrPairingCodeCodec } from '@matter/main/types';
-import { DeviceCommissioner, ExchangeProvider, InteractionClientMessenger, Invoke, PaseClient, PaseServer } from '@matter/main/protocol';
+import { DeviceCommissioner, Invoke, PaseClient, PaseServer, PeerSet } from '@matter/main/protocol';
 import { AdministratorCommissioning } from '@matter/main/clusters/administrator-commissioning';
 import { OnOff } from '@matter/main/clusters/on-off';
 import { GeneralCommissioningServer } from '@matter/main/behaviors/general-commissioning';
@@ -30,12 +28,8 @@ after(async () => {
 });
 
 async function closeController(controller) {
-  // Matter.js 0.15.6's controller teardown removes shared network interfaces from
-  // its transport set. Retain them so this fixture can close its real UDP sockets.
-  const transports = [...controller.env.get(TransportInterfaceSet)];
-  await controller.nodes.close();
+  await controller.peers.close();
   await controller.close();
-  await Promise.all(transports.map(async (transport) => { await transport.close(); }));
 }
 
 class TestGeneralCommissioningServer extends GeneralCommissioningServer {
@@ -51,27 +45,12 @@ class TestGeneralCommissioningServer extends GeneralCommissioningServer {
   }
 }
 
-async function availableUdpPort() {
-  const socket = createSocket({ type: 'udp6', ipv6Only: false });
-  socket.bind(0);
-  await once(socket, 'listening');
-
-  try {
-    return socket.address().port;
-  } finally {
-    await new Promise((resolve) => { socket.close(resolve); });
-  }
-}
-
-async function makeNode(id, type = ServerNode.RootEndpoint, store = {}, port) {
-  // Matter.js 0.15.6 binds separate random ports for IPv4 and IPv6 when given 0,
-  // but advertises the IPv6 port for both. Pick one free port for both transports.
-  port ??= await availableUdpPort();
+async function makeNode(id, type = ServerNode.RootEndpoint, store = {}, port = 0) {
   const environment = new Environment(id, Environment.default);
-  environment.set(StorageService, new StorageService(environment, (namespace) => {
+  new MockStorageService(environment, (namespace) => {
     store[namespace] ??= {};
-    return new StorageBackendMemory(store[namespace]);
-  }));
+    return new MemoryStorageDriver(store[namespace]);
+  });
   return await ServerNode.create(type, {
     id,
     environment,
@@ -90,13 +69,12 @@ async function pair(controller, server, code = 20202021) {
     const [payload] = QrPairingCodeCodec.decode(pairing.qrPairingCode);
     longDiscriminator = payload.discriminator;
   }
-  const peer = await controller.nodes.locate({ longDiscriminator, timeoutSeconds: 10 });
-  // Set this before commissioning: 0.15.6 starts the peer before committing its
-  // commissioning options. Wildcard reads race endpoint reparenting; this fixture
-  // exercises control through explicit wire commands instead.
-  await peer.set({ network: { startupSubscription: null } });
-  await peer.commission({ passcode, startupSubscription: null });
-  return peer;
+  return await controller.peers.commission({
+    passcode,
+    longDiscriminator,
+    timeout: 10000,
+    onAttestationFailure: true,
+  });
 }
 
 async function local(server, method) {
@@ -107,21 +85,13 @@ async function local(server, method) {
 
 async function invoke(peer, cluster, command, fields, endpoint = 0) {
   await peer.start();
-  const messenger = await InteractionClientMessenger.create(peer.env.get(ExchangeProvider));
-  try {
-    const timed = cluster.commands[command].timed ?? false;
-    if (timed) await messenger.sendTimedRequest(10000);
-    const response = await messenger.sendInvokeCommand(Invoke({
-      timed,
-      commands: [Invoke.Command({ endpoint, cluster, command, fields })],
-    }));
-    for (const result of response.invokeResponses) {
-      if (result.status?.status.status) {
-        throw new Error(`Matter command failed: ${result.status.status.status}`);
+  const request = Invoke({ commands: [{ endpoint, cluster, command, fields }] });
+  for await (const chunk of peer.interaction.invoke(request)) {
+    for (const result of chunk) {
+      if (result.kind === 'cmd-status' && result.status !== 0) {
+        throw new Error(`Matter command failed: ${result.status}`);
       }
     }
-  } finally {
-    await messenger.close();
   }
 }
 
@@ -299,6 +269,10 @@ test('pairing lifecycle with real Matter controllers', { timeout: 180000 }, asyn
     const fabrics = structuredClone(server.state.commissioning.fabrics);
     const port = server.state.network.operationalPort;
     await local(server, 'startLocalPairing');
+    // Drop transport sessions while retaining fabric credentials, then reconnect
+    // after restart. 0.17 no longer retries failed interactions automatically.
+    await first.env.get(PeerSet).for(firstPeer.state.commissioning.peerAddress).disconnect(new Error('Bridge restarting'));
+    await second.env.get(PeerSet).for(secondPeer.state.commissioning.peerAddress).disconnect(new Error('Bridge restarting'));
     await firstPeer.cancel();
     await secondPeer.cancel();
     await server.close();
