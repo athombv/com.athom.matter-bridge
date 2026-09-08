@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { createSocket } from 'node:dgram';
+import { once } from 'node:events';
 import { after, test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { ControllerBehavior, Crypto, Endpoint, Environment, Logger, ServerNode, StorageBackendMemory, StorageService, Time, TransportInterfaceSet } from '@matter/main';
@@ -49,7 +51,22 @@ class TestGeneralCommissioningServer extends GeneralCommissioningServer {
   }
 }
 
-async function makeNode(id, type = ServerNode.RootEndpoint, store = {}, port = 0) {
+async function availableUdpPort() {
+  const socket = createSocket({ type: 'udp6', ipv6Only: false });
+  socket.bind(0);
+  await once(socket, 'listening');
+
+  try {
+    return socket.address().port;
+  } finally {
+    await new Promise((resolve) => { socket.close(resolve); });
+  }
+}
+
+async function makeNode(id, type = ServerNode.RootEndpoint, store = {}, port) {
+  // Matter.js 0.15.6 binds separate random ports for IPv4 and IPv6 when given 0,
+  // but advertises the IPv6 port for both. Pick one free port for both transports.
+  port ??= await availableUdpPort();
   const environment = new Environment(id, Environment.default);
   environment.set(StorageService, new StorageService(environment, (namespace) => {
     store[namespace] ??= {};
@@ -73,7 +90,13 @@ async function pair(controller, server, code = 20202021) {
     const [payload] = QrPairingCodeCodec.decode(pairing.qrPairingCode);
     longDiscriminator = payload.discriminator;
   }
-  return await controller.nodes.commission({ passcode, longDiscriminator, timeoutSeconds: 10 });
+  const peer = await controller.nodes.locate({ longDiscriminator, timeoutSeconds: 10 });
+  // Set this before commissioning: 0.15.6 starts the peer before committing its
+  // commissioning options. Wildcard reads race endpoint reparenting; this fixture
+  // exercises control through explicit wire commands instead.
+  await peer.set({ network: { startupSubscription: null } });
+  await peer.commission({ passcode, startupSubscription: null });
+  return peer;
 }
 
 async function local(server, method) {
