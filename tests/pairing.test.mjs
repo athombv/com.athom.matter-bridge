@@ -3,7 +3,7 @@ import { after, test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { ControllerBehavior, Crypto, Endpoint, Environment, Logger, ServerNode, MemoryStorageDriver, MockStorageService, Time } from '@matter/main';
 import { ManualPairingCodeCodec, QrPairingCodeCodec } from '@matter/main/types';
-import { DeviceCommissioner, Invoke, PaseClient, PaseServer, PeerSet } from '@matter/main/protocol';
+import { ControllerCommissioningFlow, DeviceCommissioner, Invoke, PaseClient, PaseServer, PeerSet, SessionManager } from '@matter/main/protocol';
 import { AdministratorCommissioning } from '@matter/main/clusters/administrator-commissioning';
 import { OnOff } from '@matter/main/clusters/on-off';
 import { GeneralCommissioningServer } from '@matter/main/behaviors/general-commissioning';
@@ -137,6 +137,76 @@ test('pairing lifecycle with real Matter controllers', { timeout: 180000 }, asyn
     assert.deepEqual(server.state.commissioning.fabrics, originalFabric);
     assert.deepEqual(server.state.commissioning.pairingCodes, originalCodes);
   });
+
+  for (const [phase, stepName, pendingFabricCount] of [
+    ['before adding credentials', 'GeneralCommissioning.ConfigureRegulatoryInformation', 1],
+    ['after adding credentials', 'GeneralCommissioning.Complete', 2],
+  ]) {
+    await t.test(`cancellation with an armed failsafe ${phase}`, async () => {
+      const paused = Promise.withResolvers();
+      const resume = Promise.withResolvers();
+      const cancelled = new Error('Test commissioning cancelled');
+
+      // Pause the controller between commands so bridge cleanup can run normally.
+      class PausingCommissioningFlow extends ControllerCommissioningFlow {
+        constructor(...args) {
+          super(...args);
+          const step = this.commissioningSteps.find((step) => {
+            return step.name === stepName;
+          });
+          assert.ok(step, `Commissioning step ${stepName} exists`);
+
+          step.stepLogic = async () => {
+            paused.resolve();
+            await resume.promise;
+            throw cancelled;
+          };
+        }
+      }
+
+      const controller = await makeNode(`cancel-${pendingFabricCount}`, ServerNode.RootEndpoint.with(ControllerBehavior));
+      let commissioningResultPromise;
+
+      try {
+        await controller.start();
+        await local(server, 'startLocalPairing');
+        const pairing = await local(server, 'getLocalPairing');
+        const [payload] = QrPairingCodeCodec.decode(pairing.qrPairingCode);
+        commissioningResultPromise = controller.peers.commission({
+          passcode: payload.passcode,
+          longDiscriminator: payload.discriminator,
+          timeout: 10000,
+          onAttestationFailure: true,
+          commissioningFlowImpl: PausingCommissioningFlow,
+        }).catch((error) => {
+          paused.reject(error);
+          return error;
+        });
+
+        await paused.promise;
+        assert.equal(server.env.get(DeviceCommissioner).isFailsafeArmed, true);
+        assert.ok(server.env.get(SessionManager).getPaseSession());
+        assert.equal(Object.keys(server.state.commissioning.fabrics).length, pendingFabricCount);
+
+        await local(server, 'stopLocalPairing');
+        assert.deepEqual(await local(server, 'getLocalPairing'), {
+          status: 'cancelled', expiresAt: null, qrPairingCode: null, manualPairingCode: null,
+        });
+        assert.equal(server.env.get(DeviceCommissioner).isFailsafeArmed, false);
+        assert.equal(server.env.get(SessionManager).getPaseSession(), undefined);
+        assert.deepEqual(server.state.commissioning.fabrics, originalFabric);
+
+        await invoke(firstPeer, OnOff.Cluster, 'on', undefined, light.number);
+        assert.equal(light.state.onOff.onOff, true);
+      } finally {
+        resume.resolve();
+        await commissioningResultPromise;
+        await closeController(controller);
+      }
+
+      assert.equal(await commissioningResultPromise, cancelled);
+    });
+  }
 
   await t.test('timer expires on the server without a settings page', async () => {
     const duration = BridgeCommissioningServer.pairingDurationMs;
