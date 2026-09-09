@@ -1,7 +1,7 @@
 {
   "id": "com.athom.matter-bridge",
   "version": "0.8.0",
-  "compatibility": ">=12.8.2",
+  "compatibility": ">=12.9.0",
   "sdk": 3,
   "platforms": [
     "local"
@@ -34,6 +34,14 @@
   "support": "mailto:emile@athom.nl",
   "source": "https://github.com/athombv/com.athom.matter-bridge",
   "api": {
+    "startPairing": {
+      "method": "POST",
+      "path": "/pairing/start"
+    },
+    "stopPairing": {
+      "method": "POST",
+      "path": "/pairing/stop"
+    },
     "getState": {
       "method": "GET",
       "path": "/state"
