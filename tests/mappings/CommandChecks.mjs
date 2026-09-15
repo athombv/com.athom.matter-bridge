@@ -51,6 +51,9 @@ export class CommandChecks {
         assert.ok(vector, `No preparation vector for ${fixture.id}/${attribute.name}`);
         expected = vector[1];
       }
+      if (values.onoff === false && 'valueWhenOff' in attribute) {
+        expected = attribute.valueWhenOff;
+      }
       await harness.expectReport(
         harness.endpoint(fixture.id, attribute.endpoint),
         attribute.cluster,
@@ -139,6 +142,9 @@ export class CommandChecks {
   }
 
   static outcomes(fixture, operation) {
+    if (operation.outcomes) {
+      return operation.outcomes;
+    }
     if (operation.attribute) {
       const result = [[operation.cluster, operation.attribute, operation.value]];
       const sharedSetpoint =

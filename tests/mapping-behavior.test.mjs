@@ -30,6 +30,13 @@ test('bridge mapping contracts through a Matter controller', { timeout: 600000 }
     await t.test(fixture.id, async (t) => {
       const device = harness.devices[fixture.id];
       await t.test('discovery and initial values', async () => {
+        const support = MatterBridgeServer.getDeviceSupport(device);
+        assert.equal(support.canShare, true);
+        assert.deepEqual(
+          support.supportedCapabilities.sort(),
+          Object.keys(harness.bridge.deviceCapabilityInstances[device.id]).sort(),
+          'Selection support must match the capabilities actually mapped by the bridge',
+        );
         await surface.check(harness, fixture);
         const children = [...(harness.bridge.deviceEndpointInstances[fixture.id] ?? [])];
         assert.deepEqual(

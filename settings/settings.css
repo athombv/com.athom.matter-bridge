@@ -138,3 +138,28 @@ html > body.matter-settings {
   .pairing-code-field { gap: 8px; padding: 10px; }
   .pairing-copy { padding-left: 8px; }
 }
+
+.device-card {
+  min-width: 0;
+  max-width: 140px;
+}
+
+.device-support {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.device-support summary {
+  cursor: pointer;
+}
+
+.device-support p {
+  margin: 8px 0;
+}
+
+#content .device__input:disabled + .device__tile {
+  opacity: 0.5;
+  cursor: default;
+}

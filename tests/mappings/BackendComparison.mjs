@@ -59,7 +59,8 @@ export class BackendComparison {
 
   async #assertValue(context, input) {
     const { fixture, expected } = context;
-    const { target, tolerance } = BackendComparison.#expectedValue(expected.capabilityId, input);
+    const { target, tolerance } = BackendComparison.#expectedValue(expected.backendCapability ?? expected.capabilityId,
+      typeof input === 'number' ? input / (expected.backendScale ?? 1) : input);
 
     await eventually(async () => {
       const snapshot = await this.#rpc.call('snapshot');
@@ -86,7 +87,8 @@ export class BackendComparison {
     const { device, capability } = BackendComparison.#findCapability(snapshot, context);
 
     source.writes.length = 0;
-    await this.#rpc.call('set', { deviceId: device.id, capabilityId: capability.id, value: input });
+    const requested = typeof input === 'number' ? input / (expected.backendScale ?? 1) : input;
+    await this.#rpc.call('set', { deviceId: device.id, capabilityId: capability.id, value: requested });
 
     await eventually(() => {
       const writes = source.writes.filter((write) => {
@@ -110,7 +112,11 @@ export class BackendComparison {
   }
 
   static #findCapability(snapshot, { fixture, expected, endpointId, clusterId }) {
-    let capabilityId = expected.capabilityId;
+    let capabilityId = expected.backendCapability ?? expected.capabilityId;
+
+    if (capabilityId === 'meter_power.imported') {
+      capabilityId = 'meter_power';
+    }
 
     if (capabilityId === 'target_temperature.cool') {
       capabilityId = 'target_temperature';
@@ -139,6 +145,14 @@ export class BackendComparison {
   // These narrow allowances are documented in backend-allowances.json. Matter assertions stay exact.
   static #expectedValue(capabilityId, input) {
     switch (capabilityId) {
+      case 'meter_power':
+      case 'meter_power.imported':
+      case 'meter_power.exported':
+        return { target: input, tolerance: 0.0005 };
+      case 'fan_speed':
+        return { target: input, tolerance: 0.005 };
+      case 'measure_battery':
+        return { target: input, tolerance: 0.5 };
       case 'locked':
         return { target: input === null ? false : input, tolerance: 0 };
       case 'measure_temperature':

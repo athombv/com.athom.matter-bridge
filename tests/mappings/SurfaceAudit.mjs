@@ -66,7 +66,7 @@ export class SurfaceAudit {
             .sort();
         };
         assert.deepEqual(enabled(read(65532)), enabled(endpoint.features[name]));
-        const invariantAttributes = this.#invariants(name, read, endpoint, fixture);
+        const invariantAttributes = this.#invariants(name, read, endpoint, fixture, parent.number);
 
         for (const id of attributes) {
           const entry = cluster.attributes[id] ?? this.#catalog.globals[id];
@@ -151,7 +151,7 @@ export class SurfaceAudit {
     });
   }
 
-  #invariants(name, read, endpoint, fixture) {
+  #invariants(name, read, endpoint, fixture, parentNumber) {
     switch (name) {
       case 'Descriptor': {
         assert.deepEqual(
@@ -298,6 +298,30 @@ export class SurfaceAudit {
         assert.equal(bitmap.ultrasonic, ultrasonic);
         assert.equal(bitmap.pir, !ultrasonic);
         return ['occupancySensorType', 'occupancySensorTypeBitmap'];
+      }
+      case 'FanControl': {
+        assert.equal(read('fanModeSequence'), 5);
+        assert.equal(read('percentCurrent'), read('percentSetting'));
+        assert.equal(read('fanMode'), read('percentCurrent') === 0 ? 0 : 3);
+        return ['fanMode', 'fanModeSequence', 'percentCurrent'];
+      }
+      case 'ElectricalEnergyMeasurement': {
+        const accuracy = read('accuracy');
+        assert.equal(accuracy.measurementType, 14);
+        assert.equal(accuracy.measured, true);
+        assert.ok(accuracy.minMeasuredValue <= accuracy.maxMeasuredValue);
+        return ['accuracy'];
+      }
+      case 'PowerSource': {
+        assert.equal(read('status'), 1);
+        assert.equal(read('order'), 0);
+        assert.equal(read('description'), 'Battery');
+        assert.equal(read('batPresent'), true);
+        assert.equal(read('batReplaceability'), 0);
+        assert.deepEqual(read('endpointList'), [parentNumber]);
+        assert.equal(read('batReplacementNeeded'), read('batChargeLevel') > 0);
+        return ['status', 'order', 'description', 'batPresent', 'batReplaceability',
+          'endpointList', 'batReplacementNeeded', 'batChargeLevel'];
       }
       case 'ElectricalPowerMeasurement': {
         assert.equal(read('powerMode'), 0);

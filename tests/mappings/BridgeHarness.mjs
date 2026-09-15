@@ -1,3 +1,8 @@
+import { inspect } from 'node:util';
+import { FanControl } from '@matter/main/clusters/fan-control';
+import { PowerSource } from '@matter/main/clusters/power-source';
+import { PowerTopology } from '@matter/main/clusters/power-topology';
+import { ElectricalEnergyMeasurement } from '@matter/main/clusters/electrical-energy-measurement';
 import assert from 'node:assert/strict';
 import { randomInt } from 'node:crypto';
 import { EventEmitter } from 'node:events';
@@ -5,7 +10,7 @@ import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { ControllerBehavior, Environment, fromJson, Logger, ServerNode } from '@matter/main';
-import { Invoke, PeerSet, Read, Write, Subscribe } from '@matter/main/protocol';
+import { ClientInteraction, Invoke, PeerSet, Read, Write, Subscribe } from '@matter/main/protocol';
 import { Identify } from '@matter/main/clusters/identify';
 import { Groups } from '@matter/main/clusters/groups';
 import { Descriptor } from '@matter/main/clusters/descriptor';
@@ -38,6 +43,10 @@ Logger.level = 'fatal';
 
 export class BridgeHarness {
   static #clusters = {
+    FanControl,
+    PowerSource,
+    PowerTopology,
+    ElectricalEnergyMeasurement,
     Identify,
     Groups,
     Descriptor,
@@ -160,6 +169,15 @@ export class BridgeHarness {
   }
 
   async subscribe() {
+    // The SDK's automatic reconnect subscription replaces other subscriptions on the same fabric.
+    // Keep one explicit subscription so every report reaches the test observer after restart too.
+    await this.peer.set({ network: { autoSubscribe: false } });
+    await this.readInteraction?.close();
+    const peer = this.controller.env.get(PeerSet).for(this.peer.state.commissioning.peerAddress);
+    this.readInteraction = new ClientInteraction({
+      environment: this.peer.env,
+      exchangeProvider: peer.exchangeProvider,
+    });
     this.reports.clear();
     this.subscription = await this.peer.interaction.subscribe({
       ...Subscribe({ attributes: [{}], minIntervalFloor: 0, maxIntervalCeiling: 60 }),
@@ -228,11 +246,12 @@ export class BridgeHarness {
   async readRaw(paths = [{}]) {
     const result = [];
 
-    for await (const chunk of this.peer.interaction.read({
-      ...Read({ attributes: paths }),
-      includeKnownVersions: true,
-    })) {
-      result.push(...chunk);
+    // Numeric protocol reads need no second mutation of the SDK's local endpoint tree. The
+    // subscription owns that tree; concurrent read/subscription mutations race during bulk adds.
+    for await (const chunk of this.readInteraction.read(Read({ attributes: paths }))) {
+      for await (const report of chunk) {
+        result.push(report);
+      }
     }
 
     return result;
@@ -246,7 +265,7 @@ export class BridgeHarness {
     });
     assert.ok(
       report,
-      `Missing ${endpointId}/${clusterName}/${attributeName}: ${JSON.stringify(reports)}`,
+      `Missing ${endpointId}/${clusterName}/${attributeName}: ${inspect(reports)}`,
     );
     return report.value;
   }
@@ -264,7 +283,8 @@ export class BridgeHarness {
         );
         assert.deepEqual(value, expected);
       },
-      `Subscription ${endpointId}/${clusterName}/${attributeName} did not become ${JSON.stringify(expected)}`,
+      `Subscription ${endpointId}/${clusterName}/${attributeName} did not become ${inspect(expected)}`,
+      clusterName === 'PowerSource' ? 15000 : 5000,
     );
   }
 
@@ -329,6 +349,9 @@ export class BridgeHarness {
     const cleanupSteps = [
       () => {
         return this.subscription?.close();
+      },
+      () => {
+        return this.readInteraction?.close();
       },
       () => {
         return this.controller?.peers.close();

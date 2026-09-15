@@ -18,6 +18,11 @@ const stream = run({
     fileURLToPath(new URL('../mapping-inventory.test.mjs', import.meta.url)),
     fileURLToPath(new URL('../mapping-infrastructure.test.mjs', import.meta.url)),
     fileURLToPath(new URL('../mapping-upgrade.test.mjs', import.meta.url)),
+    fileURLToPath(new URL('../mapping-names.test.mjs', import.meta.url)),
+    fileURLToPath(new URL('../mapping-availability.test.mjs', import.meta.url)),
+    fileURLToPath(new URL('../mapping-discovery.test.mjs', import.meta.url)),
+    fileURLToPath(new URL('../mapping-fan.test.mjs', import.meta.url)),
+    fileURLToPath(new URL('../mapping-power.test.mjs', import.meta.url)),
   ],
 });
 stream.on('test:pass', (result) => {
@@ -52,6 +57,15 @@ const phases = [
   'bridge mapping contracts through a Matter controller',
   'every mapping restores current Homey state with an existing pairing',
   'previous release storage upgrades every mapping without pairing again',
+  'Homey renames reach the controller without replacing the device',
+  'restart refreshes a persisted Matter name from Homey',
+  'names follow Homey through delayed readiness and disable/re-enable',
+  'unknown boolean readings stay unavailable until a known reading arrives',
+  'mixed water sensors follow source availability without inventing readings',
+  'bulk additions expose complete descriptors and working subscriptions',
+  'existing on/off fan upgrades in place and handles steps, off and unknown speed',
+  'energy and battery additions preserve existing socket endpoints and pairing',
+  'battery percentage clamps limits without turning unknown into zero',
 ].map((name) => {
   return `| ${name} | ${results.get(name) ?? 'NOT RUN'} |`;
 });

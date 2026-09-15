@@ -1,6 +1,6 @@
 # Mapping contracts and backend comparison
 
-The 38 synthetic variants exercise 24 Homey capabilities, all existing bridge mapping families,
+The 51 synthetic variants exercise 32 Homey capabilities, all existing bridge mapping families,
 class aliases, and virtual classes. These are behavioral contracts, not generated snapshots of
 whatever the bridge currently happens to expose. Numeric Matter expectations do not use production
 conversion helpers. `manifest.mjs` records expected device types, exact cluster sets, selected
@@ -58,10 +58,17 @@ Assertions inspect controller reads and subscription reports, not just server ob
 checks cover delayed readiness, subscription disposal on disable/shutdown, re-enabling, and control
 with existing controller credentials after restart.
 
+`mapping-names.test.mjs` verifies that Homey renames reach controller subscriptions without changing
+endpoint identities, including persisted names after restart, delayed readiness, and re-enabling.
+The source name controls the advertised Matter label; controller-specific display-name overrides
+remain subject to that controller's naming rules.
+
 The backend runs in a separate process with its own package resolution. The adapter executes its
 real device interview and `MatterDevice.onSetCapabilityValue` handlers. Only the transport is
 replaced. Reads, writes, commands, and subscription reports cross IPC as numeric paths and hex TLV
-payloads. Matter.js decodes controller reports; their schema re-encodes values to TLV without unit
+payloads. Explicit reads use the numeric protocol API on the commissioned peer, while
+subscriptions own the controller endpoint cache (see the documented SDK structure race).
+Matter.js decodes controller reports; their schema re-encodes values to TLV without unit
 conversion or JSON number coercion. List assembly is handled by Matter.js. This is lossless for
 modeled attribute values, not a byte-for-byte network packet capture.
 
@@ -110,8 +117,8 @@ backend command also scans its saved output fixtures and fails on newly unclassi
 
 When updating the reference, inspect the backend cluster and fixture changes, update the revision
 and inventory deliberately, and rerun both suites. Do not automatically accept new expected values.
-Missing features such as water alarms, battery reporting, fans, energy counters, and robot-vacuum
-controls remain follow-up work; they are not silently marked supported by an endpoint smoke test.
+Missing features such as fan modes/oscillation, tariff/phase breakdowns, tamper alarms, and
+robot-vacuum controls remain follow-up work; they are not silently marked supported by an endpoint smoke test.
 The report also records feature gaps: custom OnOff handlers advertise basic on/off without the
 Lighting or room AC DeadFrontBehavior bits. Continuous level/color movement, scenes, and timed
 lighting need their own command contracts before support is claimed. Passing this suite does not
@@ -147,11 +154,11 @@ changes source values while offline, and reconnects using retained controller cr
 `../fixtures/README.md` for provenance and the controller-cache limitation. The bridge refreshes
 source values after endpoint restoration using the same callbacks as subsequent subscriptions.
 
-The optional mutation command creates disposable source copies, seeds eight specific defects, and
+The optional mutation command creates disposable source copies, seeds thirteen specific defects, and
 requires a test failure with the expected assertion evidence. Syntax errors, timeouts, and unrelated
 failures do not count as detection. Cases cover an unclassified attribute, a removed command contract,
 power scaling, lock polarity, fractional setpoints, a missing subscription callback, stale restored
-state, and contradictory color modes. Logs and `mutations.json` stay in ignored artifacts. Run the
+state, contradictory color modes, unknown booleans presented as known, inverted water alarms, and energy/battery/fan scaling. Logs and `mutations.json` stay in ignored artifacts. Run the
 unmodified public suite first: mutation failures are meaningful only with a passing baseline.
 
 ### Remaining advertised command gaps
@@ -170,3 +177,68 @@ or explicitly accepted as release limitations before claiming support. The backe
 its own importer and capability handlers; another controller can use different advertised fields or
 commands. Use [the physical checklist](PHYSICAL-CHECKS.md) for the controllers and devices available
 to the tester. Passing synthetic tests cannot establish a physical platform's cache, UI, or behavior.
+
+
+## Live-audit follow-up
+
+Water alarms now use Water Leak Detector (0x0043) and Boolean State (0x0045): true means wet,
+false means dry. Contracts cover single sensors and combined water/temperature devices. The
+previous-release storage fixture stays unchanged; the new water endpoints initialize alongside
+retained identities for existing mappings.
+
+The selection screen explains unsupported and partially supported devices using source capability
+titles. New selections with no supported capabilities are rejected before creating endpoints.
+Existing unsupported selections remain visible and removable. API selection changes are serialized
+so rapid additions cannot overwrite each other's saved selection; failed initialization is not saved.
+The support classifier is checked against actual source subscriptions for every manifest variant.
+Incomplete hue/saturation metadata retains basic light control and is shown as unshared color
+capabilities; the bridge does not advertise an unusable Color Control cluster.
+
+Matter occupancy, Boolean State, OnOff and smoke alarm fields cannot encode an unknown boolean.
+For these mapped capabilities, null/non-boolean source readings retain the last attribute value and
+set the bridged parent's Reachable attribute to false. This applies to the **whole bridged device**,
+including other sensors on a mixed device. A known reading restores reachability only when Homey
+also reports the device ready and available. Nullable numeric readings retain their existing null
+representation. Initialization starts unreachable and refreshes source values before becoming
+reachable. These guarantees are checked by `mapping-availability.test.mjs`, including restart.
+
+`mapping-discovery.test.mjs` adds 50 synthetic devices to an already commissioned bridge and checks
+complete descriptors, preserved existing identities and working subscriptions. It does not execute
+Home Assistant's WebSocket client. See [controller observations](CONTROLLER-ISSUES.md) for the
+separate event-ordering issue and the remaining physical-controller checks.
+
+The bridge shares numeric CO₂/particulate readings, but the source has no corresponding qualitative
+rating. Matter requires an Air Quality cluster for those sensor endpoints, so its rating remains
+Unknown. The selection details explain this limitation; the bridge does not invent thresholds or
+remove the required cluster to hide a controller's extra entity.
+
+
+### Fan, energy and battery mappings
+
+- Fans with standard `fan_speed` expose Fan Control percentages. A fan with exactly one writable
+  `number.*_fan_speed` field, finite non-negative min/max, positive step, and `onoff` also supports
+  speed using that declared range. Ambiguous/custom fields without this metadata remain unshared.
+  Public fixtures use invented names; no installation identifiers are checked in. The supported
+  sequence is Off/High, with percentages for intermediate speeds. Auto, oscillation and source
+  `fan_mode` are not mapped. Off preserves the remembered source speed when an on/off capability
+  exists; current Matter percentages become zero. Unknown source speed marks the device unavailable.
+- Cumulative energy maps kWh to mWh (×1,000,000). `meter_power` takes precedence over
+  `meter_power.imported`; `meter_power.exported` is independent. Daily and tariff counters are not
+  added together. Values outside JavaScript's exact integer range after conversion become unknown.
+  Contracts include 64-bit TLV values. Power in watts now works on other device classes too; existing
+  socket power stays on its original endpoint. Supplemental readings use an Electrical Sensor
+  endpoint with Tree Topology.
+- `measure_battery` maps 0–100% to 0–200 with half-percent precision, clamping the limits and
+  retaining null for unknown values. `alarm_battery` reports Warning/OK and replacement-needed
+  without inventing a percentage. Both can coexist on one Power Source endpoint. The pinned
+  backend imports the percentage preferentially and omits the alarm capability when both are
+  present (`core/PowerSourceCluster.mts`); the public mixed-capability test checks both Matter
+  attributes independently. No battery chemistry, capacity or replacement type is inferred.
+
+`mapping-fan.test.mjs` and `mapping-power.test.mjs` check additions to already paired devices,
+retained parent/child endpoint numbers, rounded fan commands, unsupported requests, unknown
+readings, numeric limits, and independent battery percentage/alarm values. The pinned Power Source
+server batches battery reports, so only those subscription assertions allow a 15-second wait.
+The backend report records imported-total naming, normalized custom fan speed, and quantization
+allowances. Homey OS rounds energy totals to three decimals in kWh; only the backend
+comparison allows half that display step, while Matter assertions retain exact mWh. These rules do not relax the independent Matter assertions.

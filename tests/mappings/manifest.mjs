@@ -548,6 +548,17 @@ const sensors = [
     ],
   ],
   [
+    'alarm_water',
+    false,
+    'BooleanState',
+    0x43,
+    false,
+    [
+      [true, true],
+      [false, false],
+    ],
+  ],
+  [
     'alarm_smoke',
     true,
     'SmokeCoAlarm',
@@ -647,8 +658,143 @@ for (const id of ['measure_co2', 'alarm_occupancy']) {
 }
 mappings.push(combined);
 
+const waterWithTemperature = {
+  id: 'water-with-temperature',
+  class: 'sensor',
+  source: 'general/BooleanStateCluster.mts',
+  capabilities: {},
+  endpoints: [],
+  attributes: [],
+  commands: [],
+};
+for (const id of ['alarm_water', 'measure_temperature']) {
+  const fixture = structuredClone(mappings.find((item) => {
+    return item.id === id;
+  }));
+  Object.assign(waterWithTemperature.capabilities, fixture.capabilities);
+  waterWithTemperature.endpoints.push(...fixture.endpoints);
+  waterWithTemperature.attributes.push(...fixture.attributes);
+}
+mappings.push(waterWithTemperature);
+
+for (const id of ['meter_power', 'meter_power.imported', 'meter_power.exported']) {
+  const exported = id === 'meter_power.exported';
+  mappings.push({
+    id: id.replaceAll('.', '-'), class: 'sensor',
+    source: 'measurement-and-sensing/ElectricalEnergyMeasurementCluster.mts',
+    capabilities: { [id]: capability(1.25, { units: 'kWh' }) },
+    endpoints: [{ id: 'energy', type: 0x510, features: {
+      ElectricalEnergyMeasurement: { cumulativeEnergy: true, [exported ? 'exportedEnergy' : 'importedEnergy']: true },
+    } }],
+    attributes: [attribute(id, 'ElectricalEnergyMeasurement',
+      exported ? 'cumulativeEnergyExported' : 'cumulativeEnergyImported',
+      { energy: 1250000 }, [[0, { energy: 0 }], [2.125, { energy: 2125000 }], [12345.678901, { energy: 12345678901n }], [null, null]], 'energy')],
+    commands: [],
+  });
+}
+for (const [id, value, clusterAttribute, initial, updates] of [
+  ['measure_battery', 75.5, 'batPercentRemaining', 151, [[0, 0], [100, 200], [50.25, 101], [null, null]]],
+  ['alarm_battery', false, 'batChargeLevel', 0, [[true, 1], [false, 0]]],
+]) {
+  mappings.push({
+    id, class: 'sensor', source: 'core/PowerSourceCluster.mts',
+    capabilities: { [id]: capability(value, { units: id === 'measure_battery' ? '%' : undefined }) },
+    endpoints: [{ id: 'battery', type: 0x11, features: { PowerSource: { battery: true } } }],
+    attributes: [attribute(id, 'PowerSource', clusterAttribute, initial, updates, 'battery')],
+    commands: [],
+  });
+}
+mappings.push({
+  id: 'power-sensor', class: 'sensor',
+  source: 'measurement-and-sensing/ElectricalPowerMeasurementCluster.mts',
+  capabilities: { measure_power: capability(12, { units: 'W' }) },
+  endpoints: [{ id: 'energy', type: 0x510 }],
+  attributes: [attribute('measure_power', 'ElectricalPowerMeasurement', 'activePower', 12000,
+    [[0, 0], [-1.25, -1250], [null, null]], 'energy')],
+  commands: [],
+});
+for (const [id, members] of [
+  ['energy-totals', ['power-sensor', 'meter_power-imported', 'meter_power-exported']],
+  ['socket-with-energy', ['socket', 'meter_power']],
+  ['water-with-battery', ['water-with-temperature', 'measure_battery']],
+]) {
+  const fixture = { id, class: id === 'socket-with-energy' ? 'socket' : 'sensor',
+    source: 'measurement-and-sensing/ElectricalEnergyMeasurementCluster.mts',
+    capabilities: {}, endpoints: [], attributes: [], commands: [] };
+
+  for (const member of members) {
+    const source = structuredClone(mappings.find((item) => { return item.id === member; }));
+    Object.assign(fixture.capabilities, source.capabilities);
+    fixture.attributes.push(...source.attributes);
+    fixture.commands.push(...source.commands);
+
+    for (const endpoint of source.endpoints) {
+      const existing = fixture.endpoints.find((item) => { return item.id === endpoint.id; });
+
+      if (existing) {
+        existing.features ??= {};
+        for (const [cluster, features] of Object.entries(endpoint.features ?? {})) {
+          existing.features[cluster] = { ...existing.features[cluster], ...features };
+        }
+      } else {
+        fixture.endpoints.push(endpoint);
+      }
+    }
+  }
+  mappings.push(fixture);
+}
+const fan = {
+  id: 'fan-speed', class: 'fan', source: 'hvac/FanControlCluster.mts',
+  capabilities: { onoff: capability(true, { setable: true }), fan_speed: capability(0.5, { setable: true, min: 0, max: 1 }) },
+  endpoints: [{ id: 'main', type: 0x2b }],
+  attributes: [onoff,
+    { ...attribute('fan_speed', 'FanControl', 'percentSetting', 50, [[0, 0], [1, 100], [0.25, 25]]), valueWhenOff: 0 },
+    { ...attribute('fan_speed', 'FanControl', 'percentCurrent', 50, [[0, 0], [1, 100], [0.25, 25]]), valueWhenOff: 0 },
+  ],
+  commands: onoffCommands.map((operation) => {
+    const on = operation.writes.onoff;
+    return { ...operation, outcomes: [['OnOff', 'onOff', on], ['FanControl', 'percentSetting', on ? 50 : 0], ['FanControl', 'percentCurrent', on ? 50 : 0]] };
+  }),
+  writes: [{ cluster: 'FanControl', attribute: 'percentSetting', value: 25,
+    writes: { fan_speed: 0.25 }, outcomes: [['FanControl', 'percentSetting', 25], ['FanControl', 'percentCurrent', 25]] },
+    { cluster: 'FanControl', attribute: 'fanMode', value: 3, prepare: { onoff: false },
+      writes: { fan_speed: 1, onoff: true }, outcomes: [['FanControl', 'fanMode', 3], ['FanControl', 'percentSetting', 100], ['FanControl', 'percentCurrent', 100], ['OnOff', 'onOff', true]] },
+    { cluster: 'FanControl', attribute: 'fanMode', value: 0,
+      writes: { onoff: false }, outcomes: [['FanControl', 'fanMode', 0], ['FanControl', 'percentSetting', 0], ['FanControl', 'percentCurrent', 0], ['OnOff', 'onOff', false]] },
+  ],
+};
+mappings.push(fan);
+
+const customFan = structuredClone(fan);
+customFan.id = 'fan-custom-range';
+delete customFan.capabilities.fan_speed;
+customFan.capabilities['number.fixture_fan_speed'] = capability(13, { setable: true, min: 1, max: 26, step: 1 });
+for (const attribute of customFan.attributes) {
+  if (attribute.capabilityId === 'fan_speed') {
+    attribute.capabilityId = 'number.fixture_fan_speed';
+    attribute.backendCapability = 'fan_speed';
+    attribute.backendScale = 26;
+    attribute.updates = [[1, 4], [26, 100], [6, 23]];
+  }
+}
+customFan.writes = [
+  { cluster: 'FanControl', attribute: 'percentSetting', value: 50,
+    writes: { 'number.fixture_fan_speed': 13 },
+    outcomes: [['FanControl', 'percentSetting', 50], ['FanControl', 'percentCurrent', 50]] },
+  { cluster: 'FanControl', attribute: 'fanMode', value: 3, prepare: { onoff: false },
+    writes: { 'number.fixture_fan_speed': 26, onoff: true },
+    outcomes: [['FanControl', 'fanMode', 3], ['FanControl', 'percentSetting', 100], ['FanControl', 'percentCurrent', 100], ['OnOff', 'onOff', true]] },
+  { cluster: 'FanControl', attribute: 'fanMode', value: 0, writes: { onoff: false },
+    outcomes: [['FanControl', 'fanMode', 0], ['FanControl', 'percentSetting', 0], ['FanControl', 'percentCurrent', 0], ['OnOff', 'onOff', false]] },
+];
+mappings.push(customFan);
+
 // Cluster IDs are the independent discovery contract for the pinned Matter model.
 const clusterIds = {
+  FanControl: 514,
+  PowerSource: 47,
+  PowerTopology: 156,
+  ElectricalEnergyMeasurement: 145,
   Identify: 3,
   Groups: 4,
   Descriptor: 29,
@@ -676,7 +822,7 @@ for (const fixture of mappings) {
   for (const endpoint of fixture.endpoints) {
     endpoint.features ??= {};
     endpoint.values = {};
-    const clusters = new Set([3, 29]); // Identify and Descriptor
+    const clusters = new Set([0x11, 0x510].includes(endpoint.type) ? [29] : [3, 29]); // Identify and Descriptor
     for (const check of fixture.attributes) {
       if (check.endpoint !== endpoint.id) {
         continue;
@@ -722,6 +868,14 @@ for (const fixture of mappings) {
     if ([0x100, 0x101, 0x10a, 0x10c, 0x10d].includes(endpoint.type)) {
       clusters.add(4); // Groups
       clusters.add(98); // Scenes Management
+    }
+    if (endpoint.type === 0x510) {
+      clusters.add(156);
+      endpoint.features.PowerTopology = { treeTopology: true };
+    }
+    if (endpoint.type === 0x2b) {
+      clusters.add(4);
+      endpoint.values.FanControl = { fanModeSequence: 5 };
     }
     if (endpoint.type === 0x2c) {
       clusters.add(91);

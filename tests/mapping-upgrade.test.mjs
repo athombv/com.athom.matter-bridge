@@ -118,7 +118,8 @@ test(
 
     for (const fixture of selected) {
       await t.test(fixture.id, async () => {
-        for (const endpoint of storageFixture.endpoints[fixture.id]) {
+        // New device types initialize alongside the saved endpoints of existing mappings.
+        for (const endpoint of storageFixture.endpoints[fixture.id] ?? []) {
           assert.equal(
             harness.endpoint(fixture.id, endpoint.id),
             endpoint.number,

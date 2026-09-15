@@ -3,8 +3,8 @@
   "fixtureCount": 72,
   "capabilities": {
     "alarm_battery": {
-      "status": "missing",
-      "reason": "No bridge mapping; follow-up capability support.",
+      "status": "supported",
+      "reason": "Covered by initial values, updates and relevant controls in the bridge mapping contracts.",
       "source": "hue-bridge.output.json"
     },
     "alarm_bin_full": {
@@ -113,8 +113,8 @@
       "source": "lge-simulator-app.output.json"
     },
     "alarm_water": {
-      "status": "missing",
-      "reason": "No bridge mapping; follow-up capability support.",
+      "status": "supported",
+      "reason": "Water Leak Detector BooleanState preserves leak polarity; discovery and updates are covered.",
       "source": "ikea-water-leak-sensor.output.json"
     },
     "button.identify": {
@@ -188,8 +188,8 @@
       "source": "lge-simulator-app.output.json"
     },
     "fan_speed": {
-      "status": "missing",
-      "reason": "No bridge mapping; follow-up capability support.",
+      "status": "supported",
+      "reason": "Covered by initial values, updates and relevant controls in the bridge mapping contracts.",
       "source": "lge-simulator-app.output.json"
     },
     "hot_water_mode": {
@@ -273,8 +273,8 @@
       "source": "govee-h61e0.output.json"
     },
     "measure_battery": {
-      "status": "missing",
-      "reason": "No bridge mapping; follow-up capability support.",
+      "status": "supported",
+      "reason": "Covered by initial values, updates and relevant controls in the bridge mapping contracts.",
       "source": "aqara-door-window-p1.output.json"
     },
     "measure_carbon_filter": {
@@ -358,8 +358,8 @@
       "source": "lge-simulator-app.output.json"
     },
     "meter_power": {
-      "status": "missing",
-      "reason": "No bridge mapping; follow-up capability support.",
+      "status": "supported",
+      "reason": "Covered by initial values, updates and relevant controls in the bridge mapping contracts.",
       "source": "aqara-light-switch-h2-1-button.output.json"
     },
     "meter_power.estimate": {
@@ -368,8 +368,8 @@
       "source": "lge-simulator-1.4.0-water-heater.output.json"
     },
     "meter_power.exported": {
-      "status": "missing",
-      "reason": "No bridge mapping; follow-up capability support.",
+      "status": "supported",
+      "reason": "Covered by initial values, updates and relevant controls in the bridge mapping contracts.",
       "source": "chip-energy-management-app.output.json"
     },
     "microwave_mode": {
@@ -516,6 +516,16 @@
       "status": "missing",
       "reason": "No bridge mapping; follow-up capability support.",
       "source": "lge-simulator-app.output.json"
+    },
+    "meter_power.imported": {
+      "status": "supported",
+      "reason": "Explicit cumulative imported total; reconstructed as meter_power by Homey OS. Tariff and daily subtotals are not summed.",
+      "source": "measurement-and-sensing/ElectricalEnergyMeasurementCluster.mts"
+    },
+    "number.fixture_fan_speed": {
+      "status": "supported",
+      "reason": "Synthetic example of a single number.*_fan_speed control on a fan, with explicit min/max/step and on/off. This is bridge compatibility coverage, not a backend-observed capability.",
+      "source": "hvac/FanControlCluster.mts (normalized fan_speed reference)"
     }
   },
   "requiredVariants": [
@@ -548,6 +558,7 @@
     "alarm_motion",
     "alarm_occupancy",
     "alarm_smoke",
+    "alarm_water",
     "fallback",
     "heatpump",
     "heater",
@@ -556,6 +567,18 @@
     "shutterblinds",
     "curtain",
     "virtual-light",
-    "light-with-sensors"
+    "light-with-sensors",
+    "water-with-temperature",
+    "meter_power",
+    "meter_power-imported",
+    "meter_power-exported",
+    "measure_battery",
+    "alarm_battery",
+    "power-sensor",
+    "energy-totals",
+    "socket-with-energy",
+    "water-with-battery",
+    "fan-speed",
+    "fan-custom-range"
   ]
 }

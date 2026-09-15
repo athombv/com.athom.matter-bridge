@@ -903,6 +903,105 @@
         ]
       },
       "commands": {}
+    },
+    "FanControl": {
+      "attributes": {
+        "0": [
+          "fanMode",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "1": [
+          "fanModeSequence",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "2": [
+          "percentSetting",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "3": [
+          "percentCurrent",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ]
+      },
+      "commands": {}
+    },
+    "ElectricalEnergyMeasurement": {
+      "attributes": {
+        "0": [
+          "accuracy",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "1": [
+          "cumulativeEnergyImported",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "2": [
+          "cumulativeEnergyExported",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ]
+      },
+      "commands": {}
+    },
+    "PowerTopology": {
+      "attributes": {},
+      "commands": {}
+    },
+    "PowerSource": {
+      "attributes": {
+        "0": [
+          "status",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "1": [
+          "order",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "2": [
+          "description",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "12": [
+          "batPercentRemaining",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "14": [
+          "batChargeLevel",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "15": [
+          "batReplacementNeeded",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "16": [
+          "batReplaceability",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "17": [
+          "batPresent",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "31": [
+          "endpointList",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ]
+      },
+      "commands": {}
     }
   }
 }
