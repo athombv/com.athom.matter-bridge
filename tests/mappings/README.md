@@ -161,26 +161,35 @@ changes source values while offline, and reconnects using retained controller cr
 `../fixtures/README.md` for provenance and the controller-cache limitation. The bridge refreshes
 source values after endpoint restoration using the same callbacks as subsequent subscriptions.
 
-The optional mutation command creates disposable source copies, seeds thirteen specific defects, and
+The optional mutation command creates disposable source copies, seeds specific defects, and
 requires a test failure with the expected assertion evidence. Syntax errors, timeouts, and unrelated
 failures do not count as detection. Cases cover an unclassified attribute, a removed command contract,
 power scaling, lock polarity, fractional setpoints, a missing subscription callback, stale restored
 state, contradictory color modes, unknown booleans presented as known, inverted water alarms, and energy/battery/fan scaling. Logs and `mutations.json` stay in ignored artifacts. Run the
 unmodified public suite first: mutation failures are meaningful only with a passing baseline.
 
-### Remaining advertised command gaps
+### Controller command reliability
 
-The inventory keeps these visible without treating a passing backend comparison as evidence:
+`mapping-command-reliability.test.mjs` independently verifies the commands beyond those normally sent
+by Homey OS's capability handlers. The surface report names these tests and fails if their results
+are absent or failing.
 
-- Identify and trigger-effect commands have no verified physical identification behavior.
-- Scene recall has no contract proving that stored state reaches Homey.
-- Continuous/step/stop brightness and color commands lack independent source-control contracts.
-- Timed unlocking has no verified source-control contract.
-- Position-only covers have no source stop capability; state-only covers have no absolute position
-  capability. These need explicit behavior decisions for inherited stop/percentage commands.
+- Brightness and color move/step commands apply Matter's rate and bounds calculations to actual
+  Homey writes. The first write is awaited; later failures stop the movement. Stop and device
+  teardown cancel timers. Independent channels retain their full source capability IDs.
+- Direct target fades retain native Homey duration options. Stop requests the currently reported
+  source value with zero duration; physical accuracy during a native fade depends on the source's
+  current-value reporting. The bridge does not have a separate Homey fade-cancellation capability.
+- Scene recall forwards the sceneable on/off, brightness, saturation, mode and temperature fields.
+  Homey errors reject recall. Ordinary hue is not a sceneable attribute in the current Matter model;
+  this does not add EnhancedHue or claim to store hue values the model does not include.
+- Identify advertises IdentifyType None. Its countdown and trigger-effect protocol are tested;
+  no physical flashing or sound is claimed or synthesized.
+- Optional timed unlocking is not advertised because the source has no native timed-unlock capability.
+- A position-only cover rejects StopMotion explicitly; a state-only cover rejects absolute position.
+  Covers with both capabilities can stop through `windowcoverings_state` and retain their endpoint.
 
-These are coverage gaps, not a claim that every listed command is defective. They must be resolved
-or explicitly accepted as release limitations before claiming support. The backend only exercises
+These contracts complement the backend comparison. The backend only exercises
 its own importer and capability handlers; another controller can use different advertised fields or
 commands. Use [the physical checklist](PHYSICAL-CHECKS.md) for the controllers and devices available
 to the tester. Passing synthetic tests cannot establish a physical platform's cache, UI, or behavior.

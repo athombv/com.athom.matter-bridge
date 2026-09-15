@@ -93,6 +93,11 @@ export class SurfaceAudit {
           if (entry[1] !== 'tested') {
             continue;
           }
+          // These commands have time-dependent or negative contracts in the dedicated reliability
+          // suite. The report requires that named test to pass before counting this evidence.
+          if (entry[3]) {
+            continue;
+          }
           const tested = fixture.commands.some((command) => {
             return (
               command.cluster === name &&
@@ -100,7 +105,8 @@ export class SurfaceAudit {
               (command.endpoint ?? 'main') === endpoint.id
             );
           });
-          // Position-only Homey covers cannot stop; the state-capability variant exercises StopMotion.
+          // A position-only source cannot stop and a state-only source cannot set a position.
+          // Their explicit failure contracts run in the command reliability suite.
           if (
             name === 'WindowCovering' &&
             entry[0] === 'stopMotion' &&
@@ -108,8 +114,9 @@ export class SurfaceAudit {
           ) {
             this.#record(name, 'command', '2-position-only', [
               'stopMotion',
-              'gap',
-              'No stop capability on position-only Homey covers; inherited stop does not stop the physical motor.',
+              'tested',
+              'Position-only sources explicitly reject stop without changing state or issuing a source write.',
+              'cover commands reject unavailable source operations and timed unlock is not advertised',
             ]);
             continue;
           }
@@ -120,8 +127,9 @@ export class SurfaceAudit {
           ) {
             this.#record(name, 'command', '5-state-only', [
               'goToLiftPercentage',
-              'gap',
-              'State-only Homey covers have no absolute position capability; inherited percentage handling does not await Homey errors.',
+              'tested',
+              'State-only sources explicitly reject position commands without changing state or issuing a source write.',
+              'cover commands reject unavailable source operations and timed unlock is not advertised',
             ]);
             continue;
           }
@@ -148,11 +156,16 @@ export class SurfaceAudit {
       name: entry[0],
       status: entry[1],
       reason: entry[2],
+      test: entry[3],
     });
   }
 
   #invariants(name, read, endpoint, fixture, parentNumber) {
     switch (name) {
+      case 'Identify':
+        assert.equal(read('identifyType'), 0, 'No physical identification is advertised');
+        assert.equal(read('identifyTime'), 0);
+        return ['identifyType', 'identifyTime'];
       case 'Descriptor': {
         assert.deepEqual(
           read('deviceTypeList').map((type) => {

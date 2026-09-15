@@ -67,6 +67,8 @@ npm audit --omit=dev
 homey app install
 ```
 
+Use the normal install command so the CLI packages production dependencies and excludes tests.
+`--skip-build` packages the source directory directly in Homey CLI 4.4.4 and bypasses that preparation.
 Do not use `--clean` when updating an existing installation. Acceptance testing on
 Homey requires adding a second external platform, verifying both control the same
 selected devices, and repeating those checks after an app restart.

@@ -24,6 +24,7 @@ const stream = run({
     fileURLToPath(new URL('../mapping-fan.test.mjs', import.meta.url)),
     fileURLToPath(new URL('../mapping-channels.test.mjs', import.meta.url)),
     fileURLToPath(new URL('../mapping-light-controls.test.mjs', import.meta.url)),
+    fileURLToPath(new URL('../mapping-command-reliability.test.mjs', import.meta.url)),
     fileURLToPath(new URL('../mapping-power.test.mjs', import.meta.url)),
   ],
 });
@@ -70,10 +71,25 @@ const phases = [
   'independent light channels route full capability IDs and retain identity after restart',
   'energy and battery additions preserve existing socket endpoints and pairing',
   'battery percentage clamps limits without turning unknown into zero',
+  'step and individual color commands reach Homey and propagate source rejections',
+  'continuous brightness and color movement stops issuing Homey writes after Stop',
+  'cover commands reject unavailable source operations and timed unlock is not advertised',
+  'scene recall applies stored source state and propagates Homey failures',
+  'Identify explicitly advertises no physical identification and maintains its countdown',
+  'independent channel movement cleans up on disable and works after re-enabling',
+  'a cover with position and movement capabilities preserves its endpoint and can stop',
+  'brightness limits couple on/off through Homey and honor execution while off',
+  'an unchanged hue target still switches the physical color mode and preserves rejected state',
 ].map((name) => {
+  if (results.get(name) !== 'PASS') {
+    failed = true;
+  }
   return `| ${name} | ${results.get(name) ?? 'NOT RUN'} |`;
 });
 const surfaceRows = surface.entries.map((entry) => {
+  if (entry.test && results.get(entry.test) !== 'PASS') {
+    failed = true;
+  }
   return `| ${entry.cluster}.${entry.name} | ${entry.kind} | ${entry.status} | ${entry.reason} |`;
 });
 const report = [

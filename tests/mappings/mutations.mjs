@@ -11,6 +11,23 @@ await mkdir(artifacts, { recursive: true });
 await rm(join(artifacts, 'mutations.json'), { force: true });
 const mutations = [
   {
+    id: 'movement-does-not-write-homey',
+    mapping: 'light-extended-color',
+    suite: 'mapping-command-reliability.test.mjs',
+    file: 'lib/mappings/HomeyTransitions.mjs',
+    from: 'await this.#write(behavior, changes);',
+    to: '// Mutated: update only Matter state.',
+    evidence: 'step: expected source write',
+  },
+  {
+    id: 'scene-recall-swallows-source-failure',
+    mapping: 'light-extended-color',
+    suite: 'mapping-command-reliability.test.mjs',
+    from: '        if (error) {\n          throw error;\n        }',
+    to: '        // Mutated: ignore a failed source scene application.',
+    evidence: 'Missing expected rejection.',
+  },
+  {
     id: 'stale-capability-metadata',
     mapping: 'fan-speed',
     suite: 'mapping-fan.test.mjs',
