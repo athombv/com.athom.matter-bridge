@@ -161,6 +161,12 @@ changes source values while offline, and reconnects using retained controller cr
 `../fixtures/README.md` for provenance and the controller-cache limitation. The bridge refreshes
 source values after endpoint restoration using the same callbacks as subsequent subscriptions.
 
+Color readings are refreshed before cluster initialization validates restored attributes. Legacy
+temperature values can fall outside the current physical limits and otherwise prevent the complete
+light endpoint from starting. The upgrade suite injects below-range, above-range and fractional
+saved values into synthetic paired storage, then checks retained endpoint numbers, current readings,
+updates and working controls. Pairing state alone is not evidence that every endpoint initialized.
+
 The optional mutation command creates disposable source copies, seeds specific defects, and
 requires a test failure with the expected assertion evidence. Syntax errors, timeouts, and unrelated
 failures do not count as detection. Cases cover an unclassified attribute, a removed command contract,

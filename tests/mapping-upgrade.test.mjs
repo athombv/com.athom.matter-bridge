@@ -7,6 +7,49 @@ import { mappings } from './mappings/manifest.mjs';
 import { selectMappings } from './mappings/selectMappings.mjs';
 import { upgradeVectors } from './mappings/upgradeVectors.mjs';
 
+test('legacy color values outside current limits restore the paired light before validation', { timeout: 30000 }, async (t) => {
+  const storageFixture = JSON.parse(
+    await readFile(new URL('./fixtures/mapping-upgrade.json', import.meta.url), 'utf8'),
+  );
+  const ids = ['light-temperature', 'light-extended-color', 'light-extended-temperature'];
+  const legacyValues = [90.5, 800.25, 1];
+  const selected = ids.map((id, index) => {
+    const key = `mapping-bridge/root.parts.aggregator.parts.${id}.parts.main.colorControl.colorTemperatureMireds`;
+    assert.ok(key in storageFixture.files, 'The legacy fixture must contain the saved color attribute');
+    storageFixture.files[key] = JSON.stringify(legacyValues[index]);
+
+    return mappings.find((fixture) => {
+      return fixture.id === id;
+    });
+  });
+  const harness = await BridgeHarness.create(selected, { storageFixture });
+  t.after(async () => {
+    await harness.close();
+  });
+
+  assert.deepEqual(harness.errors, [], 'Every paired light must initialize successfully');
+  assert.equal(harness.bridge.serverNode.lifecycle.isCommissioned, true);
+
+  for (const fixture of selected) {
+    const endpoint = harness.endpoint(fixture.id);
+    const previous = storageFixture.endpoints[fixture.id].find((item) => {
+      return item.id === 'main';
+    });
+    assert.equal(endpoint, previous.number, 'The controller must keep using its existing endpoint');
+    await harness.expectReport(endpoint, 'ColorControl', 'colorTemperatureMireds', 277);
+    assert.equal(harness.devices[fixture.id].writes.length, 0, 'Restoration must not operate the physical light');
+    harness.devices[fixture.id].emit('light_temperature', 1);
+    await harness.expectReport(endpoint, 'ColorControl', 'colorTemperatureMireds', 400);
+    await harness.invoke(endpoint, 'OnOff', 'off', {});
+    await harness.expectReport(endpoint, 'OnOff', 'onOff', false);
+    await harness.invoke(endpoint, 'LevelControl', 'moveToLevelWithOnOff', {
+      level: 128, transitionTime: 0, optionsMask: {}, optionsOverride: {},
+    });
+    await harness.expectReport(endpoint, 'LevelControl', 'currentLevel', 128);
+    await harness.expectReport(endpoint, 'OnOff', 'onOff', true);
+  }
+});
+
 test(
   'every mapping restores current Homey state with an existing pairing',
   { timeout: 180000 },

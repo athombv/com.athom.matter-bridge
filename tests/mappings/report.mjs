@@ -60,6 +60,7 @@ const phases = [
   'bridge mapping contracts through a Matter controller',
   'every mapping restores current Homey state with an existing pairing',
   'previous release storage upgrades every mapping without pairing again',
+  'legacy color values outside current limits restore the paired light before validation',
   'Homey renames reach the controller without replacing the device',
   'restart refreshes a persisted Matter name from Homey',
   'names follow Homey through delayed readiness and disable/re-enable',
