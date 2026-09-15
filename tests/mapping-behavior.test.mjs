@@ -259,6 +259,28 @@ test('bridge mapping contracts through a Matter controller', { timeout: 180000 }
         childNumbers.push({ deviceId, id: child.id, number: child.number });
       }
     }
+
+    // Existing installations may have persisted contradictory mode attributes before the fix.
+    const colorModes = [];
+    for (const fixture of selected) {
+      if (!fixture.capabilities.light_mode) {
+        continue;
+      }
+
+      const sourceMode = fixture.capabilities.light_mode.value;
+      const expectedMode = sourceMode === 'temperature' ? 2 : 0;
+      const number = harness.endpoint(fixture.id);
+      harness.devices[fixture.id].emit('light_mode', sourceMode);
+      await harness.expectReport(number, 'ColorControl', 'colorMode', expectedMode);
+      await harness.expectReport(number, 'ColorControl', 'enhancedColorMode', expectedMode);
+
+      const endpoint = [...harness.bridge.deviceEndpointInstances[fixture.id]].find((child) => {
+        return child.id === 'main';
+      });
+      await endpoint.set({ colorControl: { colorMode: 1, enhancedColorMode: 1 } });
+      colorModes.push({ endpoint: number, expectedMode });
+    }
+
     const port = harness.bridge.serverNode.state.network.operationalPort;
     await harness.subscription.close();
     harness.subscription = undefined;
@@ -284,6 +306,10 @@ test('bridge mapping contracts through a Matter controller', { timeout: 180000 }
     }
     assert.equal(harness.endpoint(delayed.id), endpoint);
     await harness.peer.start();
+    for (const { endpoint, expectedMode } of colorModes) {
+      assert.equal(await harness.read(endpoint, 'ColorControl', 'colorMode'), expectedMode);
+      assert.equal(await harness.read(endpoint, 'ColorControl', 'enhancedColorMode'), expectedMode);
+    }
     await harness.invoke(endpoint, 'OnOff', 'off');
     await eventually(() => {
       assert.equal(delayed.capabilitiesObj.onoff.value, false);
