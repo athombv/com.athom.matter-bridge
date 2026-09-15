@@ -264,12 +264,12 @@
     },
     "matter_color_loop": {
       "status": "missing",
-      "reason": "No bridge mapping; follow-up capability support.",
+      "reason": "Verified Homey OS extension with ColorControlCluster.mts handlers. Eligible for bridge support; color-loop state and speed/direction/start-hue command semantics still need a mapping.",
       "source": "govee-h61e0.output.json"
     },
     "matter_mode_select": {
       "status": "missing",
-      "reason": "No bridge mapping; follow-up capability support.",
+      "reason": "Verified Homey OS extension with ModeSelectCluster.mts handlers. Eligible for bridge support; advertised enum choices, current mode and changeToMode still need a mapping.",
       "source": "govee-h61e0.output.json"
     },
     "measure_battery": {
@@ -384,7 +384,7 @@
     },
     "open_lock": {
       "status": "missing",
-      "reason": "No bridge mapping; follow-up capability support.",
+      "reason": "Verified Homey OS extension with DoorLockCluster.mts handlers. Eligible for bridge support; the write-only opening action and Matter Unbolting semantics still need a mapping. locked remains supported.",
       "source": "matter-js-bridge-all-devices.output.json"
     },
     "operational_state": {

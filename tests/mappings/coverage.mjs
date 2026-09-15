@@ -3,15 +3,17 @@ import { readFile } from 'node:fs/promises';
 import { mappings, backendReference } from './manifest.mjs';
 
 export async function mappingCoverage() {
-  const inventoryJson = await readFile(
-    new URL('./backend-inventory.json', import.meta.url),
-    'utf8',
-  );
+  const [inventoryJson, officialJson, extensionsJson] = await Promise.all([
+    readFile(new URL('./backend-inventory.json', import.meta.url), 'utf8'),
+    readFile(new URL('../fixtures/official-capabilities.json', import.meta.url), 'utf8'),
+    readFile(new URL('../fixtures/homey-os-capabilities.json', import.meta.url), 'utf8'),
+  ]);
   const inventory = JSON.parse(inventoryJson);
-  const official = JSON.parse(await readFile(
-    new URL('../fixtures/official-capabilities.json', import.meta.url), 'utf8',
-  ));
+  const official = JSON.parse(officialJson);
+  const extensions = JSON.parse(extensionsJson);
+
   assert.equal(official.backendRevision, backendReference.revision);
+  assert.equal(extensions.backendRevision, backendReference.revision);
 
   assert.equal(inventory.revision, backendReference.revision);
 
@@ -28,7 +30,9 @@ export async function mappingCoverage() {
 
     for (const id of Object.keys(fixture.capabilities)) {
       const base = id.split('.')[0];
-      assert.ok(official.capabilities[base], `Non-official mapped capability ${fixture.id}/${id}`);
+      const isKnownCapability = official.capabilities[base] !== undefined ||
+        extensions.capabilities[base] !== undefined;
+      assert.ok(isKnownCapability, `Unverified mapped capability ${fixture.id}/${id}`);
       const classifiedId = inventory.capabilities[id] ? id : base;
       assert.ok(inventory.capabilities[classifiedId], `Unclassified capability ${fixture.id}/${id}`);
 
@@ -66,6 +70,7 @@ export async function mappingCoverage() {
     `Backend reference: ${inventory.revision}`,
     `${inventory.fixtureCount} saved backend device fixtures; not an exhaustive Homey capability catalog.`,
     `Official base provenance: homey-lib ${official.homeyLibVersion}, ${official.source}.`,
+    `Verified Homey OS extension provenance: ${extensions.source}. Eligibility does not imply an implemented mapping.`,
     `${mappings.length} bridge fixture variants covering ${covered.size} capabilities.`,
     '',
     '| Capability | Status | Evidence / follow-up |',

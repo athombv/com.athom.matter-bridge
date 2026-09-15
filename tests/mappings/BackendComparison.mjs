@@ -11,6 +11,28 @@ export class BackendComparison {
     this.#rpc = rpc;
   }
 
+  static applicableAllowances(fixture, allowances) {
+    const capabilities = new Set();
+
+    for (const expected of fixture.attributes) {
+      capabilities.add(expected.backendCapability ?? expected.capabilityId);
+    }
+
+    const applicable = [];
+
+    for (const allowance of allowances) {
+      const matches = allowance.capabilities.some((id) => {
+        return capabilities.has(id);
+      });
+
+      if (matches) {
+        applicable.push(allowance.id);
+      }
+    }
+
+    return applicable;
+  }
+
   async compare(fixture) {
     const source = this.#harness.devices[fixture.id];
     const modeId = fixture.capabilitySuffix ? `thermostat_mode.${fixture.capabilitySuffix}` : 'thermostat_mode';

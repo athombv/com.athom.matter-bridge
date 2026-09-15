@@ -114,6 +114,13 @@ Every inventory entry is supported, missing, or intentionally unsupported with a
 support requires initial/update contracts and control contracts for writable capabilities. Required
 variant IDs prevent silently deleting coverage while retaining a capability elsewhere. The local
 backend command also scans its saved output fixtures and fails on newly unclassified capabilities.
+It checks the fixture count and the installed official homey-lib catalog, plus the explicitly
+verified Homey OS extensions in `../fixtures/homey-os-capabilities.json`. `matter_color_loop`,
+`matter_mode_select`, and `open_lock` have definitions and handlers maintained by Homey OS, so they
+are eligible for support. They remain missing mappings until their Matter behavior is implemented
+and tested. Arbitrary app capabilities remain excluded.
+Allowance reporting uses each attribute's comparison capability, including independent channels;
+the source suffix does not hide a precision or naming allowance from the report.
 
 When updating the reference, inspect the backend cluster and fixture changes, update the revision
 and inventory deliberately, and rerun both suites. Do not automatically accept new expected values.
@@ -256,9 +263,10 @@ duration conversion.
 
 `tests/fixtures/official-capabilities.json` records the implemented bases from homey-lib 2.52.2
 installed with the pinned backend, including source paths and reference revision. Coverage validation
-rejects any mapped fixture whose base is absent from this catalog. This subset describes implemented
-support; it does not imply that all official Homey capabilities or all backend features are bridged.
-Custom app fields, including generic `number.*`, `boolean.*`, and vendor-specific bases, are excluded.
+permits bases from this catalog and the verified Homey OS extensions recorded separately in
+`tests/fixtures/homey-os-capabilities.json`. Eligibility does not imply that a mapping exists;
+declared support still requires behavioral contracts. Custom app fields, including generic
+`number.*`, `boolean.*`, and vendor-specific bases, are excluded.
 
 PM1 uses the numeric PM1 Concentration Measurement cluster in µg/m³. Voltage and current use
 Electrical Power Measurement in mV and mA. Wrong units, nonnumeric metadata and write-only metadata

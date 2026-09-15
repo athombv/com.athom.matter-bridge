@@ -3,7 +3,8 @@ import { fork, execFileSync } from 'node:child_process';
 import { once } from 'node:events';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { createRequire } from 'node:module';
 import { access, readFile, readdir, mkdir, writeFile } from 'node:fs/promises';
 import { BridgeHarness } from './BridgeHarness.mjs';
 import { Rpc } from './Rpc.mjs';
@@ -65,20 +66,41 @@ if (!values['allow-backend-revision-mismatch']) {
 console.log(
   `Backend ${revision}${changes ? ' (modified)' : ''} (${nodeVersion}); bridge ${process.version}`,
 );
-// Reference files are independent reads; parsing and validation happen after both finish.
-const [inventoryJson, allowancesJson] = await Promise.all([
+// Reference files are independent reads; validate them after all reads finish.
+const [inventoryJson, allowancesJson, extensionsJson] = await Promise.all([
   readFile(new URL('./backend-inventory.json', import.meta.url), 'utf8'),
   readFile(new URL('./backend-allowances.json', import.meta.url), 'utf8'),
+  readFile(new URL('../fixtures/homey-os-capabilities.json', import.meta.url), 'utf8'),
 ]);
 const inventory = JSON.parse(inventoryJson);
 const allowances = JSON.parse(allowancesJson);
+const extensions = JSON.parse(extensionsJson);
+assert.equal(extensions.backendRevision, backendReference.revision);
+const backendRequire = createRequire(resolve(backendPath, 'packages/homey-local/package.json'));
+const homeyLibPath = dirname(backendRequire.resolve('homey-lib/package.json'));
+const officialFiles = await readdir(resolve(homeyLibPath, 'assets/capability/capabilities'));
+const officialBases = new Set(officialFiles.map((file) => {
+  return file.replace(/\.json$/, '');
+}));
+
+// Explicitly verified Homey OS extensions are eligible alongside homey-lib capabilities.
+for (const [id, entry] of Object.entries(inventory.capabilities)) {
+  const base = id.split('.')[0];
+  const isKnownCapability = officialBases.has(base) || extensions.capabilities[base] !== undefined;
+
+  if (!isKnownCapability) {
+    assert.equal(entry.status, 'intentionally unsupported', `Unverified backend capability ${id}`);
+  }
+}
+
 const assets = resolve(backendPath, backendReference.fixtures);
-const files = await readdir(assets);
+const files = (await readdir(assets)).filter((file) => {
+  return file.endsWith('.output.json');
+});
+
+assert.equal(files.length, inventory.fixtureCount, 'Backend fixture count changed; refresh the mapping inventory');
 
 for (const file of files) {
-  if (!file.endsWith('.output.json')) {
-    continue;
-  }
   const fixtureJson = await readFile(resolve(assets, file), 'utf8');
   const fixture = JSON.parse(fixtureJson);
 
@@ -128,15 +150,7 @@ try {
   for (const fixture of selected) {
     try {
       await comparison.compare(fixture);
-      const applicableAllowances = [];
-      for (const allowance of allowances) {
-        const applies = allowance.capabilities.some((id) => {
-          return !!fixture.capabilities[id];
-        });
-        if (applies) {
-          applicableAllowances.push(allowance.id);
-        }
-      }
+      const applicableAllowances = BackendComparison.applicableAllowances(fixture, allowances);
 
       results.push({ id: fixture.id, status: 'PASS', allowances: applicableAllowances });
       console.log(`PASS ${fixture.id}: backend discovery, values, updates and controls`);
