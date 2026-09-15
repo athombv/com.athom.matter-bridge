@@ -51,6 +51,16 @@
           "activePower",
           "tested",
           "Mapping contract covers initial values and source subscription updates."
+        ],
+        "4": [
+          "voltage",
+          "tested",
+          "Independent values assert milli-unit conversion, zero, fractional and unknown readings."
+        ],
+        "5": [
+          "activeCurrent",
+          "tested",
+          "Independent values assert milli-unit conversion, zero, fractional and unknown readings."
         ]
       },
       "commands": {}
@@ -999,6 +1009,36 @@
           "endpointList",
           "tested",
           "Independent mapping vector or metadata invariant."
+        ]
+      },
+      "commands": {}
+    },
+    "Pm1ConcentrationMeasurement": {
+      "attributes": {
+        "0": [
+          "measuredValue",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "1": [
+          "minMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "2": [
+          "maxMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "8": [
+          "measurementUnit",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "9": [
+          "measurementMedium",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
         ]
       },
       "commands": {}

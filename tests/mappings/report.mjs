@@ -22,6 +22,8 @@ const stream = run({
     fileURLToPath(new URL('../mapping-availability.test.mjs', import.meta.url)),
     fileURLToPath(new URL('../mapping-discovery.test.mjs', import.meta.url)),
     fileURLToPath(new URL('../mapping-fan.test.mjs', import.meta.url)),
+    fileURLToPath(new URL('../mapping-channels.test.mjs', import.meta.url)),
+    fileURLToPath(new URL('../mapping-light-controls.test.mjs', import.meta.url)),
     fileURLToPath(new URL('../mapping-power.test.mjs', import.meta.url)),
   ],
 });
@@ -63,7 +65,9 @@ const phases = [
   'unknown boolean readings stay unavailable until a known reading arrives',
   'mixed water sensors follow source availability without inventing readings',
   'bulk additions expose complete descriptors and working subscriptions',
-  'existing on/off fan upgrades in place and handles steps, off and unknown speed',
+  'existing on/off fan upgrades in place and handles official speed, off and unknown readings',
+  'removing custom speed preserves a paired fan on/off endpoint',
+  'independent light channels route full capability IDs and retain identity after restart',
   'energy and battery additions preserve existing socket endpoints and pairing',
   'battery percentage clamps limits without turning unknown into zero',
 ].map((name) => {

@@ -8,6 +8,10 @@ export async function mappingCoverage() {
     'utf8',
   );
   const inventory = JSON.parse(inventoryJson);
+  const official = JSON.parse(await readFile(
+    new URL('../fixtures/official-capabilities.json', import.meta.url), 'utf8',
+  ));
+  assert.equal(official.backendRevision, backendReference.revision);
 
   assert.equal(inventory.revision, backendReference.revision);
 
@@ -23,7 +27,12 @@ export async function mappingCoverage() {
     assert.ok(fixture.attributes.length, `Missing attributes for ${fixture.id}`);
 
     for (const id of Object.keys(fixture.capabilities)) {
-      assert.ok(inventory.capabilities[id], `Unclassified capability ${fixture.id}/${id}`);
+      const base = id.split('.')[0];
+      assert.ok(official.capabilities[base], `Non-official mapped capability ${fixture.id}/${id}`);
+      const classifiedId = inventory.capabilities[id] ? id : base;
+      assert.ok(inventory.capabilities[classifiedId], `Unclassified capability ${fixture.id}/${id}`);
+
+      assert.equal(inventory.capabilities[classifiedId].status, 'supported', `Mapping status conflicts with fixture ${fixture.id}/${id}`);
 
       const checks = fixture.attributes.filter((attribute) => {
         return attribute.capabilityId === id;
@@ -44,7 +53,7 @@ export async function mappingCoverage() {
         assert.ok(hasCommand, `Missing command contract ${fixture.id}/${id}`);
       }
 
-      covered.add(id);
+      covered.add(classifiedId);
     }
   }
 
@@ -56,6 +65,7 @@ export async function mappingCoverage() {
   const lines = [
     `Backend reference: ${inventory.revision}`,
     `${inventory.fixtureCount} saved backend device fixtures; not an exhaustive Homey capability catalog.`,
+    `Official base provenance: homey-lib ${official.homeyLibVersion}, ${official.source}.`,
     `${mappings.length} bridge fixture variants covering ${covered.size} capabilities.`,
     '',
     '| Capability | Status | Evidence / follow-up |',

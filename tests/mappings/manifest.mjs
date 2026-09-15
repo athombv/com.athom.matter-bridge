@@ -53,10 +53,10 @@ const saturation = attribute('light_saturation', 'ColorControl', 'currentSaturat
   [1, 254],
   [0.25, 64],
 ]);
-const temperature = attribute('light_temperature', 'ColorControl', 'colorTemperatureMireds', 151, [
-  [0, 1],
-  [1, 300],
-  [0.25, 76],
+const temperature = attribute('light_temperature', 'ColorControl', 'colorTemperatureMireds', 277, [
+  [0, 153],
+  [1, 400],
+  [0.25, 215],
 ]);
 const hueCommand = command(
   'ColorControl',
@@ -67,7 +67,7 @@ const hueCommand = command(
 const temperatureCommand = command(
   'ColorControl',
   'moveToColorTemperature',
-  { colorTemperatureMireds: 300, transitionTime: 0, optionsMask: {}, optionsOverride: {} },
+  { colorTemperatureMireds: 400, transitionTime: 0, optionsMask: {}, optionsOverride: {} },
   { onoff: true, light_temperature: 1 },
 );
 
@@ -476,6 +476,19 @@ const sensors = [
     'ppm',
   ],
   [
+    'measure_pm1',
+    10,
+    'Pm1ConcentrationMeasurement',
+    0x2c,
+    10,
+    [
+      [0, 0],
+      [12.5, 12.5],
+      [null, null],
+    ],
+    'µg/m³',
+  ],
+  [
     'measure_pm10',
     10,
     'Pm10ConcentrationMeasurement',
@@ -765,29 +778,79 @@ const fan = {
 };
 mappings.push(fan);
 
-const customFan = structuredClone(fan);
-customFan.id = 'fan-custom-range';
-delete customFan.capabilities.fan_speed;
-customFan.capabilities['number.fixture_fan_speed'] = capability(13, { setable: true, min: 1, max: 26, step: 1 });
-for (const attribute of customFan.attributes) {
-  if (attribute.capabilityId === 'fan_speed') {
-    attribute.capabilityId = 'number.fixture_fan_speed';
-    attribute.backendCapability = 'fan_speed';
-    attribute.backendScale = 26;
-    attribute.updates = [[1, 4], [26, 100], [6, 23]];
+for (const [id, name, value, initial, units] of [
+  ['measure_voltage', 'voltage', 230.125, 230125, 'V'],
+  ['measure_current', 'activeCurrent', 1.25, 1250, 'A'],
+]) {
+  mappings.push({
+    id, class: 'sensor', source: 'measurement-and-sensing/ElectricalPowerMeasurementCluster.mts',
+    capabilities: { [id]: capability(value, { units }) },
+    endpoints: [{ id: 'energy', type: 0x510 }],
+    attributes: [attribute(id, 'ElectricalPowerMeasurement', name, initial,
+      [[0, 0], [1.234, 1234], [null, null]], 'energy')],
+    commands: [],
+  });
+}
+
+// Use the same independent Matter vectors for standard sub-capability instances.
+// Only routing changes; conversion expectations never come from production code.
+const subCapabilityVariants = new Set([
+  'socket', 'light-extended-color', 'thermostat-implicit', 'lock-true', 'position-cover',
+  'thermostat-off-heat-cool-auto', 'state-cover', 'fan-speed', 'fallback', 'measure_temperature', 'measure_humidity',
+  'measure_co', 'measure_co2', 'measure_pm1', 'measure_pm10', 'measure_pm25',
+  'measure_luminance', 'measure_voltage', 'measure_current', 'power-sensor',
+  'alarm_contact', 'alarm_motion', 'alarm_occupancy', 'alarm_water', 'alarm_smoke',
+  'measure_battery', 'alarm_battery',
+]);
+for (const original of [...mappings]) {
+  if (!subCapabilityVariants.has(original.id)) {
+    continue;
+  }
+  const fixture = structuredClone(original);
+  fixture.id = original.id === 'thermostat-off-heat-cool-auto' ? 'sub-hvac' : `sub-${original.id}`;
+  fixture.capabilitySuffix = 'secondary';
+  fixture.capabilities = Object.fromEntries(Object.entries(fixture.capabilities).map(([id, value]) => {
+    return [`${id}.secondary`, value];
+  }));
+  for (const endpoint of fixture.endpoints) {
+    endpoint.id = `channel:secondary:${endpoint.id}`;
+  }
+  for (const check of fixture.attributes) {
+    check.backendCapability = check.capabilityId;
+    check.capabilityId += '.secondary';
+    check.endpoint = `channel:secondary:${check.endpoint}`;
+  }
+  for (const operation of [...fixture.commands, ...(fixture.writes ?? [])]) {
+    operation.endpoint = `channel:secondary:${operation.endpoint ?? 'main'}`;
+    operation.writes = Object.fromEntries(Object.entries(operation.writes).map(([id, value]) => {
+      return [`${id}.secondary`, value];
+    }));
+    if (operation.prepare) {
+      operation.prepare = Object.fromEntries(Object.entries(operation.prepare).map(([id, value]) => {
+        return [`${id}.secondary`, value];
+      }));
+    }
+  }
+  mappings.push(fixture);
+}
+
+const electrical = {
+  id: 'electrical-channels', class: 'sensor',
+  source: 'measurement-and-sensing/ElectricalPowerMeasurementCluster.mts',
+  capabilities: {}, endpoints: [], attributes: [], commands: [],
+};
+for (const id of ['power-sensor', 'measure_voltage', 'measure_current',
+  'sub-power-sensor', 'sub-measure_voltage', 'sub-measure_current']) {
+  const fixture = structuredClone(mappings.find((item) => { return item.id === id; }));
+  Object.assign(electrical.capabilities, fixture.capabilities);
+  electrical.attributes.push(...fixture.attributes);
+  for (const endpoint of fixture.endpoints) {
+    if (!electrical.endpoints.some((item) => { return item.id === endpoint.id; })) {
+      electrical.endpoints.push(endpoint);
+    }
   }
 }
-customFan.writes = [
-  { cluster: 'FanControl', attribute: 'percentSetting', value: 50,
-    writes: { 'number.fixture_fan_speed': 13 },
-    outcomes: [['FanControl', 'percentSetting', 50], ['FanControl', 'percentCurrent', 50]] },
-  { cluster: 'FanControl', attribute: 'fanMode', value: 3, prepare: { onoff: false },
-    writes: { 'number.fixture_fan_speed': 26, onoff: true },
-    outcomes: [['FanControl', 'fanMode', 3], ['FanControl', 'percentSetting', 100], ['FanControl', 'percentCurrent', 100], ['OnOff', 'onOff', true]] },
-  { cluster: 'FanControl', attribute: 'fanMode', value: 0, writes: { onoff: false },
-    outcomes: [['FanControl', 'fanMode', 0], ['FanControl', 'percentSetting', 0], ['FanControl', 'percentCurrent', 0], ['OnOff', 'onOff', false]] },
-];
-mappings.push(customFan);
+mappings.push(electrical);
 
 // Cluster IDs are the independent discovery contract for the pinned Matter model.
 const clusterIds = {
@@ -811,6 +874,7 @@ const clusterIds = {
   RelativeHumidityMeasurement: 1029,
   CarbonMonoxideConcentrationMeasurement: 1036,
   CarbonDioxideConcentrationMeasurement: 1037,
+  Pm1ConcentrationMeasurement: 1068,
   Pm10ConcentrationMeasurement: 1069,
   Pm25ConcentrationMeasurement: 1066,
   IlluminanceMeasurement: 1024,
@@ -837,7 +901,7 @@ for (const fixture of mappings) {
       }
       if (check.cluster === 'OccupancySensing') {
         endpoint.features.OccupancySensing =
-          check.capabilityId === 'alarm_motion' ? { passiveInfrared: true } : { ultrasonic: true };
+          check.capabilityId.split('.')[0] === 'alarm_motion' ? { passiveInfrared: true } : { ultrasonic: true };
       }
       if (check.cluster === 'SmokeCoAlarm') {
         endpoint.features.SmokeCoAlarm = { smokeAlarm: true };
@@ -850,14 +914,14 @@ for (const fixture of mappings) {
           [`max${kind}SetpointLimit`]: 3000,
         });
       }
-      if (check.cluster === 'ColorControl' && check.capabilityId === 'light_temperature') {
+      if (check.cluster === 'ColorControl' && check.capabilityId.split('.')[0] === 'light_temperature') {
         endpoint.values.ColorControl = {
-          colorTempPhysicalMinMireds: 1,
-          colorTempPhysicalMaxMireds: 300,
+          colorTempPhysicalMinMireds: 153,
+          colorTempPhysicalMaxMireds: 400,
         };
       }
     }
-    if (endpoint.features.ColorControl && !fixture.capabilities.light_mode) {
+    if (endpoint.features.ColorControl && !fixture.capabilities[fixture.capabilitySuffix ? `light_mode.${fixture.capabilitySuffix}` : 'light_mode']) {
       const mode = endpoint.features.ColorControl.colorTemperature ? 2 : 0;
       endpoint.values.ColorControl = {
         ...endpoint.values.ColorControl,

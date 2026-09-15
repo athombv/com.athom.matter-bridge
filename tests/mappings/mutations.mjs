@@ -11,6 +11,47 @@ await mkdir(artifacts, { recursive: true });
 await rm(join(artifacts, 'mutations.json'), { force: true });
 const mutations = [
   {
+    id: 'stale-capability-metadata',
+    mapping: 'fan-speed',
+    suite: 'mapping-fan.test.mjs',
+    file: 'lib/mappings/CapabilityGroups.mjs',
+    from: 'get() {\n            return source.capabilitiesObj[id];\n          },',
+    to: 'value: source.capabilitiesObj[id],',
+    evidence: 'did not become 50',
+  },
+  {
+    id: 'wrong-electrical-scale',
+    mapping: 'electrical-channels',
+    file: 'lib/mappings/PowerTelemetry.mjs',
+    from: 'Math.round(value * 1000)',
+    to: 'Math.round(value)',
+    evidence: 'electrical-channels/measure_power initial',
+  },
+  {
+    id: 'lost-channel-command-routing',
+    mapping: 'sub-light-extended-color',
+    file: 'lib/mappings/CapabilityGroups.mjs',
+    from: 'source.setCapabilityValue({ ...write, capabilityId })',
+    to: 'source.setCapabilityValue(write)',
+    evidence: 'controller commands report their complete outcomes',
+  },
+  {
+    id: 'unrealistic-color-temperature-range',
+    mapping: 'light-extended-color',
+    suite: 'mapping-light-controls.test.mjs',
+    from: '#minColorTemperatureMireds = 153;',
+    to: '#minColorTemperatureMireds = 1;',
+    evidence: '1 !== 153',
+  },
+  {
+    id: 'discarded-light-transition-duration',
+    mapping: 'light-extended-color',
+    suite: 'mapping-light-controls.test.mjs',
+    from: 'write.opts = { duration: transitionTime * 100 };',
+    to: 'write.opts = { duration: 0 };',
+    evidence: 'moveToLevel/dim',
+  },
+  {
     id: 'unclassified-advertised-attribute',
     mapping: 'socket',
     removeAttribute: true,
@@ -95,8 +136,8 @@ const mutations = [
     id: 'wrong-fan-scale',
     mapping: 'fan-speed',
     file: 'lib/mappings/FanMapping.mjs',
-    from: 'value / speed.max',
-    to: 'value / (speed.max * 2)',
+    from: 'Math.min(1, value)',
+    to: 'Math.min(1, value / 2)',
     evidence: 'fan-speed/fan_speed initial',
   },
   {

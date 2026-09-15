@@ -104,7 +104,7 @@ export class SurfaceAudit {
           if (
             name === 'WindowCovering' &&
             entry[0] === 'stopMotion' &&
-            !fixture.capabilities.windowcoverings_state
+            !fixture.capabilities[fixture.capabilitySuffix ? `windowcoverings_state.${fixture.capabilitySuffix}` : 'windowcoverings_state']
           ) {
             this.#record(name, 'command', '2-position-only', [
               'stopMotion',
@@ -116,7 +116,7 @@ export class SurfaceAudit {
           if (
             name === 'WindowCovering' &&
             entry[0] === 'goToLiftPercentage' &&
-            !fixture.capabilities.windowcoverings_set
+            !fixture.capabilities[fixture.capabilitySuffix ? `windowcoverings_set.${fixture.capabilitySuffix}` : 'windowcoverings_set']
           ) {
             this.#record(name, 'command', '5-state-only', [
               'goToLiftPercentage',
@@ -211,10 +211,10 @@ export class SurfaceAudit {
         };
         assert.deepEqual(enabled(read('colorCapabilities')), enabled(read(65532)));
         if (features.colorTemperature) {
-          assert.equal(read('colorTempPhysicalMinMireds'), 1);
-          assert.equal(read('colorTempPhysicalMaxMireds'), 300);
-          assert.equal(read('coupleColorTempToLevelMinMireds'), 1);
-          assert.ok(read('colorTemperatureMireds') >= 1 && read('colorTemperatureMireds') <= 300);
+          assert.equal(read('colorTempPhysicalMinMireds'), 153);
+          assert.equal(read('colorTempPhysicalMaxMireds'), 400);
+          assert.equal(read('coupleColorTempToLevelMinMireds'), 153);
+          assert.ok(read('colorTemperatureMireds') >= 153 && read('colorTemperatureMireds') <= 400);
         }
         return [
           'colorMode',
@@ -246,7 +246,7 @@ export class SurfaceAudit {
           const target = read(`occupied${kind}ingSetpoint`);
           assert.ok(target >= 1600 && target <= 3000);
         }
-        const modes = fixture.capabilities.thermostat_mode?.values?.map((entry) => {
+        const modes = fixture.capabilities[fixture.capabilitySuffix ? `thermostat_mode.${fixture.capabilitySuffix}` : 'thermostat_mode']?.values?.map((entry) => {
           return { off: 0, heat: 4, cool: 3, auto: 1 }[entry.id];
         }) ?? [features.heating ? 4 : 3];
         assert.ok(
@@ -292,7 +292,7 @@ export class SurfaceAudit {
         return ['operationalStatus', 'targetPositionLiftPercent100ths', 'configStatus'];
       }
       case 'OccupancySensing': {
-        const ultrasonic = fixture.capabilities.alarm_occupancy !== undefined;
+        const ultrasonic = fixture.capabilities[fixture.capabilitySuffix ? `alarm_occupancy.${fixture.capabilitySuffix}` : 'alarm_occupancy'] !== undefined;
         assert.equal(read('occupancySensorType'), ultrasonic ? 1 : 0);
         const bitmap = read('occupancySensorTypeBitmap');
         assert.equal(bitmap.ultrasonic, ultrasonic);
@@ -327,10 +327,21 @@ export class SurfaceAudit {
         assert.equal(read('powerMode'), 0);
         const accuracy = read('accuracy');
         assert.equal(read('numberOfMeasurementTypes'), accuracy.length);
-        assert.equal(accuracy.length, 1);
-        assert.equal(accuracy[0].measurementType, 5);
-        assert.ok(accuracy[0].minMeasuredValue <= accuracy[0].maxMeasuredValue);
-        return ['powerMode', 'numberOfMeasurementTypes', 'accuracy'];
+        const expectedTypes = fixture.attributes.filter((attribute) => {
+          return attribute.endpoint === endpoint.id && attribute.cluster === name;
+        }).map((attribute) => {
+          return { activePower: 5, voltage: 1, activeCurrent: 2 }[attribute.name];
+        });
+        assert.deepEqual(accuracy.map((entry) => {
+          return entry.measurementType;
+        }).sort(), expectedTypes.sort());
+        for (const entry of accuracy) {
+          assert.ok(entry.minMeasuredValue <= entry.maxMeasuredValue);
+        }
+        if (!expectedTypes.includes(5)) {
+          assert.equal(read('activePower'), null, 'Required power attribute has no source reading');
+        }
+        return ['powerMode', 'numberOfMeasurementTypes', 'accuracy', 'activePower'];
       }
       case 'AirQuality':
         assert.equal(read('airQuality'), 0, 'No source capability classifies overall air quality');

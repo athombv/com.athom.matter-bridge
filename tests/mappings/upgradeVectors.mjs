@@ -22,7 +22,7 @@ export function upgradeVectors(fixture) {
       return isDeepStrictEqual(value, values[attribute.capabilityId]);
     });
     assert.ok(update, `No upgrade expectation for ${fixture.id}/${attribute.name}`);
-    const expected = values.onoff === false && 'valueWhenOff' in attribute
+    const expected = values[fixture.capabilitySuffix ? `onoff.${fixture.capabilitySuffix}` : 'onoff'] === false && 'valueWhenOff' in attribute
       ? attribute.valueWhenOff
       : update[1];
     attributes.push({ ...attribute, expected });

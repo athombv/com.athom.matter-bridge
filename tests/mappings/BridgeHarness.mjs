@@ -28,6 +28,7 @@ import { TemperatureMeasurement } from '@matter/main/clusters/temperature-measur
 import { RelativeHumidityMeasurement } from '@matter/main/clusters/relative-humidity-measurement';
 import { CarbonMonoxideConcentrationMeasurement } from '@matter/main/clusters/carbon-monoxide-concentration-measurement';
 import { CarbonDioxideConcentrationMeasurement } from '@matter/main/clusters/carbon-dioxide-concentration-measurement';
+import { Pm1ConcentrationMeasurement } from '@matter/main/clusters/pm1-concentration-measurement';
 import { Pm10ConcentrationMeasurement } from '@matter/main/clusters/pm10-concentration-measurement';
 import { Pm25ConcentrationMeasurement } from '@matter/main/clusters/pm25-concentration-measurement';
 import { IlluminanceMeasurement } from '@matter/main/clusters/illuminance-measurement';
@@ -64,6 +65,7 @@ export class BridgeHarness {
     RelativeHumidityMeasurement,
     CarbonMonoxideConcentrationMeasurement,
     CarbonDioxideConcentrationMeasurement,
+    Pm1ConcentrationMeasurement,
     Pm10ConcentrationMeasurement,
     Pm25ConcentrationMeasurement,
     IlluminanceMeasurement,

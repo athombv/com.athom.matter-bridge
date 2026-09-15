@@ -36,14 +36,6 @@
     "rule": "Match backend alarm_motion at the same endpoint/cluster; require the identical boolean value."
   },
   {
-    "id": "backend-color-temperature-clamp",
-    "capabilities": [
-      "light_temperature"
-    ],
-    "source": "packages/homey-local/lib/matter/data-model/cluster/library/lighting/ColorControlCluster.mts",
-    "rule": "Backend clamps the bridge's 1 mired minimum to 153. Input 0/0.25/0.5 must import as 0; input 1 as 1, within 1/147. Reverse 0.5 yields 227 mired (226/299 at source). Public assertions independently retain the established 1-300 mired range."
-  },
-  {
     "id": "backend-unknown-lock",
     "capabilities": [
       "locked"
@@ -62,11 +54,10 @@
   {
     "id": "fan-percentage-quantization",
     "capabilities": [
-      "fan_speed",
-      "number.fixture_fan_speed"
+      "fan_speed"
     ],
     "source": "packages/homey-local/lib/matter/data-model/cluster/library/hvac/FanControlCluster.mts",
-    "rule": "Allow half a percent step (0.005 normalized). Synthetic custom speed range 1\u201326 is normalized by its explicit maximum and reconstructed as fan_speed on the same endpoint/cluster. Reverse commands use that normalized value and must reach the original source capability and step. PercentCurrent is compared with the backend percentSetting projection only because both values have independent identical source-report contracts. When switched off, percentSetting/Current report zero while the source can retain a remembered speed; this state coupling is tested independently."
+    "rule": "Allow half a percent step (0.005 normalized). PercentCurrent is compared with the backend percentSetting projection only because both values have independent identical source-report contracts. When switched off, percentSetting/Current report zero while the source can retain a remembered speed; this state coupling is tested independently."
   },
   {
     "id": "battery-precision",
@@ -93,5 +84,30 @@
     ],
     "source": "packages/homey-core/lib/Capability.mjs; homey-lib/assets/capability/capabilities/meter_power.json",
     "rule": "The backend formats meter_power to three decimals in kWh. Allow half a display step, 0.0005 kWh. Public contracts still assert exact mWh integers, including 64-bit TLV values."
+  },
+  {
+    "id": "color-temperature-quantization",
+    "capabilities": [
+      "light_temperature"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/lighting/ColorControlCluster.mts",
+    "rule": "The bridge uses the Homey OS fallback range 153\u2013400 mired for normalized sources without physical limits. Allow one mired step (1/247) on round trips; the backend no longer clamps or collapses source values. This is a declared fallback, not calibrated physical lamp metadata."
+  },
+  {
+    "id": "electrical-display-precision",
+    "capabilities": [
+      "measure_voltage",
+      "measure_current"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/measurement-and-sensing/ElectricalPowerMeasurementCluster.mts; homey-lib/assets/capability/capabilities/measure_voltage.json and measure_current.json (decimals: 2)",
+    "rule": "The pinned backend stores voltage/current to two decimals in V/A. Allow half that display step (0.005) only in backend reconstruction. Independent Matter checks retain exact mV/mA, including 230.125 V -> 230125 mV and 1.234 A -> 1234 mA. The same tolerance applies to standard sub-capabilities matched by endpoint and cluster."
+  },
+  {
+    "id": "electrical-sibling-total",
+    "capabilities": [
+      "measure_power"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/measurement-and-sensing/ElectricalPowerMeasurementCluster.mts",
+    "rule": "When exactly two matching power capabilities share endpoint/cluster provenance, the pinned backend creates measure_power as a sibling sum and measure_power.matter-<endpoint>-144 as the physical channel reading. Select the latter for channel comparison; do not allow numeric tolerance or match the aggregate to a source channel. No polyphase feature is inferred. A mixed fixture independently asserts two 12 W channels rather than a 24 W channel."
   }
 ]

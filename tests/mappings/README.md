@@ -1,6 +1,6 @@
 # Mapping contracts and backend comparison
 
-The 51 synthetic variants exercise 32 Homey capabilities, all existing bridge mapping families,
+The synthetic variants exercise all implemented official capability bases and bridge mapping families,
 class aliases, and virtual classes. These are behavioral contracts, not generated snapshots of
 whatever the bridge currently happens to expose. Numeric Matter expectations do not use production
 conversion helpers. `manifest.mjs` records expected device types, exact cluster sets, selected
@@ -89,10 +89,10 @@ These are compatibility observations, not permission to loosen the public Matter
   selecting off.
 - The bridge's existing Ultrasonic occupancy representation is named `alarm_motion` by the backend.
   The comparison checks identical boolean meaning and records the name difference.
-- `ColorControlCluster.mts` clamps a physical minimum below 100 mired to 153. The bridge's existing
-  1–300 mired range therefore loses its lower range on import. Explicit vectors verify that Homey
-  inputs 0, 0.25, and 0.5 import as 0, and 1 imports as 1. A backend command of 0.5 produces 227 mired,
-  corresponding to 226/299 in the source. Changing this established range is separate product work.
+- Normalized light temperature uses the same 153–400 mired fallback as Homey OS (approximately
+  6500–2500 K). Homey capabilities do not provide physical Kelvin limits, so this is a declared
+  fallback rather than calibrated lamp metadata. Both directions now round-trip within one mired
+  step (1/247); the previous backend clamp allowance has been removed.
 - `DoorLockCluster.mts` maps a null lock state to `false`. The adapter checks this specific backend
   behavior; public tests require the bridge to preserve unknown lock state as null.
 - `MeasurementClusters.mts` applies the illuminance logarithm to the special Matter value 0. The
@@ -215,10 +215,9 @@ remove the required cluster to hide a controller's extra entity.
 
 ### Fan, energy and battery mappings
 
-- Fans with standard `fan_speed` expose Fan Control percentages. A fan with exactly one writable
-  `number.*_fan_speed` field, finite non-negative min/max, positive step, and `onoff` also supports
-  speed using that declared range. Ambiguous/custom fields without this metadata remain unshared.
-  Public fixtures use invented names; no installation identifiers are checked in. The supported
+- Fans with official `fan_speed` expose Fan Control percentages. Custom fields such as
+  `number.*_fan_speed` are excluded even if their range looks like a speed control. Their standard
+  `onoff` capability remains shared. The supported
   sequence is Off/High, with percentages for intermediate speeds. Auto, oscillation and source
   `fan_mode` are not mapped. Off preserves the remembered source speed when an on/off capability
   exists; current Matter percentages become zero. Unknown source speed marks the device unavailable.
@@ -236,9 +235,58 @@ remove the required cluster to hide a controller's extra entity.
   attributes independently. No battery chemistry, capacity or replacement type is inferred.
 
 `mapping-fan.test.mjs` and `mapping-power.test.mjs` check additions to already paired devices,
-retained parent/child endpoint numbers, rounded fan commands, unsupported requests, unknown
+retained parent/child endpoint numbers, fan commands, unsupported requests, unknown
 readings, numeric limits, and independent battery percentage/alarm values. The pinned Power Source
 server batches battery reports, so only those subscription assertions allow a 15-second wait.
-The backend report records imported-total naming, normalized custom fan speed, and quantization
+The backend report records imported-total naming, official fan speed, and quantization
 allowances. Homey OS rounds energy totals to three decimals in kWh; only the backend
 comparison allows half that display step, while Matter assertions retain exact mWh. These rules do not relax the independent Matter assertions.
+
+### Light range and transition regressions
+
+`mapping-light-controls.test.mjs` checks realistic normalized color-temperature limits, round-trip
+commands and restart identity. Brightness and combined hue/saturation or temperature commands
+forward Matter deciseconds as Homey `opts.duration` milliseconds, including zero and the default
+level transition. Source drivers remain responsible for executing the requested fade. Rejected
+commands still fail at the Matter boundary. Mutation checks independently break the range and
+duration conversion.
+
+
+### Official capabilities and independent channels
+
+`tests/fixtures/official-capabilities.json` records the implemented bases from homey-lib 2.52.2
+installed with the pinned backend, including source paths and reference revision. Coverage validation
+rejects any mapped fixture whose base is absent from this catalog. This subset describes implemented
+support; it does not imply that all official Homey capabilities or all backend features are bridged.
+Custom app fields, including generic `number.*`, `boolean.*`, and vendor-specific bases, are excluded.
+
+PM1 uses the numeric PM1 Concentration Measurement cluster in µg/m³. Voltage and current use
+Electrical Power Measurement in mV and mA. Wrong units, nonnumeric metadata and write-only metadata
+for these three readings are excluded. Zero, fractional and unknown values have independent contracts.
+Electrical Power Measurement requires `activePower`; it stays null when no power capability exists.
+Homey OS may therefore reconstruct an additional unknown power capability for a voltage/current-only
+endpoint. It also rounds voltage/current to two decimals; the narrow backend allowance does not
+change the exact Matter assertions.
+
+For implemented bases, matching suffixes form independent channels: `onoff.secondary` and
+`dim.secondary` control the same light channel, with writes sent to their full original capability IDs.
+Measurement-only channels do not inherit unrelated light/thermostat controls. Unsuffixed endpoints
+keep their existing IDs; added channels use stable IDs derived from the complete suffix. No phase,
+app-specific semantics or conversion is inferred from a suffix. Sub-capabilities retain the same
+class, feature and capability-combination requirements as their base mappings.
+
+The existing `target_temperature.cool` alongside `thermostat_mode` remains a separate cooling target.
+Energy totals retain their established `meter_power`, `.imported` and `.exported` rules. Other energy
+suffixes remain unshared: names do not establish direction, reset periods or non-overlapping totals.
+The backend reconstructs its own endpoint-derived suffixes; comparisons match endpoint/cluster and
+official base rather than requiring original Homey suffix text. It may synthesize a combined power
+reading for sibling electrical endpoints; per-channel comparisons must use the physical endpoint's
+own capability and must not treat the combined value as a channel reading.
+
+`mapping-channels.test.mjs` checks mixed channels, exact source writes, read-only rejection,
+measurement-only channels, unknown booleans, restart identity, re-enabling and subscription cleanup.
+The main manifest exercises all mapped sensor bases and representative controls with suffixes,
+including a mixed electrical device with multiple readings on each channel.
+`fan-policy-upgrade.json` contains only disposable synthetic pairing state produced by
+`generate-fan-upgrade-fixture.mjs` using the previous bridge commit. The upgrade test verifies that
+removing custom fan speed preserves the existing on/off endpoint and pairing.

@@ -5,7 +5,8 @@
   user-select: text;
 }
 
-html, body {
+/* Homey loads its shared stylesheet after ours; keep its root overflow rule from winning. */
+html:root, body.matter-settings {
   height: 100%;
   overflow: hidden;
 }
@@ -35,6 +36,8 @@ html > body.matter-settings {
 }
 
 .settings-page > [role="tabpanel"] {
+  /* Keep the hidden, absolutely positioned device checkboxes inside this scroll area. */
+  position: relative;
   flex: 1;
   min-height: 0;
   padding: 28px 16px 16px;

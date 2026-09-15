@@ -66,7 +66,7 @@ export class DevicesPanel {
 
     const { canShare, supportedCapabilities, unsupportedCapabilities } = device.support;
     const hasNumericAirQuality = supportedCapabilities.some(({ id }) => {
-      return ['measure_co2', 'measure_pm10', 'measure_pm25'].includes(id);
+      return ['measure_co2', 'measure_pm1', 'measure_pm10', 'measure_pm25'].includes(id.split('.')[0]);
     });
 
     if (!canShare || unsupportedCapabilities.length > 0 || hasNumericAirQuality) {

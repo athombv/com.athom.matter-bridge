@@ -15,6 +15,9 @@ export class CommandChecks {
     const harness = this.#harness;
     const fixture = this.#fixture;
     const device = harness.devices[fixture.id];
+    const capabilityId = (base) => {
+      return fixture.capabilitySuffix ? `${base}.${fixture.capabilitySuffix}` : base;
+    };
     const values = Object.fromEntries(
       Object.entries(fixture.capabilities).map(([id, capability]) => {
         return [id, capability.value];
@@ -36,7 +39,7 @@ export class CommandChecks {
     }
     // Toggle has a deliberate start state independent of earlier commands.
     if (operation.name === 'toggle') {
-      values.onoff = true;
+      values[capabilityId('onoff')] = true;
     }
     for (const [id, value] of Object.entries(values)) {
       device.emit(id, value);
@@ -51,7 +54,7 @@ export class CommandChecks {
         assert.ok(vector, `No preparation vector for ${fixture.id}/${attribute.name}`);
         expected = vector[1];
       }
-      if (values.onoff === false && 'valueWhenOff' in attribute) {
+      if (values[capabilityId('onoff')] === false && 'valueWhenOff' in attribute) {
         expected = attribute.valueWhenOff;
       }
       await harness.expectReport(
@@ -142,6 +145,9 @@ export class CommandChecks {
   }
 
   static outcomes(fixture, operation) {
+    const capabilityId = (base) => {
+      return fixture.capabilitySuffix ? `${base}.${fixture.capabilitySuffix}` : base;
+    };
     if (operation.outcomes) {
       return operation.outcomes;
     }
@@ -165,7 +171,7 @@ export class CommandChecks {
     }
     switch (operation.cluster) {
       case 'OnOff':
-        return [['OnOff', 'onOff', operation.writes.onoff]];
+        return [['OnOff', 'onOff', operation.writes[capabilityId('onoff')]]];
       case 'LevelControl': {
         const result = [
           [
@@ -175,7 +181,7 @@ export class CommandChecks {
           ],
         ];
         if (operation.name === 'moveToLevelWithOnOff') {
-          result.push(['OnOff', 'onOff', operation.writes.onoff]);
+          result.push(['OnOff', 'onOff', operation.writes[capabilityId('onoff')]]);
         }
         return result;
       }
@@ -219,10 +225,10 @@ export class CommandChecks {
         return result;
       }
       case 'DoorLock':
-        return [['DoorLock', 'lockState', operation.writes.locked ? 1 : 2]];
+        return [['DoorLock', 'lockState', operation.writes[capabilityId('locked')] ? 1 : 2]];
       case 'WindowCovering': {
-        if ('windowcoverings_state' in operation.writes) {
-          const movement = { up: 1, down: 2, idle: 0 }[operation.writes.windowcoverings_state];
+        if (capabilityId('windowcoverings_state') in operation.writes) {
+          const movement = { up: 1, down: 2, idle: 0 }[operation.writes[capabilityId('windowcoverings_state')]];
           return [
             ['WindowCovering', 'operationalStatus', { global: movement, lift: movement, tilt: 0 }],
           ];

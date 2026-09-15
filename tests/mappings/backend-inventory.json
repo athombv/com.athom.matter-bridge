@@ -293,8 +293,8 @@
       "source": "lge-air-quality-sensor.output.json"
     },
     "measure_current": {
-      "status": "missing",
-      "reason": "No bridge mapping; follow-up capability support.",
+      "status": "supported",
+      "reason": "Independent discovery, value and update contracts cover the official capability and standard sub-capabilities with compatible units.",
       "source": "aqara-light-switch-h2-1-button.output.json"
     },
     "measure_hepa_filter": {
@@ -313,8 +313,8 @@
       "source": "aqara-motion-light.output.json"
     },
     "measure_pm1": {
-      "status": "missing",
-      "reason": "No bridge mapping; follow-up capability support.",
+      "status": "supported",
+      "reason": "Independent discovery, value and update contracts cover the official capability and standard sub-capabilities with compatible units.",
       "source": "lge-air-quality-sensor.output.json"
     },
     "measure_pm10": {
@@ -348,8 +348,8 @@
       "source": "aqara-hub-m2-1-device.output.json"
     },
     "measure_voltage": {
-      "status": "missing",
-      "reason": "No bridge mapping; follow-up capability support.",
+      "status": "supported",
+      "reason": "Independent discovery, value and update contracts cover the official capability and standard sub-capabilities with compatible units.",
       "source": "chip-energy-management-app.output.json"
     },
     "measure_water": {
@@ -523,8 +523,8 @@
       "source": "measurement-and-sensing/ElectricalEnergyMeasurementCluster.mts"
     },
     "number.fixture_fan_speed": {
-      "status": "supported",
-      "reason": "Synthetic example of a single number.*_fan_speed control on a fan, with explicit min/max/step and on/off. This is bridge compatibility coverage, not a backend-observed capability.",
+      "status": "intentionally unsupported",
+      "reason": "Custom app capability; its name and numeric range do not establish official fan_speed semantics. Existing onoff remains supported.",
       "source": "hvac/FanControlCluster.mts (normalized fan_speed reference)"
     }
   },
@@ -579,6 +579,36 @@
     "socket-with-energy",
     "water-with-battery",
     "fan-speed",
-    "fan-custom-range"
+    "measure_pm1",
+    "measure_voltage",
+    "measure_current",
+    "sub-socket",
+    "sub-light-extended-color",
+    "sub-thermostat-implicit",
+    "sub-lock-true",
+    "sub-position-cover",
+    "sub-state-cover",
+    "sub-measure_temperature",
+    "sub-measure_humidity",
+    "sub-measure_co",
+    "sub-measure_co2",
+    "sub-measure_pm1",
+    "sub-measure_pm10",
+    "sub-measure_pm25",
+    "sub-measure_luminance",
+    "sub-alarm_contact",
+    "sub-alarm_motion",
+    "sub-alarm_occupancy",
+    "sub-alarm_water",
+    "sub-alarm_smoke",
+    "sub-fallback",
+    "sub-measure_battery",
+    "sub-alarm_battery",
+    "sub-power-sensor",
+    "sub-fan-speed",
+    "sub-measure_voltage",
+    "sub-measure_current",
+    "electrical-channels",
+    "sub-hvac"
   ]
 }

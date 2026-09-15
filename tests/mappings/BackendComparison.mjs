@@ -13,6 +13,7 @@ export class BackendComparison {
 
   async compare(fixture) {
     const source = this.#harness.devices[fixture.id];
+    const modeId = fixture.capabilitySuffix ? `thermostat_mode.${fixture.capabilitySuffix}` : 'thermostat_mode';
 
     for (const expected of fixture.attributes) {
       const endpointId = this.#harness.endpoint(fixture.id, expected.endpoint);
@@ -22,9 +23,9 @@ export class BackendComparison {
       const isSetpoint = expected.cluster === 'Thermostat' && expected.name.includes('Setpoint');
 
       // Homey OS presents a single target whose meaning depends on the current mode.
-      if (isSetpoint && source.capabilitiesObj.thermostat_mode) {
+      if (isSetpoint && source.capabilitiesObj[modeId]) {
         const mode = expected.name.includes('Cooling') ? 'cool' : 'heat';
-        source.emit('thermostat_mode', mode);
+        source.emit(modeId, mode);
         await this.#harness.expectReport(
           endpointId,
           'Thermostat',
@@ -48,8 +49,8 @@ export class BackendComparison {
       }
 
       // A redundant attribute write can legitimately avoid issuing a Homey command.
-      if (expected.capabilityId === 'thermostat_mode') {
-        source.emit('thermostat_mode', 'off');
+      if (expected.capabilityId === modeId) {
+        source.emit(modeId, 'off');
         await this.#assertValue(context, 'off');
       }
 
@@ -59,8 +60,9 @@ export class BackendComparison {
 
   async #assertValue(context, input) {
     const { fixture, expected } = context;
-    const { target, tolerance } = BackendComparison.#expectedValue(expected.backendCapability ?? expected.capabilityId,
-      typeof input === 'number' ? input / (expected.backendScale ?? 1) : input);
+    const { target, tolerance } = BackendComparison.#expectedValue(
+      expected.backendCapability ?? expected.capabilityId, input,
+    );
 
     await eventually(async () => {
       const snapshot = await this.#rpc.call('snapshot');
@@ -87,8 +89,7 @@ export class BackendComparison {
     const { device, capability } = BackendComparison.#findCapability(snapshot, context);
 
     source.writes.length = 0;
-    const requested = typeof input === 'number' ? input / (expected.backendScale ?? 1) : input;
-    await this.#rpc.call('set', { deviceId: device.id, capabilityId: capability.id, value: requested });
+    await this.#rpc.call('set', { deviceId: device.id, capabilityId: capability.id, value: input });
 
     await eventually(() => {
       const writes = source.writes.filter((write) => {
@@ -103,7 +104,7 @@ export class BackendComparison {
         return;
       }
 
-      const target = expected.capabilityId === 'light_temperature' ? 226 / 299 : input;
+      const target = input;
       assert.ok(
         Math.abs(actual - target) <= 0.01,
         `Backend requested ${actual}, expected ${target}`,
@@ -126,16 +127,27 @@ export class BackendComparison {
       capabilityId = 'alarm_motion';
     }
 
+    const separator = capabilityId.includes('.') ? '-' : '.';
+    const endpointCapabilityId = `${capabilityId}${separator}matter-${endpointId}-${clusterId}`;
+
     for (const device of snapshot) {
-      const capability = device.capabilities.find((item) => {
+      let candidates = device.capabilities.filter((item) => {
         const matchesEndpoint = item.endpointId === endpointId && item.clusterId === clusterId;
-        const matchesName =
-          item.id === capabilityId || item.id.startsWith(`${capabilityId}.matter-`);
+        const matchesName = item.id === capabilityId || item.id === endpointCapabilityId;
         return matchesEndpoint && matchesName;
       });
 
-      if (capability) {
-        return { device, capability };
+      // The backend adds an aggregate power capability to the first sibling's metadata.
+      // Compare the physical channel, never that sum, when both coexist on this endpoint.
+      if (capabilityId === 'measure_power' && clusterId === 144 && candidates.length === 2) {
+        candidates = candidates.filter((item) => {
+          return item.id === endpointCapabilityId;
+        });
+      }
+      assert.ok(candidates.length <= 1, `${fixture.id}: ambiguous backend capability ${capabilityId}`);
+
+      if (candidates.length) {
+        return { device, capability: candidates[0] };
       }
     }
 
@@ -155,6 +167,9 @@ export class BackendComparison {
         return { target: input, tolerance: 0.5 };
       case 'locked':
         return { target: input === null ? false : input, tolerance: 0 };
+      case 'measure_voltage':
+      case 'measure_current':
+        return { target: input, tolerance: 0.005 };
       case 'measure_temperature':
         return { target: input, tolerance: 0.05 };
       case 'measure_humidity':
@@ -163,17 +178,8 @@ export class BackendComparison {
       case 'light_hue':
       case 'light_saturation':
         return { target: input, tolerance: 1 / 254 };
-      case 'light_temperature': {
-        // The pinned backend clamps the existing 1 mired minimum to 153.
-        const target = new Map([
-          [0.5, 0],
-          [0, 0],
-          [1, 1],
-          [0.25, 0],
-        ]).get(input);
-        assert.notEqual(target, undefined, 'Unclassified color-temperature compatibility vector');
-        return { target, tolerance: 1 / 147 };
-      }
+      case 'light_temperature':
+        return { target: input, tolerance: 1 / 247 };
       case 'windowcoverings_set':
         return { target: input, tolerance: 0.005 };
       case 'measure_luminance':
