@@ -159,6 +159,11 @@ test('bridge mapping contracts through a Matter controller', { timeout: 180000 }
             },
             `${fixture.id} did not execute ${operation.name ?? operation.attribute}`,
           );
+          if (operation.cluster === 'ColorControl') {
+            const mode = operation.name === 'moveToColorTemperature' ? 2 : 0;
+            await harness.expectReport(endpoint, 'ColorControl', 'colorMode', mode);
+            await harness.expectReport(endpoint, 'ColorControl', 'enhancedColorMode', mode);
+          }
         }
       });
       const operation = fixture.commands[0] ?? fixture.writes?.[0];

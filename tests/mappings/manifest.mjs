@@ -136,6 +136,10 @@ for (const variant of [
         ['color', 0],
         ['temperature', 2],
       ]),
+      attribute('light_mode', 'ColorControl', 'enhancedColorMode', mode === 'color' ? 0 : 2, [
+        ['color', 0],
+        ['temperature', 2],
+      ]),
     );
     for (const cmd of commands) {
       if (cmd.cluster === 'ColorControl') {
@@ -705,6 +709,14 @@ for (const fixture of mappings) {
           colorTempPhysicalMaxMireds: 300,
         };
       }
+    }
+    if (endpoint.features.ColorControl && !fixture.capabilities.light_mode) {
+      const mode = endpoint.features.ColorControl.colorTemperature ? 2 : 0;
+      endpoint.values.ColorControl = {
+        ...endpoint.values.ColorControl,
+        colorMode: mode,
+        enhancedColorMode: mode,
+      };
     }
     if ([0x100, 0x101, 0x10a, 0x10c, 0x10d].includes(endpoint.type)) {
       clusters.add(4); // Groups
