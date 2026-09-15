@@ -1,0 +1,216 @@
+{
+  "homeyLibVersion": "2.52.2",
+  "backendRevision": "bafec2787531c8065e49622a73ed6a42f23b3669",
+  "source": "homey-lib/assets/capability/capabilities/<id>.json",
+  "scope": "Implemented official bases only; this is not the complete Homey capability catalog.",
+  "capabilities": {
+    "onoff": {
+      "type": "boolean",
+      "getable": true,
+      "setable": true
+    },
+    "dim": {
+      "type": "number",
+      "getable": true,
+      "setable": true,
+      "min": 0,
+      "max": 1,
+      "decimals": 2,
+      "units": "%"
+    },
+    "light_hue": {
+      "type": "number",
+      "getable": true,
+      "setable": true,
+      "min": 0,
+      "max": 1,
+      "decimals": 2
+    },
+    "light_saturation": {
+      "type": "number",
+      "getable": true,
+      "setable": true,
+      "min": 0,
+      "max": 1,
+      "decimals": 2
+    },
+    "light_temperature": {
+      "type": "number",
+      "getable": true,
+      "setable": true,
+      "min": 0,
+      "max": 1,
+      "decimals": 2
+    },
+    "light_mode": {
+      "type": "enum",
+      "getable": true,
+      "setable": true
+    },
+    "fan_speed": {
+      "type": "number",
+      "getable": true,
+      "setable": true,
+      "min": 0,
+      "max": 1,
+      "decimals": 2,
+      "units": "%"
+    },
+    "target_temperature": {
+      "type": "number",
+      "getable": true,
+      "setable": true,
+      "min": 4,
+      "max": 35,
+      "decimals": 1,
+      "units": "°C"
+    },
+    "thermostat_mode": {
+      "type": "enum",
+      "getable": true,
+      "setable": true
+    },
+    "locked": {
+      "type": "boolean",
+      "getable": true,
+      "setable": true
+    },
+    "windowcoverings_set": {
+      "type": "number",
+      "getable": true,
+      "setable": true,
+      "min": 0,
+      "max": 1,
+      "decimals": 2,
+      "units": "%"
+    },
+    "windowcoverings_state": {
+      "type": "enum",
+      "getable": true,
+      "setable": true
+    },
+    "measure_temperature": {
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "decimals": 1,
+      "units": "°C"
+    },
+    "measure_humidity": {
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "decimals": 2,
+      "units": "%"
+    },
+    "measure_co": {
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "decimals": 2,
+      "units": "ppm"
+    },
+    "measure_co2": {
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "decimals": 2,
+      "units": "ppm"
+    },
+    "measure_pm1": {
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "decimals": 2,
+      "units": "μg/m³"
+    },
+    "measure_pm10": {
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "decimals": 2,
+      "units": "μg/m³"
+    },
+    "measure_pm25": {
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "decimals": 2,
+      "units": "μg/m³"
+    },
+    "measure_luminance": {
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "decimals": 2,
+      "units": "lx"
+    },
+    "alarm_motion": {
+      "type": "boolean",
+      "getable": true,
+      "setable": false
+    },
+    "alarm_occupancy": {
+      "type": "boolean",
+      "getable": true,
+      "setable": false
+    },
+    "alarm_contact": {
+      "type": "boolean",
+      "getable": true,
+      "setable": false
+    },
+    "alarm_smoke": {
+      "type": "boolean",
+      "getable": true,
+      "setable": false
+    },
+    "alarm_water": {
+      "type": "boolean",
+      "getable": true,
+      "setable": false
+    },
+    "measure_power": {
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "decimals": 2,
+      "units": "W"
+    },
+    "measure_voltage": {
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "decimals": 2,
+      "units": "V"
+    },
+    "measure_current": {
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "decimals": 2,
+      "units": "A"
+    },
+    "meter_power": {
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "decimals": 3,
+      "units": "kWh"
+    },
+    "measure_battery": {
+      "type": "number",
+      "getable": true,
+      "setable": false,
+      "min": 0,
+      "max": 100,
+      "decimals": 2,
+      "units": "%"
+    },
+    "alarm_battery": {
+      "type": "boolean",
+      "getable": true,
+      "setable": false
+    }
+  }
+}

@@ -1,0 +1,113 @@
+[
+  {
+    "id": "matter-quantization",
+    "capabilities": [
+      "dim",
+      "light_hue",
+      "light_saturation"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/lighting/ColorControlCluster.mts; packages/homey-local/lib/matter/data-model/cluster/library/general/LevelControlCluster.mts",
+    "rule": "Allow one encoded step (1/254). Public contracts assert exact encoded integers."
+  },
+  {
+    "id": "homey-measurement-precision",
+    "capabilities": [
+      "measure_temperature",
+      "measure_humidity",
+      "windowcoverings_set"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/measurement-and-sensing/MeasurementClusters.mts; packages/homey-local/lib/matter/data-model/cluster/library/closures/WindowCoveringCluster.mts",
+    "rule": "Allow half a display step: temperature 0.05 C, humidity 0.5 percent, cover position 0.005. Public contracts assert exact Matter values."
+  },
+  {
+    "id": "mode-dependent-target",
+    "capabilities": [
+      "target_temperature.cool"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/hvac/ThermostatCluster.mts",
+    "rule": "Select cooling and match target_temperature at the same endpoint/cluster to the separate cooling target. Verify reverse control reaches target_temperature.cool."
+  },
+  {
+    "id": "ultrasonic-occupancy-name",
+    "capabilities": [
+      "alarm_occupancy"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/measurement-and-sensing/OccupancySensingCluster.mts",
+    "rule": "Match backend alarm_motion at the same endpoint/cluster; require the identical boolean value."
+  },
+  {
+    "id": "backend-unknown-lock",
+    "capabilities": [
+      "locked"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/closures/DoorLockCluster.mts",
+    "rule": "Backend maps null to false. Only null receives this allowance; public assertions require null to stay unknown."
+  },
+  {
+    "id": "backend-zero-illuminance",
+    "capabilities": [
+      "measure_luminance"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/measurement-and-sensing/MeasurementClusters.mts",
+    "rule": "Backend applies the logarithm to Matter's special 0 and reports 10^(-1/10000) lux. Only input zero receives this allowance; public assertions require encoded 0. Other vectors allow 0.001 lux."
+  },
+  {
+    "id": "fan-percentage-quantization",
+    "capabilities": [
+      "fan_speed"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/hvac/FanControlCluster.mts",
+    "rule": "Allow half a percent step (0.005 normalized). PercentCurrent is compared with the backend percentSetting projection only because both values have independent identical source-report contracts. When switched off, percentSetting/Current report zero while the source can retain a remembered speed; this state coupling is tested independently."
+  },
+  {
+    "id": "battery-precision",
+    "capabilities": [
+      "measure_battery"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/core/PowerSourceCluster.mts",
+    "rule": "Matter encodes percentage in half-percent steps; allow 0.5 percentage point for backend rounding. Public tests require exact 0\u2013200 integers and null unknown readings."
+  },
+  {
+    "id": "imported-total-name",
+    "capabilities": [
+      "meter_power.imported"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/measurement-and-sensing/ElectricalEnergyMeasurementCluster.mts",
+    "rule": "Match meter_power on the same endpoint/cluster, with identical kWh values. No summing tariff or daily subtotals."
+  },
+  {
+    "id": "energy-display-precision",
+    "capabilities": [
+      "meter_power",
+      "meter_power.imported",
+      "meter_power.exported"
+    ],
+    "source": "packages/homey-core/lib/Capability.mjs; homey-lib/assets/capability/capabilities/meter_power.json",
+    "rule": "The backend formats meter_power to three decimals in kWh. Allow half a display step, 0.0005 kWh. Public contracts still assert exact mWh integers, including 64-bit TLV values."
+  },
+  {
+    "id": "color-temperature-quantization",
+    "capabilities": [
+      "light_temperature"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/lighting/ColorControlCluster.mts",
+    "rule": "The bridge uses the Homey OS fallback range 153\u2013400 mired for normalized sources without physical limits. Allow one mired step (1/247) on round trips; the backend no longer clamps or collapses source values. This is a declared fallback, not calibrated physical lamp metadata."
+  },
+  {
+    "id": "electrical-display-precision",
+    "capabilities": [
+      "measure_voltage",
+      "measure_current"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/measurement-and-sensing/ElectricalPowerMeasurementCluster.mts; homey-lib/assets/capability/capabilities/measure_voltage.json and measure_current.json (decimals: 2)",
+    "rule": "The pinned backend stores voltage/current to two decimals in V/A. Allow half that display step (0.005) only in backend reconstruction. Independent Matter checks retain exact mV/mA, including 230.125 V -> 230125 mV and 1.234 A -> 1234 mA. The same tolerance applies to standard sub-capabilities matched by endpoint and cluster."
+  },
+  {
+    "id": "electrical-sibling-total",
+    "capabilities": [
+      "measure_power"
+    ],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/measurement-and-sensing/ElectricalPowerMeasurementCluster.mts",
+    "rule": "When exactly two matching power capabilities share endpoint/cluster provenance, the pinned backend creates measure_power as a sibling sum and measure_power.matter-<endpoint>-144 as the physical channel reading. Select the latter for channel comparison; do not allow numeric tolerance or match the aggregate to a source channel. No polyphase feature is inferred. A mixed fixture independently asserts two 12 W channels rather than a 24 W channel."
+  }
+]

@@ -1,0 +1,1066 @@
+{
+  "matterJsVersion": "0.17.9",
+  "specification": "https://csa-iot.org/wp-content/uploads/2024/05/matter-application-cluster-specification.pdf",
+  "scope": "Bridged parent metadata and application child endpoints. Root commissioning has separate pairing/migration suites. Generated responses, events and SDK configuration writes are delegated, not independently audited.",
+  "globals": {
+    "65528": [
+      "generatedCommandList",
+      "delegated",
+      "Matter.js builds response command descriptors from the cluster schema."
+    ],
+    "65529": [
+      "acceptedCommandList",
+      "tested",
+      "SurfaceAudit checks every advertised command against this inventory."
+    ],
+    "65531": [
+      "attributeList",
+      "tested",
+      "SurfaceAudit checks every advertised attribute against this inventory."
+    ],
+    "65532": [
+      "featureMap",
+      "tested",
+      "The independent mapping manifest asserts exact enabled features."
+    ],
+    "65533": [
+      "clusterRevision",
+      "delegated",
+      "The pinned Matter.js cluster definition owns the revision."
+    ]
+  },
+  "clusters": {
+    "ElectricalPowerMeasurement": {
+      "attributes": {
+        "0": [
+          "powerMode",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "1": [
+          "numberOfMeasurementTypes",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "2": [
+          "accuracy",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "8": [
+          "activePower",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "4": [
+          "voltage",
+          "tested",
+          "Independent values assert milli-unit conversion, zero, fractional and unknown readings."
+        ],
+        "5": [
+          "activeCurrent",
+          "tested",
+          "Independent values assert milli-unit conversion, zero, fractional and unknown readings."
+        ]
+      },
+      "commands": {}
+    },
+    "Identify": {
+      "attributes": {
+        "0": [
+          "identifyTime",
+          "delegated",
+          "Matter.js identification timer/type; physical Homey identification is not connected."
+        ],
+        "1": [
+          "identifyType",
+          "delegated",
+          "Matter.js identification timer/type; physical Homey identification is not connected."
+        ]
+      },
+      "commands": {
+        "0": [
+          "identify",
+          "tested",
+          "IdentifyType is None. Protocol countdown and effect acceptance cause no physical source writes.",
+          "Identify explicitly advertises no physical identification and maintains its countdown"
+        ],
+        "64": [
+          "triggerEffect",
+          "tested",
+          "IdentifyType is None. Protocol countdown and effect acceptance cause no physical source writes.",
+          "Identify explicitly advertises no physical identification and maintains its countdown"
+        ]
+      }
+    },
+    "Groups": {
+      "attributes": {
+        "0": [
+          "nameSupport",
+          "delegated",
+          "Matter.js owns per-fabric group membership; physical multicast control is not tested."
+        ]
+      },
+      "commands": {
+        "0": [
+          "addGroup",
+          "delegated",
+          "Matter.js owns per-fabric group membership; physical multicast control is not tested."
+        ],
+        "1": [
+          "viewGroup",
+          "delegated",
+          "Matter.js owns per-fabric group membership; physical multicast control is not tested."
+        ],
+        "2": [
+          "getGroupMembership",
+          "delegated",
+          "Matter.js owns per-fabric group membership; physical multicast control is not tested."
+        ],
+        "3": [
+          "removeGroup",
+          "delegated",
+          "Matter.js owns per-fabric group membership; physical multicast control is not tested."
+        ],
+        "4": [
+          "removeAllGroups",
+          "delegated",
+          "Matter.js owns per-fabric group membership; physical multicast control is not tested."
+        ],
+        "5": [
+          "addGroupIfIdentifying",
+          "delegated",
+          "Matter.js owns per-fabric group membership; physical multicast control is not tested."
+        ]
+      }
+    },
+    "Descriptor": {
+      "attributes": {
+        "0": [
+          "deviceTypeList",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "1": [
+          "serverList",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "2": [
+          "clientList",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "3": [
+          "partsList",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ]
+      },
+      "commands": {}
+    },
+    "ScenesManagement": {
+      "attributes": {
+        "1": [
+          "sceneTableSize",
+          "delegated",
+          "Matter.js owns scene storage; scene recall reaching Homey is unverified."
+        ],
+        "2": [
+          "fabricSceneInfo",
+          "delegated",
+          "Matter.js owns scene storage; scene recall reaching Homey is unverified."
+        ]
+      },
+      "commands": {
+        "0": [
+          "addScene",
+          "delegated",
+          "Matter.js owns scene storage; scene recall reaching Homey is unverified."
+        ],
+        "1": [
+          "viewScene",
+          "delegated",
+          "Matter.js owns scene storage; scene recall reaching Homey is unverified."
+        ],
+        "2": [
+          "removeScene",
+          "delegated",
+          "Matter.js owns scene storage; scene recall reaching Homey is unverified."
+        ],
+        "3": [
+          "removeAllScenes",
+          "delegated",
+          "Matter.js owns scene storage; scene recall reaching Homey is unverified."
+        ],
+        "4": [
+          "storeScene",
+          "delegated",
+          "Matter.js owns scene storage; scene recall reaching Homey is unverified."
+        ],
+        "5": [
+          "recallScene",
+          "tested",
+          "Stored on/off, brightness, saturation, color mode and temperature values are forwarded to Homey. Source failures reject RecallScene.",
+          "scene recall applies stored source state and propagates Homey failures"
+        ],
+        "6": [
+          "getSceneMembership",
+          "delegated",
+          "Matter.js owns scene storage; scene recall reaching Homey is unverified."
+        ],
+        "64": [
+          "copyScene",
+          "delegated",
+          "Matter.js owns scene storage; scene recall reaching Homey is unverified."
+        ]
+      }
+    },
+    "OnOff": {
+      "attributes": {
+        "0": [
+          "onOff",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ]
+      },
+      "commands": {
+        "0": [
+          "off",
+          "tested",
+          "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ],
+        "1": [
+          "on",
+          "tested",
+          "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ],
+        "2": [
+          "toggle",
+          "tested",
+          "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ]
+      }
+    },
+    "LevelControl": {
+      "attributes": {
+        "0": [
+          "currentLevel",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "1": [
+          "remainingTime",
+          "delegated",
+          "Matter.js owns this optional configuration; effects on physical Homey controls are unverified."
+        ],
+        "2": [
+          "minLevel",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "3": [
+          "maxLevel",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "15": [
+          "options",
+          "delegated",
+          "Matter.js owns this optional configuration; effects on physical Homey controls are unverified."
+        ],
+        "17": [
+          "onLevel",
+          "delegated",
+          "Matter.js owns this optional configuration; effects on physical Homey controls are unverified."
+        ],
+        "16384": [
+          "startUpCurrentLevel",
+          "delegated",
+          "Matter.js owns this optional configuration; effects on physical Homey controls are unverified."
+        ]
+      },
+      "commands": {
+        "0": [
+          "moveToLevel",
+          "tested",
+          "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ],
+        "1": [
+          "move",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "continuous brightness and color movement stops issuing Homey writes after Stop"
+        ],
+        "2": [
+          "step",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "step and individual color commands reach Homey and propagate source rejections"
+        ],
+        "3": [
+          "stop",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "continuous brightness and color movement stops issuing Homey writes after Stop"
+        ],
+        "4": [
+          "moveToLevelWithOnOff",
+          "tested",
+          "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ],
+        "5": [
+          "moveWithOnOff",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "continuous brightness and color movement stops issuing Homey writes after Stop"
+        ],
+        "6": [
+          "stepWithOnOff",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "step and individual color commands reach Homey and propagate source rejections"
+        ],
+        "7": [
+          "stopWithOnOff",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "continuous brightness and color movement stops issuing Homey writes after Stop"
+        ]
+      }
+    },
+    "ColorControl": {
+      "attributes": {
+        "0": [
+          "currentHue",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "1": [
+          "currentSaturation",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "7": [
+          "colorTemperatureMireds",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "8": [
+          "colorMode",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "15": [
+          "options",
+          "delegated",
+          "Matter.js owns this optional configuration; non-default option effects are unverified."
+        ],
+        "16": [
+          "numberOfPrimaries",
+          "delegated",
+          "Matter.js owns this optional configuration; non-default option effects are unverified."
+        ],
+        "16385": [
+          "enhancedColorMode",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "16394": [
+          "colorCapabilities",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "16395": [
+          "colorTempPhysicalMinMireds",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "16396": [
+          "colorTempPhysicalMaxMireds",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "16397": [
+          "coupleColorTempToLevelMinMireds",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ]
+      },
+      "commands": {
+        "0": [
+          "moveToHue",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "step and individual color commands reach Homey and propagate source rejections"
+        ],
+        "1": [
+          "moveHue",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "continuous brightness and color movement stops issuing Homey writes after Stop"
+        ],
+        "2": [
+          "stepHue",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "step and individual color commands reach Homey and propagate source rejections"
+        ],
+        "3": [
+          "moveToSaturation",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "step and individual color commands reach Homey and propagate source rejections"
+        ],
+        "4": [
+          "moveSaturation",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "continuous brightness and color movement stops issuing Homey writes after Stop"
+        ],
+        "5": [
+          "stepSaturation",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "step and individual color commands reach Homey and propagate source rejections"
+        ],
+        "6": [
+          "moveToHueAndSaturation",
+          "tested",
+          "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ],
+        "10": [
+          "moveToColorTemperature",
+          "tested",
+          "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ],
+        "71": [
+          "stopMoveStep",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "continuous brightness and color movement stops issuing Homey writes after Stop"
+        ],
+        "75": [
+          "moveColorTemperature",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "continuous brightness and color movement stops issuing Homey writes after Stop"
+        ],
+        "76": [
+          "stepColorTemperature",
+          "tested",
+          "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
+          "step and individual color commands reach Homey and propagate source rejections"
+        ]
+      }
+    },
+    "Thermostat": {
+      "attributes": {
+        "0": [
+          "localTemperature",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "3": [
+          "absMinHeatSetpointLimit",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "4": [
+          "absMaxHeatSetpointLimit",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "5": [
+          "absMinCoolSetpointLimit",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "6": [
+          "absMaxCoolSetpointLimit",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "17": [
+          "occupiedCoolingSetpoint",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "18": [
+          "occupiedHeatingSetpoint",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "21": [
+          "minHeatSetpointLimit",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "22": [
+          "maxHeatSetpointLimit",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "23": [
+          "minCoolSetpointLimit",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "24": [
+          "maxCoolSetpointLimit",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "25": [
+          "minSetpointDeadBand",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "27": [
+          "controlSequenceOfOperation",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "28": [
+          "systemMode",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ]
+      },
+      "commands": {
+        "0": [
+          "setpointRaiseLower",
+          "tested",
+          "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ]
+      }
+    },
+    "RelativeHumidityMeasurement": {
+      "attributes": {
+        "0": [
+          "measuredValue",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "1": [
+          "minMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "2": [
+          "maxMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ]
+      },
+      "commands": {}
+    },
+    "DoorLock": {
+      "attributes": {
+        "0": [
+          "lockState",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "1": [
+          "lockType",
+          "delegated",
+          "Matter.js default metadata; credential/operating-mode management is not exposed by the source capability."
+        ],
+        "2": [
+          "actuatorEnabled",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "37": [
+          "operatingMode",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "38": [
+          "supportedOperatingModes",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ]
+      },
+      "commands": {
+        "0": [
+          "lockDoor",
+          "tested",
+          "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ],
+        "1": [
+          "unlockDoor",
+          "tested",
+          "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ],
+        "3": [
+          "unlockWithTimeout",
+          "tested",
+          "Optional timed unlocking is not advertised: the source has no native timed-unlock capability.",
+          "cover commands reject unavailable source operations and timed unlock is not advertised"
+        ]
+      }
+    },
+    "WindowCovering": {
+      "attributes": {
+        "0": [
+          "type",
+          "delegated",
+          "Matter.js default covering metadata/mode; physical calibration and direction configuration are unverified."
+        ],
+        "7": [
+          "configStatus",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "10": [
+          "operationalStatus",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "11": [
+          "targetPositionLiftPercent100ths",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "13": [
+          "endProductType",
+          "delegated",
+          "Matter.js default covering metadata/mode; physical calibration and direction configuration are unverified."
+        ],
+        "14": [
+          "currentPositionLiftPercent100ths",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "23": [
+          "mode",
+          "delegated",
+          "Matter.js default covering metadata/mode; physical calibration and direction configuration are unverified."
+        ]
+      },
+      "commands": {
+        "0": [
+          "upOrOpen",
+          "tested",
+          "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ],
+        "1": [
+          "downOrClose",
+          "tested",
+          "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ],
+        "2": [
+          "stopMotion",
+          "tested",
+          "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ],
+        "5": [
+          "goToLiftPercentage",
+          "tested",
+          "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ]
+      }
+    },
+    "TemperatureMeasurement": {
+      "attributes": {
+        "0": [
+          "measuredValue",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "1": [
+          "minMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "2": [
+          "maxMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ]
+      },
+      "commands": {}
+    },
+    "CarbonMonoxideConcentrationMeasurement": {
+      "attributes": {
+        "0": [
+          "measuredValue",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "1": [
+          "minMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "2": [
+          "maxMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "8": [
+          "measurementUnit",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "9": [
+          "measurementMedium",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ]
+      },
+      "commands": {}
+    },
+    "AirQuality": {
+      "attributes": {
+        "0": [
+          "airQuality",
+          "tested",
+          "SurfaceAudit requires Unknown when there is no source air-quality classification."
+        ]
+      },
+      "commands": {}
+    },
+    "CarbonDioxideConcentrationMeasurement": {
+      "attributes": {
+        "0": [
+          "measuredValue",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "1": [
+          "minMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "2": [
+          "maxMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "8": [
+          "measurementUnit",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "9": [
+          "measurementMedium",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ]
+      },
+      "commands": {}
+    },
+    "Pm10ConcentrationMeasurement": {
+      "attributes": {
+        "0": [
+          "measuredValue",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "1": [
+          "minMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "2": [
+          "maxMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "8": [
+          "measurementUnit",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "9": [
+          "measurementMedium",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ]
+      },
+      "commands": {}
+    },
+    "Pm25ConcentrationMeasurement": {
+      "attributes": {
+        "0": [
+          "measuredValue",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "1": [
+          "minMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "2": [
+          "maxMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "8": [
+          "measurementUnit",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "9": [
+          "measurementMedium",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ]
+      },
+      "commands": {}
+    },
+    "IlluminanceMeasurement": {
+      "attributes": {
+        "0": [
+          "measuredValue",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "1": [
+          "minMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "2": [
+          "maxMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ]
+      },
+      "commands": {}
+    },
+    "BooleanState": {
+      "attributes": {
+        "0": [
+          "stateValue",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ]
+      },
+      "commands": {}
+    },
+    "OccupancySensing": {
+      "attributes": {
+        "0": [
+          "occupancy",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "1": [
+          "occupancySensorType",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "2": [
+          "occupancySensorTypeBitmap",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ]
+      },
+      "commands": {}
+    },
+    "SmokeCoAlarm": {
+      "attributes": {
+        "0": [
+          "expressedState",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "1": [
+          "smokeState",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "3": [
+          "batteryAlert",
+          "delegated",
+          "No Homey source capability for this diagnostic; Matter.js supplies its default."
+        ],
+        "5": [
+          "testInProgress",
+          "delegated",
+          "No Homey source capability for this diagnostic; Matter.js supplies its default."
+        ],
+        "6": [
+          "hardwareFaultAlert",
+          "delegated",
+          "No Homey source capability for this diagnostic; Matter.js supplies its default."
+        ],
+        "7": [
+          "endOfServiceAlert",
+          "delegated",
+          "No Homey source capability for this diagnostic; Matter.js supplies its default."
+        ]
+      },
+      "commands": {}
+    },
+    "BridgedDeviceBasicInformation": {
+      "attributes": {
+        "1": [
+          "vendorName",
+          "tested",
+          "SurfaceAudit asserts synthetic source metadata and initial reachability."
+        ],
+        "3": [
+          "productName",
+          "tested",
+          "SurfaceAudit asserts synthetic source metadata and initial reachability."
+        ],
+        "5": [
+          "nodeLabel",
+          "tested",
+          "SurfaceAudit asserts synthetic source metadata and initial reachability."
+        ],
+        "15": [
+          "serialNumber",
+          "tested",
+          "SurfaceAudit asserts synthetic source metadata and initial reachability."
+        ],
+        "17": [
+          "reachable",
+          "tested",
+          "SurfaceAudit asserts synthetic source metadata and initial reachability."
+        ],
+        "18": [
+          "uniqueId",
+          "delegated",
+          "Matter.js creates and persists this identifier; mapping upgrade tests check endpoint numbers and saved pairing credentials."
+        ]
+      },
+      "commands": {}
+    },
+    "FanControl": {
+      "attributes": {
+        "0": [
+          "fanMode",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "1": [
+          "fanModeSequence",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "2": [
+          "percentSetting",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "3": [
+          "percentCurrent",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ]
+      },
+      "commands": {}
+    },
+    "ElectricalEnergyMeasurement": {
+      "attributes": {
+        "0": [
+          "accuracy",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "1": [
+          "cumulativeEnergyImported",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "2": [
+          "cumulativeEnergyExported",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ]
+      },
+      "commands": {}
+    },
+    "PowerTopology": {
+      "attributes": {},
+      "commands": {}
+    },
+    "PowerSource": {
+      "attributes": {
+        "0": [
+          "status",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "1": [
+          "order",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "2": [
+          "description",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "12": [
+          "batPercentRemaining",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "14": [
+          "batChargeLevel",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "15": [
+          "batReplacementNeeded",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "16": [
+          "batReplaceability",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "17": [
+          "batPresent",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ],
+        "31": [
+          "endpointList",
+          "tested",
+          "Independent mapping vector or metadata invariant."
+        ]
+      },
+      "commands": {}
+    },
+    "Pm1ConcentrationMeasurement": {
+      "attributes": {
+        "0": [
+          "measuredValue",
+          "tested",
+          "Mapping contract covers initial values and source subscription updates."
+        ],
+        "1": [
+          "minMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "2": [
+          "maxMeasuredValue",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "8": [
+          "measurementUnit",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "9": [
+          "measurementMedium",
+          "tested",
+          "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ]
+      },
+      "commands": {}
+    }
+  }
+}
