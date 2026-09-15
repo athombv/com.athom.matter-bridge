@@ -21,6 +21,7 @@ const onoff = attribute('onoff', 'OnOff', 'onOff', true, [
 const onoffCommands = [
   command('OnOff', 'off', {}, { onoff: false }),
   command('OnOff', 'on', {}, { onoff: true }),
+  command('OnOff', 'toggle', {}, { onoff: false }),
 ];
 const level = attribute('dim', 'LevelControl', 'currentLevel', 128, [
   [0, 1],

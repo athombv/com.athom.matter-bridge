@@ -15,6 +15,7 @@ Run the public suite with Node 22:
 npm run test:mappings
 npm test
 npm run test:mappings:report
+npm run test:mappings:mutations
 ```
 
 The report command runs the tests and writes `tests/mappings/artifacts/report.md`, including actual
@@ -115,3 +116,57 @@ The report also records feature gaps: custom OnOff handlers advertise basic on/o
 Lighting or room AC DeadFrontBehavior bits. Continuous level/color movement, scenes, and timed
 lighting need their own command contracts before support is claimed. Passing this suite does not
 establish complete device-type conformance.
+
+## Independent protocol audit
+
+`matter-surface.json` explicitly classifies attributes and accepted commands actually advertised by
+bridged parent and child endpoints. `SurfaceAudit.mjs` fails when an advertised member has no
+classification, or a member declared tested has no mapping assertion or invariant. It also checks
+parent metadata, exact descriptor relationships and features, both color modes, color capability
+bits, thermostat mode/limit relationships, cover status, sensor bounds, and other related values.
+The catalog is deliberately reviewed; it must not be regenerated to accept new bridge output.
+
+The report distinguishes tested members, behavior delegated to the pinned SDK with a reason, and
+explicit gaps. These counts represent cluster members, including separate cover capability contexts;
+they are not device counts or a percentage of Matter conformance. Generated responses, events,
+SDK configuration writes, root commissioning, and aggregator internals are outside this application
+surface audit. Root pairing/migration has separate tests. Delegating SDK behavior does not verify
+that a physical Homey device responds to it.
+
+`CommandChecks.mjs` checks source writes and resulting controller reads/subscriptions for every
+mapping command and mapped attribute write. It resets source state between cases and forces a real
+change so a no-op cannot masquerade as a successful command. Every operation is also tested with
+source writes rejected: it must return a failure, attempt a source write, and leave mapped values
+unchanged. This covers rejection of the whole operation, not partial success where one of several
+Homey capability writes succeeds before another fails. Transition timing and those partial failures
+remain follow-up work.
+
+`mapping-upgrade.test.mjs` exercises all variants twice: across a current-version restart, and from
+synthetic storage written by the actual previous release. It persists changes before stopping,
+changes source values while offline, and reconnects using retained controller credentials. See
+`../fixtures/README.md` for provenance and the controller-cache limitation. The bridge refreshes
+source values after endpoint restoration using the same callbacks as subsequent subscriptions.
+
+The optional mutation command creates disposable source copies, seeds eight specific defects, and
+requires a test failure with the expected assertion evidence. Syntax errors, timeouts, and unrelated
+failures do not count as detection. Cases cover an unclassified attribute, a removed command contract,
+power scaling, lock polarity, fractional setpoints, a missing subscription callback, stale restored
+state, and contradictory color modes. Logs and `mutations.json` stay in ignored artifacts. Run the
+unmodified public suite first: mutation failures are meaningful only with a passing baseline.
+
+### Remaining advertised command gaps
+
+The inventory keeps these visible without treating a passing backend comparison as evidence:
+
+- Identify and trigger-effect commands have no verified physical identification behavior.
+- Scene recall has no contract proving that stored state reaches Homey.
+- Continuous/step/stop brightness and color commands lack independent source-control contracts.
+- Timed unlocking has no verified source-control contract.
+- Position-only covers have no source stop capability; state-only covers have no absolute position
+  capability. These need explicit behavior decisions for inherited stop/percentage commands.
+
+These are coverage gaps, not a claim that every listed command is defective. They must be resolved
+or explicitly accepted as release limitations before claiming support. The backend only exercises
+its own importer and capability handlers; another controller can use different advertised fields or
+commands. Use [the physical checklist](PHYSICAL-CHECKS.md) for the controllers and devices available
+to the tester. Passing synthetic tests cannot establish a physical platform's cache, UI, or behavior.

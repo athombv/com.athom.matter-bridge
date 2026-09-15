@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict';
 import { randomInt } from 'node:crypto';
 import { EventEmitter } from 'node:events';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { ControllerBehavior, Environment, Logger, ServerNode } from '@matter/main';
-import { Invoke, Read, Write, Subscribe } from '@matter/main/protocol';
+import { dirname, join } from 'node:path';
+import { ControllerBehavior, Environment, fromJson, Logger, ServerNode } from '@matter/main';
+import { Invoke, PeerSet, Read, Write, Subscribe } from '@matter/main/protocol';
 import { Identify } from '@matter/main/clusters/identify';
 import { Groups } from '@matter/main/clusters/groups';
 import { Descriptor } from '@matter/main/clusters/descriptor';
+import { BridgedDeviceBasicInformation } from '@matter/main/clusters/bridged-device-basic-information';
 import { ScenesManagement } from '@matter/main/clusters/scenes-management';
 import { AirQuality } from '@matter/main/clusters/air-quality';
 import { OnOff } from '@matter/main/clusters/on-off';
@@ -40,6 +41,7 @@ export class BridgeHarness {
     Identify,
     Groups,
     Descriptor,
+    BridgedDeviceBasicInformation,
     ScenesManagement,
     AirQuality,
     OnOff,
@@ -61,7 +63,7 @@ export class BridgeHarness {
     SmokeCoAlarm,
   };
 
-  static async create(fixtures) {
+  static async create(fixtures, { serverClass = MatterBridgeServer, storageFixture } = {}) {
     const harness = new BridgeHarness();
     harness.directory = await mkdtemp(join(tmpdir(), 'bridge-mappings-'));
     harness.devices = Object.fromEntries(
@@ -110,7 +112,13 @@ export class BridgeHarness {
     };
 
     try {
-      harness.bridge = new MatterBridgeServer(harness.options);
+      for (const [path, contents] of Object.entries(storageFixture?.files ?? {})) {
+        const target = join(harness.directory, path);
+        await mkdir(dirname(target), { recursive: true });
+        await writeFile(target, contents);
+      }
+
+      harness.bridge = new serverClass(harness.options);
       await harness.bridge.start();
 
       const environment = new Environment('mapping-controller', Environment.default);
@@ -125,40 +133,21 @@ export class BridgeHarness {
         },
       );
 
-      harness.peer = await harness.controller.peers.commission({
-        passcode: 20202021,
-        longDiscriminator: discriminator,
-        timeout: 10000,
-        onAttestationFailure: true,
-      });
-      await harness.peer.start();
-      harness.subscription = await harness.peer.interaction.subscribe({
-        ...Subscribe({ attributes: [{}], minIntervalFloor: 0, maxIntervalCeiling: 60 }),
-        updated: async (chunks) => {
-          for await (const chunk of chunks) {
-            for (const report of chunk) {
-              if (report.kind !== 'attr-value') {
-                continue;
-              }
-
-              harness.reports.set(BridgeHarness.key(report.path), report.value);
-              await harness.onReport?.(report);
-            }
-          }
-        },
-      });
-      const initialReports = await harness.readRaw();
-
-      for (const report of initialReports) {
-        if (report.kind !== 'attr-value') {
-          continue;
-        }
-
-        const key = BridgeHarness.key(report.path);
-        if (!harness.reports.has(key)) {
-          harness.reports.set(key, report.value);
-        }
+      if (storageFixture) {
+        await harness.controller.start();
+        harness.peer = await harness.controller.peers.forAddress(
+          fromJson(storageFixture.peerAddress),
+        );
+      } else {
+        harness.peer = await harness.controller.peers.commission({
+          passcode: 20202021,
+          longDiscriminator: discriminator,
+          timeout: 10000,
+          onAttestationFailure: true,
+        });
       }
+      await harness.peer.start();
+      await harness.subscribe();
       return harness;
     } catch (error) {
       try {
@@ -168,6 +157,54 @@ export class BridgeHarness {
       }
       throw error;
     }
+  }
+
+  async subscribe() {
+    this.reports.clear();
+    this.subscription = await this.peer.interaction.subscribe({
+      ...Subscribe({ attributes: [{}], minIntervalFloor: 0, maxIntervalCeiling: 60 }),
+      updated: async (chunks) => {
+        for await (const chunk of chunks) {
+          for (const report of chunk) {
+            if (report.kind !== 'attr-value') {
+              continue;
+            }
+
+            this.reports.set(BridgeHarness.key(report.path), report.value);
+            await this.onReport?.(report);
+          }
+        }
+      },
+    });
+    const initialReports = await this.readRaw();
+
+    for (const report of initialReports) {
+      if (report.kind !== 'attr-value') {
+        continue;
+      }
+
+      const key = BridgeHarness.key(report.path);
+      if (!this.reports.has(key)) {
+        this.reports.set(key, report.value);
+      }
+    }
+  }
+
+  async restart(whileStopped) {
+    const port = this.bridge.serverNode.state.network.operationalPort;
+    await this.subscription.close();
+    this.subscription = undefined;
+    await this.controller.env
+      .get(PeerSet)
+      .for(this.peer.state.commissioning.peerAddress)
+      .disconnect(new Error('Mapping restart'));
+    await this.peer.cancel();
+    await this.bridge.stop();
+    await whileStopped?.();
+    this.bridge = new MatterBridgeServer({ ...this.options, port });
+    await this.bridge.start();
+    await this.peer.start();
+    await this.subscribe();
   }
 
   static key(path) {

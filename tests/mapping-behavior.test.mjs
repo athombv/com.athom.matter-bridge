@@ -7,17 +7,30 @@ import { BridgeHarness } from './mappings/BridgeHarness.mjs';
 import { eventually } from './mappings/eventually.mjs';
 import { mappings } from './mappings/manifest.mjs';
 import { selectMappings } from './mappings/selectMappings.mjs';
+import { CommandChecks } from './mappings/CommandChecks.mjs';
+import { SurfaceAudit } from './mappings/SurfaceAudit.mjs';
+import { mkdir, writeFile } from 'node:fs/promises';
 
-test('bridge mapping contracts through a Matter controller', { timeout: 180000 }, async (t) => {
+test('bridge mapping contracts through a Matter controller', { timeout: 600000 }, async (t) => {
   const selected = selectMappings(mappings, process.env.MAPPING_CASE);
+  const surface = await SurfaceAudit.create();
   const harness = await BridgeHarness.create(selected);
   t.after(async () => {
-    await harness.close();
+    try {
+      await mkdir(new URL('./mappings/artifacts/', import.meta.url), { recursive: true });
+      await writeFile(
+        new URL('./mappings/artifacts/surface.json', import.meta.url),
+        JSON.stringify(surface.report(), null, 2),
+      );
+    } finally {
+      await harness.close();
+    }
   });
   for (const fixture of selected) {
     await t.test(fixture.id, async (t) => {
       const device = harness.devices[fixture.id];
       await t.test('discovery and initial values', async () => {
+        await surface.check(harness, fixture);
         const children = [...(harness.bridge.deviceEndpointInstances[fixture.id] ?? [])];
         assert.deepEqual(
           children
@@ -119,6 +132,7 @@ test('bridge mapping contracts through a Matter controller', { timeout: 180000 }
           for (const [input, output] of expected.updates) {
             device.emit(expected.capabilityId, input);
             await harness.expectReport(endpoint, expected.cluster, expected.name, output);
+            await surface.check(harness, fixture);
           }
         }
         assert.equal(
@@ -127,79 +141,18 @@ test('bridge mapping contracts through a Matter controller', { timeout: 180000 }
           'Source reports must not echo commands back to Homey',
         );
       });
-      await t.test('controller commands and writes reach Homey', async () => {
+      const commands = new CommandChecks(harness, fixture);
+      await t.test('controller commands report their complete outcomes', async () => {
         for (const operation of [...fixture.commands, ...(fixture.writes ?? [])]) {
-          for (const [id, value] of Object.entries(operation.prepare ?? {})) {
-            device.emit(id, value);
-            const check = fixture.attributes.find((item) => {
-              return item.capabilityId === id;
-            });
-            await harness.expectReport(
-              harness.endpoint(fixture.id, check.endpoint),
-              check.cluster,
-              check.name,
-              check.initial,
-            );
-          }
-          device.writes.length = 0;
-          const endpoint = harness.endpoint(fixture.id, operation.endpoint);
-          if (operation.attribute) {
-            await harness.write(endpoint, operation.cluster, operation.attribute, operation.value);
-          } else {
-            await harness.invoke(endpoint, operation.cluster, operation.name, operation.fields);
-          }
-          await eventually(
-            () => {
-              const actual = Object.fromEntries(
-                device.writes.map((write) => {
-                  return [write.capabilityId, write.value];
-                }),
-              );
-              assert.deepEqual(actual, operation.writes);
-            },
-            `${fixture.id} did not execute ${operation.name ?? operation.attribute}`,
-          );
-          if (operation.cluster === 'ColorControl') {
-            const mode = operation.name === 'moveToColorTemperature' ? 2 : 0;
-            await harness.expectReport(endpoint, 'ColorControl', 'colorMode', mode);
-            await harness.expectReport(endpoint, 'ColorControl', 'enhancedColorMode', mode);
-          }
+          await commands.run(operation);
+          await surface.check(harness, fixture);
         }
       });
-      const operation = fixture.commands[0] ?? fixture.writes?.[0];
-      if (operation) {
-        await t.test('Homey rejections are reported', async () => {
-          if (operation.attribute) {
-            const expected = fixture.attributes.find((item) => {
-              return item.name === operation.attribute;
-            });
-            device.emit(expected.capabilityId, fixture.capabilities[expected.capabilityId].value);
-            await harness.expectReport(
-              harness.endpoint(fixture.id, expected.endpoint),
-              expected.cluster,
-              expected.name,
-              expected.initial,
-            );
-          }
-          const attempts = device.attempts;
-          device.rejectWrites = true;
-          try {
-            const endpoint = harness.endpoint(fixture.id, operation.endpoint);
-            if (operation.attribute) {
-              await assert.rejects(
-                harness.write(endpoint, operation.cluster, operation.attribute, operation.value),
-              );
-            } else {
-              await assert.rejects(
-                harness.invoke(endpoint, operation.cluster, operation.name, operation.fields),
-              );
-            }
-            assert.ok(
-              device.attempts > attempts,
-              'Rejection came from Homey, not local request validation',
-            );
-          } finally {
-            device.rejectWrites = false;
+      if (fixture.commands.length || fixture.writes?.length) {
+        await t.test('every rejected operation preserves reported state', async () => {
+          for (const operation of [...fixture.commands, ...(fixture.writes ?? [])]) {
+            await commands.run(operation, { reject: true });
+            await surface.check(harness, fixture);
           }
         });
       }

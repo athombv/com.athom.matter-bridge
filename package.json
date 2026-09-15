@@ -9,7 +9,8 @@
     "standalone": "bash -c 'while true; do node --max-old-space-size=128 standalone.mjs; code=$?; if [ $code -ne 42 ]; then exit $code; fi; done'",
     "test:mappings": "node --test tests/mapping-*.test.mjs",
     "test:mappings:backend": "node tests/mappings/backend.mjs",
-    "test:mappings:report": "node tests/mappings/report.mjs"
+    "test:mappings:report": "node tests/mappings/report.mjs",
+    "test:mappings:mutations": "node tests/mappings/mutations.mjs"
   },
   "dependencies": {
     "@matter/main": "0.17.9",
