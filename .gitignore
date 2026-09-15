@@ -5,3 +5,5 @@
 # Standalone
 /.envrc
 /.matter*
+# Generated mapping test reports
+/tests/mappings/artifacts/

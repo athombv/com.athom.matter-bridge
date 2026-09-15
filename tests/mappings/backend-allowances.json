@@ -1,0 +1,44 @@
+[
+  {
+    "id": "matter-quantization",
+    "capabilities": ["dim", "light_hue", "light_saturation"],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/lighting/ColorControlCluster.mts; packages/homey-local/lib/matter/data-model/cluster/library/general/LevelControlCluster.mts",
+    "rule": "Allow one encoded step (1/254). Public contracts assert exact encoded integers."
+  },
+  {
+    "id": "homey-measurement-precision",
+    "capabilities": ["measure_temperature", "measure_humidity", "windowcoverings_set"],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/measurement-and-sensing/MeasurementClusters.mts; packages/homey-local/lib/matter/data-model/cluster/library/closures/WindowCoveringCluster.mts",
+    "rule": "Allow half a display step: temperature 0.05 C, humidity 0.5 percent, cover position 0.005. Public contracts assert exact Matter values."
+  },
+  {
+    "id": "mode-dependent-target",
+    "capabilities": ["target_temperature.cool"],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/hvac/ThermostatCluster.mts",
+    "rule": "Select cooling and match target_temperature at the same endpoint/cluster to the separate cooling target. Verify reverse control reaches target_temperature.cool."
+  },
+  {
+    "id": "ultrasonic-occupancy-name",
+    "capabilities": ["alarm_occupancy"],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/measurement-and-sensing/OccupancySensingCluster.mts",
+    "rule": "Match backend alarm_motion at the same endpoint/cluster; require the identical boolean value."
+  },
+  {
+    "id": "backend-color-temperature-clamp",
+    "capabilities": ["light_temperature"],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/lighting/ColorControlCluster.mts",
+    "rule": "Backend clamps the bridge's 1 mired minimum to 153. Input 0/0.25/0.5 must import as 0; input 1 as 1, within 1/147. Reverse 0.5 yields 227 mired (226/299 at source). Public assertions independently retain the established 1-300 mired range."
+  },
+  {
+    "id": "backend-unknown-lock",
+    "capabilities": ["locked"],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/closures/DoorLockCluster.mts",
+    "rule": "Backend maps null to false. Only null receives this allowance; public assertions require null to stay unknown."
+  },
+  {
+    "id": "backend-zero-illuminance",
+    "capabilities": ["measure_luminance"],
+    "source": "packages/homey-local/lib/matter/data-model/cluster/library/measurement-and-sensing/MeasurementClusters.mts",
+    "rule": "Backend applies the logarithm to Matter's special 0 and reports 10^(-1/10000) lux. Only input zero receives this allowance; public assertions require encoded 0. Other vectors allow 0.001 lux."
+  }
+]

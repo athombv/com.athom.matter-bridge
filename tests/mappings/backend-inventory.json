@@ -1,0 +1,561 @@
+{
+  "revision": "bafec2787531c8065e49622a73ed6a42f23b3669",
+  "fixtureCount": 72,
+  "capabilities": {
+    "alarm_battery": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "hue-bridge.output.json"
+    },
+    "alarm_bin_full": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "alarm_bin_missing": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "alarm_cleaning_pad_missing": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "alarm_co": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "alarm_contact": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "aqara-door-window-p1.output.json"
+    },
+    "alarm_door_fault": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-bridge-all-devices.output.json"
+    },
+    "alarm_freeze_risk": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-water-freeze-sensor.output.json"
+    },
+    "alarm_generic": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.3.9-microwave.output.json"
+    },
+    "alarm_lost": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "alarm_motion": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "aqara-hub-m3-2-devices.output.json"
+    },
+    "alarm_occupancy": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "matter-js-occupancy-sensor.output.json"
+    },
+    "alarm_open": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-bridge-all-devices.output.json"
+    },
+    "alarm_presence": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-occupancy-sensor.output.json"
+    },
+    "alarm_pump_device": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "alarm_pump_supply": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "alarm_rain": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-rain-sensor.output.json"
+    },
+    "alarm_smoke": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "alarm_stuck": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "alarm_tank_empty": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "alarm_tank_missing": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "alarm_tank_open": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "alarm_water": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "ikea-water-leak-sensor.output.json"
+    },
+    "button.identify": {
+      "status": "intentionally unsupported",
+      "reason": "Backend identification action is not exported as a Homey device capability by the bridge.",
+      "source": "aqara-door-window-p1.output.json"
+    },
+    "button.operational_state_go_home": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-bridge-all-devices.output.json"
+    },
+    "button.operational_state_pause": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.3.9-microwave.output.json"
+    },
+    "button.operational_state_resume": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.3.9-microwave.output.json"
+    },
+    "button.operational_state_start": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.3.9-microwave.output.json"
+    },
+    "button.operational_state_stop": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.3.9-microwave.output.json"
+    },
+    "button.reset_dishwasher_alarms": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-dishwasher.output.json"
+    },
+    "button.suppress_alarm": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "ikea-water-leak-sensor.output.json"
+    },
+    "cooking_time": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.3.9-microwave.output.json"
+    },
+    "dim": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "govee-h61e0.output.json"
+    },
+    "dishwasher_program": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-bridge-all-devices.output.json"
+    },
+    "evcharger_charging": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "chip-energy-management-app.output.json"
+    },
+    "evcharger_charging_state": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "chip-energy-management-app.output.json"
+    },
+    "fan_mode": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "fan_speed": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "hot_water_mode": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.4.0-water-heater.output.json"
+    },
+    "laundry_washer_cycles": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-bridge-all-devices.output.json"
+    },
+    "laundry_washer_program": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-bridge-all-devices.output.json"
+    },
+    "laundry_washer_speed": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-bridge-all-devices.output.json"
+    },
+    "level_aqi": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "aqara-hub-m2-1-device.output.json"
+    },
+    "level_carbon_filter": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-resource-monitoring.output.json"
+    },
+    "level_co": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-bridge-all-devices.output.json"
+    },
+    "level_hepa_filter": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-resource-monitoring.output.json"
+    },
+    "light_hue": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "govee-h61e0.output.json"
+    },
+    "light_mode": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "govee-h61e0.output.json"
+    },
+    "light_saturation": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "govee-h61e0.output.json"
+    },
+    "light_temperature": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "govee-h61e0.output.json"
+    },
+    "lock_mode": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "locked": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "matter_color_loop": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "govee-h61e0.output.json"
+    },
+    "matter_mode_select": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "govee-h61e0.output.json"
+    },
+    "measure_battery": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "aqara-door-window-p1.output.json"
+    },
+    "measure_carbon_filter": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-resource-monitoring.output.json"
+    },
+    "measure_co": {
+      "source": "cluster library; no numeric example in saved device corpus",
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest."
+    },
+    "measure_co2": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "lge-air-quality-sensor.output.json"
+    },
+    "measure_current": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "aqara-light-switch-h2-1-button.output.json"
+    },
+    "measure_hepa_filter": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-resource-monitoring.output.json"
+    },
+    "measure_humidity": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "aqara-hub-m2-1-device.output.json"
+    },
+    "measure_luminance": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "aqara-motion-light.output.json"
+    },
+    "measure_pm1": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-air-quality-sensor.output.json"
+    },
+    "measure_pm10": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "lge-air-quality-sensor.output.json"
+    },
+    "measure_pm25": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "lge-air-quality-sensor.output.json"
+    },
+    "measure_power": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "aqara-light-switch-h2-1-button.output.json"
+    },
+    "measure_pressure": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "measure_temperature": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "aqara-hub-m2-1-device.output.json"
+    },
+    "measure_tvoc": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "aqara-hub-m2-1-device.output.json"
+    },
+    "measure_voltage": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "chip-energy-management-app.output.json"
+    },
+    "measure_water": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "meter_power": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "aqara-light-switch-h2-1-button.output.json"
+    },
+    "meter_power.estimate": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.4.0-water-heater.output.json"
+    },
+    "meter_power.exported": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "chip-energy-management-app.output.json"
+    },
+    "microwave_mode": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.3.9-microwave.output.json"
+    },
+    "onoff": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "aqara-light-switch-h2-1-button.output.json"
+    },
+    "open_lock": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-bridge-all-devices.output.json"
+    },
+    "operational_state": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.3.9-microwave.output.json"
+    },
+    "operational_state.current_phase": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.3.9-microwave.output.json"
+    },
+    "oven_mode": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.3.9-oven.output.json"
+    },
+    "power_boost": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.4.0-water-heater.output.json"
+    },
+    "power_level": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.3.9-microwave.output.json"
+    },
+    "progress": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-1.4.0-water-heater.output.json"
+    },
+    "pump_mode": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "pump_setpoint": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-bridge-all-devices.output.json"
+    },
+    "speaker_duration": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "speaker_next": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "speaker_playing": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "speaker_prev": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "speaker_stop": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "swing_mode": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "target_temperature": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "aqara-hub-m2-thermostat.output.json"
+    },
+    "target_temperature.cool": {
+      "status": "supported",
+      "reason": "Separate cooling target; backend projects it through mode-dependent target_temperature.",
+      "source": "hvac/ThermostatCluster.mts"
+    },
+    "target_temperature_level": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-bridge-all-devices.output.json"
+    },
+    "thermostat_mode": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "aqara-hub-m2-thermostat.output.json"
+    },
+    "vacuumcleaner_job_mode": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    },
+    "vacuumcleaner_job_mode.clean_mode": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-bridge-all-devices.output.json"
+    },
+    "volume_mute": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-bridge-all-devices.output.json"
+    },
+    "volume_set": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "matter-js-bridge-all-devices.output.json"
+    },
+    "windowcoverings_closed": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "eve-motionblinds.output.json"
+    },
+    "windowcoverings_set": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "eve-motionblinds.output.json"
+    },
+    "windowcoverings_state": {
+      "status": "supported",
+      "reason": "Covered by bridge mapping contracts; class/feature restrictions are recorded in the manifest.",
+      "source": "eve-motionblinds.output.json"
+    },
+    "windowcoverings_tilt_set": {
+      "status": "missing",
+      "reason": "No bridge mapping; follow-up capability support.",
+      "source": "lge-simulator-app.output.json"
+    }
+  },
+  "requiredVariants": [
+    "socket",
+    "light-onoff",
+    "light-dimmable",
+    "light-color",
+    "light-temperature",
+    "light-extended-color",
+    "light-extended-temperature",
+    "thermostat-implicit",
+    "thermostat-off-heat",
+    "thermostat-off-cool",
+    "thermostat-off-cool-separate",
+    "thermostat-off-heat-cool-auto",
+    "thermostat-off-heat-cool-auto-separate",
+    "lock-true",
+    "lock-false",
+    "lock-null",
+    "position-cover",
+    "state-cover",
+    "measure_temperature",
+    "measure_humidity",
+    "measure_co",
+    "measure_co2",
+    "measure_pm10",
+    "measure_pm25",
+    "measure_luminance",
+    "alarm_contact",
+    "alarm_motion",
+    "alarm_occupancy",
+    "alarm_smoke",
+    "fallback",
+    "heatpump",
+    "heater",
+    "airconditioning",
+    "blinds",
+    "shutterblinds",
+    "curtain",
+    "virtual-light",
+    "light-with-sensors"
+  ]
+}
