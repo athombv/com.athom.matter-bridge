@@ -31,7 +31,7 @@
     "name": "Emile Nijssen",
     "email": "emile@athom.nl"
   },
-  "support": "mailto:emile@athom.nl",
+  "support": "mailto:apps@athom.nl",
   "source": "https://github.com/athombv/com.athom.matter-bridge",
   "api": {
     "startPairing": {
