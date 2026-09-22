@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import { test } from 'node:test';
 import { ServerNode } from '@matter/main';
-import MatterBridgeServer from '../lib/MatterBridgeServer.mjs';
+import { MatterBridgeServer } from '../lib/MatterBridgeServer.mjs';
 
 test('device-only updates initialize selected devices when ready and ignore subsequent updates', async (t) => {
   const device = { id: 'lamp', name: 'Test lamp', ready: false };

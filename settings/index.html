@@ -50,7 +50,17 @@
       }
 
       .device__input {
-        display: none;
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+      }
+
+      .device__input:focus-visible + .device__tile {
+        outline: 2px solid var(--homey-color-blue);
+        outline-offset: 3px;
       }
 
       .device__tile {
@@ -262,105 +272,15 @@
         window.addEventListener('pagehide', () => { pairingPanel.dispose(); }, { once: true });
 
         if (state.commissioned === true) {
-          // Get Devices
+          const { DevicesPanel } = await import('./devices.mjs');
           const devices = await Homey.api('GET', '/devices');
-          const updateSelectedCount = () => {
-            const selected = devices.filter((device) => { return device.isSelected; }).length;
-            $selectedCount.textContent = `${selected} selected`;
-          };
-          updateSelectedCount();
-
-          async function updateDeviceSelection(device, input) {
-            const selected = input.checked;
-            input.disabled = true;
-            try {
-              const path = selected ? '/devices/enable' : '/devices/disable';
-              await Homey.api('POST', path, { deviceId: device.id });
-              device.isSelected = selected;
-            } catch (error) {
-              input.checked = device.isSelected;
-              throw error;
-            } finally {
-              input.disabled = false;
-              updateSelectedCount();
-            }
-          }
-
-          // Create Zones
-          const $zones = document.createElement('div');
-          $zones.className = 'zones';
-          $devicesContent.appendChild($zones);
-
-          const $zone_devices_by_name = {};
-
-          const zones = new Set();
-          for (const device of devices) {
-            if (!device.zoneName) continue;
-            zones.add(device.zoneName);
-          }
-
-          const zonesArray = Array.from(zones);
-          zonesArray.sort();
-          for (const zone of zonesArray) {
-            const $zone = document.createElement('div');
-            $zone.className = 'zone';
-            $zone.dataset.zoneName = zone;
-            $zones.appendChild($zone);
-
-            const $zoneName = document.createElement('h2');
-            $zoneName.className = 'zone-name';
-            $zoneName.textContent = zone;
-            $zone.appendChild($zoneName);
-
-            const $zoneDevices = document.createElement('div');
-            $zoneDevices.className = 'zone-devices';
-            $zone.appendChild($zoneDevices);
-
-            $zone_devices_by_name[zone] = $zoneDevices;
-          }
-
-          // Add Devices to Zones
-          for (const device of devices) {
-            const $device = $templateDevice.content.cloneNode(true);
-
-            const $label = $device.querySelector('[data-template-device-label]');
-            const $input = $device.querySelector('[data-template-device-input]');
-            const $name = $device.querySelector('[data-template-device-name]');
-            const $icon = $device.querySelector('[data-template-device-icon]');
-
-            $input.addEventListener('change', () => {
-              updateDeviceSelection(device, $input).catch((error) => { Homey.error(error); });
-            });
-
-            $name.setAttribute('title', device.name);
-            $name.textContent = device.name;
-
-            if (device.iconOverride) {
-              const iconUrl = `https://athombv.github.io/node-homey-lib/assets/device/icons/${device.iconOverride}.svg`;
-              const image = new Image();
-              image.src = iconUrl;
-              image.onload = () => {
-                $icon.style.maskImage = `url(${iconUrl})`;
-              };
-              image.onerror = () => {
-                if (device.iconUrl) {
-                  $icon.style.maskImage = `url(${device.iconUrl})`;
-                } else {
-                  $icon.classList.add('is-missing');
-                }
-              };
-            } else if (device.iconUrl) {
-              $icon.style.maskImage = `url(${device.iconUrl})`;
-            } else {
-              $icon.classList.add('is-missing');
-            }
-
-            if (device.isSelected) {
-              $input.checked = 'checked';
-            }
-
-            $zone_devices_by_name[device.zoneName].appendChild($device);
-          }
+          const devicesPanel = new DevicesPanel({
+            Homey,
+            container: $devicesContent,
+            selectedCount: $selectedCount,
+            template: $templateDevice,
+          });
+          devicesPanel.render(devices);
         }
 
         Homey.ready();

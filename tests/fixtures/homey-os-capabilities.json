@@ -1,0 +1,22 @@
+{
+  "backendRevision": "bafec2787531c8065e49622a73ed6a42f23b3669",
+  "source": "packages/homey-local/lib/ManagerVirtualDeviceLocal.mjs",
+  "scope": "Verified Homey OS capability extensions to homey-lib; this does not permit arbitrary app capabilities.",
+  "capabilities": {
+    "open_lock": {
+      "type": "boolean",
+      "getable": false,
+      "setable": true
+    },
+    "matter_mode_select": {
+      "type": "enum",
+      "getable": true,
+      "setable": true
+    },
+    "matter_color_loop": {
+      "type": "boolean",
+      "getable": true,
+      "setable": true
+    }
+  }
+}

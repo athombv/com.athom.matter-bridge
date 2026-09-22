@@ -1,0 +1,279 @@
+import { SimulatedDevice } from './mappings/SimulatedDevice.mjs';
+import { MatterBridgeServer } from '../lib/MatterBridgeServer.mjs';
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { PeerSet } from '@matter/main/protocol';
+import { BridgeHarness } from './mappings/BridgeHarness.mjs';
+import { eventually } from './mappings/eventually.mjs';
+import { mappings } from './mappings/manifest.mjs';
+import { selectMappings } from './mappings/selectMappings.mjs';
+import { CommandChecks } from './mappings/CommandChecks.mjs';
+import { SurfaceAudit } from './mappings/SurfaceAudit.mjs';
+import { mkdir, writeFile } from 'node:fs/promises';
+
+test('bridge mapping contracts through a Matter controller', { timeout: 600000 }, async (t) => {
+  const selected = selectMappings(mappings, process.env.MAPPING_CASE);
+  const surface = await SurfaceAudit.create();
+  const harness = await BridgeHarness.create(selected);
+  t.after(async () => {
+    try {
+      await mkdir(new URL('./mappings/artifacts/', import.meta.url), { recursive: true });
+      await writeFile(
+        new URL('./mappings/artifacts/surface.json', import.meta.url),
+        JSON.stringify(surface.report(), null, 2),
+      );
+    } finally {
+      await harness.close();
+    }
+  });
+  for (const fixture of selected) {
+    await t.test(fixture.id, async (t) => {
+      const device = harness.devices[fixture.id];
+      await t.test('discovery and initial values', async () => {
+        const support = MatterBridgeServer.getDeviceSupport(device);
+        assert.equal(support.canShare, true);
+        assert.deepEqual(
+          support.supportedCapabilities.sort(),
+          Object.keys(harness.bridge.deviceCapabilityInstances[device.id]).sort(),
+          'Selection support must match the capabilities actually mapped by the bridge',
+        );
+        await surface.check(harness, fixture);
+        const children = [...(harness.bridge.deviceEndpointInstances[fixture.id] ?? [])];
+        assert.deepEqual(
+          children
+            .map((endpoint) => {
+              return endpoint.id;
+            })
+            .sort(),
+          fixture.endpoints
+            .map((endpoint) => {
+              return endpoint.id;
+            })
+            .sort(),
+        );
+        for (const expected of fixture.endpoints) {
+          const number = harness.endpoint(fixture.id, expected.id);
+          assert.deepEqual(
+            (await harness.read(number, 'Descriptor', 'serverList')).sort((a, b) => {
+              return a - b;
+            }),
+            expected.clusters,
+            'Advertised clusters',
+          );
+          const types = await harness.read(number, 'Descriptor', 'deviceTypeList');
+          assert.deepEqual(
+            types.map((type) => {
+              return type.deviceType;
+            }),
+            [expected.type],
+            `${fixture.id}/${expected.id} device types`,
+          );
+          for (const [cluster, features] of Object.entries(expected.features ?? {})) {
+            const actual = await harness.read(number, cluster, 'featureMap');
+            const enabled = (value) => {
+              return Object.keys(value)
+                .filter((key) => {
+                  return value[key] === true;
+                })
+                .sort();
+            };
+            assert.deepEqual(enabled(actual), enabled(features), `${cluster} advertised features`);
+          }
+          for (const [cluster, attributes] of Object.entries(expected.values ?? {})) {
+            for (const [name, value] of Object.entries(attributes)) {
+              assert.deepEqual(
+                await harness.read(number, cluster, name),
+                value,
+                `${cluster}.${name}`,
+              );
+            }
+          }
+        }
+        for (const expected of fixture.attributes) {
+          const actual = await harness.read(
+            harness.endpoint(fixture.id, expected.endpoint),
+            expected.cluster,
+            expected.name,
+          );
+          assert.deepEqual(
+            actual,
+            expected.initial,
+            `${fixture.id}/${expected.capabilityId} initial`,
+          );
+        }
+        for (const operation of fixture.commands) {
+          const accepted = await harness.read(
+            harness.endpoint(fixture.id, operation.endpoint),
+            operation.cluster,
+            'acceptedCommandList',
+          );
+          assert.ok(
+            accepted.includes(BridgeHarness.cluster(operation.cluster).commands[operation.name].id),
+            `Command ${operation.name} must be advertised`,
+          );
+        }
+      });
+      const setpoint = fixture.attributes.find((item) => {
+        return item.cluster === 'Thermostat' && item.name.includes('Setpoint');
+      });
+      if (setpoint) {
+        await t.test('thermostat limits and unknown targets', async () => {
+          const endpoint = harness.endpoint(fixture.id, setpoint.endpoint);
+          const lastValue = await harness.read(endpoint, 'Thermostat', setpoint.name);
+          const attempts = device.attempts;
+          device.emit(setpoint.capabilityId, null);
+          assert.equal(await harness.read(endpoint, 'Thermostat', setpoint.name), lastValue);
+          await assert.rejects(harness.write(endpoint, 'Thermostat', setpoint.name, 3100));
+          await assert.rejects(harness.write(endpoint, 'Thermostat', setpoint.name, 1500));
+          assert.equal(
+            device.attempts,
+            attempts,
+            'Invalid writes and source reports must not command Homey',
+          );
+        });
+      }
+      await t.test('Homey updates reach subscriptions', async () => {
+        const attempts = device.attempts;
+        for (const expected of fixture.attributes) {
+          const endpoint = harness.endpoint(fixture.id, expected.endpoint);
+          for (const [input, output] of expected.updates) {
+            device.emit(expected.capabilityId, input);
+            await harness.expectReport(endpoint, expected.cluster, expected.name, output);
+            await surface.check(harness, fixture);
+          }
+        }
+        assert.equal(
+          device.attempts,
+          attempts,
+          'Source reports must not echo commands back to Homey',
+        );
+      });
+      const commands = new CommandChecks(harness, fixture);
+      await t.test('controller commands report their complete outcomes', async () => {
+        for (const operation of [...fixture.commands, ...(fixture.writes ?? [])]) {
+          await commands.run(operation);
+          await surface.check(harness, fixture);
+        }
+      });
+      if (fixture.commands.length || fixture.writes?.length) {
+        await t.test('every rejected operation preserves reported state', async () => {
+          for (const operation of [...fixture.commands, ...(fixture.writes ?? [])]) {
+            await commands.run(operation, { reject: true });
+            await surface.check(harness, fixture);
+          }
+        });
+      }
+    });
+  }
+  await t.test('disable/re-enable releases subscriptions and restores reports', async () => {
+    const fixture = selected.find((item) => {
+      return item.id === 'socket';
+    });
+    if (!fixture) {
+      return;
+    }
+    const device = harness.devices.socket;
+    await harness.bridge.disableDevice(device.id);
+    for (const listeners of device.listeners.values()) {
+      assert.equal(listeners.size, 0);
+    }
+    await harness.bridge.enableDevice(device.id);
+    const endpoint = harness.endpoint(device.id);
+    device.emit('onoff', false);
+    await harness.expectReport(endpoint, 'OnOff', 'onOff', false);
+    device.emit('onoff', true);
+    await harness.expectReport(endpoint, 'OnOff', 'onOff', true);
+    assert.equal(device.listeners.get('onoff').size, 1);
+  });
+
+  await t.test('delayed readiness and restart preserve identity and control', async () => {
+    if (!harness.devices.socket) {
+      return;
+    }
+    const fixture = structuredClone(
+      selected.find((item) => {
+        return item.id === 'socket';
+      }),
+    );
+    fixture.id = 'delayed-socket';
+    fixture.ready = false;
+    const delayed = new SimulatedDevice(fixture);
+    harness.devices[delayed.id] = delayed;
+    await harness.bridge.enableDevice(delayed.id);
+    assert.equal(harness.bridge.deviceEndpointInstances[delayed.id], undefined);
+    delayed.ready = true;
+    harness.manager.emit('device.update', delayed);
+    await eventually(() => {
+      assert.ok(harness.endpoint(delayed.id));
+    }, 'Delayed device initialization');
+    const endpoint = harness.endpoint(delayed.id);
+    assert.equal(await harness.read(endpoint, 'OnOff', 'onOff'), true);
+    const numbers = Object.fromEntries(
+      Object.keys(harness.devices).map((id) => {
+        return [id, harness.bridge.deviceEndpoints[id].number];
+      }),
+    );
+    const childNumbers = [];
+    for (const [deviceId, endpoints] of Object.entries(harness.bridge.deviceEndpointInstances)) {
+      for (const child of endpoints) {
+        childNumbers.push({ deviceId, id: child.id, number: child.number });
+      }
+    }
+
+    // Existing installations may have persisted contradictory mode attributes before the fix.
+    const colorModes = [];
+    for (const fixture of selected) {
+      if (!fixture.capabilities.light_mode) {
+        continue;
+      }
+
+      const sourceMode = fixture.capabilities.light_mode.value;
+      const expectedMode = sourceMode === 'temperature' ? 2 : 0;
+      const number = harness.endpoint(fixture.id);
+      harness.devices[fixture.id].emit('light_mode', sourceMode);
+      await harness.expectReport(number, 'ColorControl', 'colorMode', expectedMode);
+      await harness.expectReport(number, 'ColorControl', 'enhancedColorMode', expectedMode);
+
+      const endpoint = [...harness.bridge.deviceEndpointInstances[fixture.id]].find((child) => {
+        return child.id === 'main';
+      });
+      await endpoint.set({ colorControl: { colorMode: 1, enhancedColorMode: 1 } });
+      colorModes.push({ endpoint: number, expectedMode });
+    }
+
+    const port = harness.bridge.serverNode.state.network.operationalPort;
+    await harness.subscription.close();
+    harness.subscription = undefined;
+    await harness.controller.env
+      .get(PeerSet)
+      .for(harness.peer.state.commissioning.peerAddress)
+      .disconnect(new Error('Bridge restart test'));
+    await harness.peer.cancel();
+    await harness.bridge.stop();
+    assert.equal(harness.manager.listenerCount('device.update'), 0);
+    for (const device of Object.values(harness.devices)) {
+      for (const listeners of device.listeners.values()) {
+        assert.equal(listeners.size, 0);
+      }
+    }
+    harness.bridge = new MatterBridgeServer({ ...harness.options, port });
+    await harness.bridge.start();
+    for (const [id, number] of Object.entries(numbers)) {
+      assert.equal(harness.bridge.deviceEndpoints[id].number, number);
+    }
+    for (const child of childNumbers) {
+      assert.equal(harness.endpoint(child.deviceId, child.id), child.number);
+    }
+    assert.equal(harness.endpoint(delayed.id), endpoint);
+    await harness.peer.start();
+    for (const { endpoint, expectedMode } of colorModes) {
+      assert.equal(await harness.read(endpoint, 'ColorControl', 'colorMode'), expectedMode);
+      assert.equal(await harness.read(endpoint, 'ColorControl', 'enhancedColorMode'), expectedMode);
+    }
+    await harness.invoke(endpoint, 'OnOff', 'off');
+    await eventually(() => {
+      assert.equal(delayed.capabilitiesObj.onoff.value, false);
+    }, 'Existing controller controls after restart');
+    assert.equal(await harness.read(endpoint, 'OnOff', 'onOff'), false);
+  });
+});

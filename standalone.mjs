@@ -3,7 +3,7 @@ import readline from 'node:readline';
 import { HomeyAPI } from 'homey-api';
 import { checkbox } from '@inquirer/prompts';
 
-import MatterBridgeServer from './lib/MatterBridgeServer.mjs';
+import { MatterBridgeServer } from './lib/MatterBridgeServer.mjs';
 
 console.log('----------------------------------------------');
 console.log('Starting Matter Bridge in standalone mode...');

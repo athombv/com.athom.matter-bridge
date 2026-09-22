@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { Environment, Logger } from '@matter/main';
-import MatterBridgeServer from '../lib/MatterBridgeServer.mjs';
+import { MatterBridgeServer } from '../lib/MatterBridgeServer.mjs';
 
 Logger.level = 'error';
 

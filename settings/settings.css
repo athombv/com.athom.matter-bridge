@@ -5,7 +5,8 @@
   user-select: text;
 }
 
-html, body {
+/* Homey loads its shared stylesheet after ours; keep its root overflow rule from winning. */
+html:root, body.matter-settings {
   height: 100%;
   overflow: hidden;
 }
@@ -35,6 +36,8 @@ html > body.matter-settings {
 }
 
 .settings-page > [role="tabpanel"] {
+  /* Keep the hidden, absolutely positioned device checkboxes inside this scroll area. */
+  position: relative;
   flex: 1;
   min-height: 0;
   padding: 28px 16px 16px;
@@ -137,4 +140,29 @@ html > body.matter-settings {
   .pairing-card { padding: 16px; }
   .pairing-code-field { gap: 8px; padding: 10px; }
   .pairing-copy { padding-left: 8px; }
+}
+
+.device-card {
+  min-width: 0;
+  max-width: 140px;
+}
+
+.device-support {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.device-support summary {
+  cursor: pointer;
+}
+
+.device-support p {
+  margin: 8px 0;
+}
+
+#content .device__input:disabled + .device__tile {
+  opacity: 0.5;
+  cursor: default;
 }

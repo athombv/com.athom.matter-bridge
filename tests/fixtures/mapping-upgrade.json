@@ -1,0 +1,564 @@
+{
+  "revision": "d340d3eb932feb81b0d03423cc4383ffdbdbeaf2",
+  "matterJsVersion": "0.17.9",
+  "peerAddress": "{\"fabricIndex\":1,\"nodeId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"1\\\"}\"}",
+  "endpoints": {
+    "socket": [
+      {
+        "id": "main",
+        "number": 3
+      }
+    ],
+    "light-onoff": [
+      {
+        "id": "main",
+        "number": 5
+      }
+    ],
+    "light-dimmable": [
+      {
+        "id": "main",
+        "number": 7
+      }
+    ],
+    "light-color": [
+      {
+        "id": "main",
+        "number": 9
+      }
+    ],
+    "light-temperature": [
+      {
+        "id": "main",
+        "number": 11
+      }
+    ],
+    "light-extended-color": [
+      {
+        "id": "main",
+        "number": 13
+      }
+    ],
+    "light-extended-temperature": [
+      {
+        "id": "main",
+        "number": 15
+      }
+    ],
+    "thermostat-implicit": [
+      {
+        "id": "main",
+        "number": 17
+      },
+      {
+        "id": "measure_humidity",
+        "number": 18
+      }
+    ],
+    "thermostat-off-heat": [
+      {
+        "id": "main",
+        "number": 20
+      },
+      {
+        "id": "measure_humidity",
+        "number": 21
+      }
+    ],
+    "thermostat-off-cool": [
+      {
+        "id": "main",
+        "number": 23
+      }
+    ],
+    "thermostat-off-cool-separate": [
+      {
+        "id": "main",
+        "number": 25
+      }
+    ],
+    "thermostat-off-heat-cool-auto": [
+      {
+        "id": "main",
+        "number": 27
+      },
+      {
+        "id": "measure_humidity",
+        "number": 28
+      }
+    ],
+    "thermostat-off-heat-cool-auto-separate": [
+      {
+        "id": "main",
+        "number": 30
+      },
+      {
+        "id": "measure_humidity",
+        "number": 31
+      }
+    ],
+    "lock-true": [
+      {
+        "id": "main",
+        "number": 33
+      }
+    ],
+    "lock-false": [
+      {
+        "id": "main",
+        "number": 35
+      }
+    ],
+    "lock-null": [
+      {
+        "id": "main",
+        "number": 37
+      }
+    ],
+    "position-cover": [
+      {
+        "id": "main",
+        "number": 39
+      }
+    ],
+    "state-cover": [
+      {
+        "id": "main",
+        "number": 41
+      }
+    ],
+    "measure_temperature": [
+      {
+        "id": "measure_temperature",
+        "number": 43
+      }
+    ],
+    "measure_humidity": [
+      {
+        "id": "measure_humidity",
+        "number": 45
+      }
+    ],
+    "measure_co": [
+      {
+        "id": "measure_co",
+        "number": 47
+      }
+    ],
+    "measure_co2": [
+      {
+        "id": "measure_co2",
+        "number": 49
+      }
+    ],
+    "measure_pm10": [
+      {
+        "id": "measure_pm10",
+        "number": 51
+      }
+    ],
+    "measure_pm25": [
+      {
+        "id": "measure_pm25",
+        "number": 53
+      }
+    ],
+    "measure_luminance": [
+      {
+        "id": "measure_luminance",
+        "number": 55
+      }
+    ],
+    "alarm_contact": [
+      {
+        "id": "alarm_contact",
+        "number": 57
+      }
+    ],
+    "alarm_motion": [
+      {
+        "id": "alarm_motion",
+        "number": 59
+      }
+    ],
+    "alarm_occupancy": [
+      {
+        "id": "alarm_occupancy",
+        "number": 61
+      }
+    ],
+    "alarm_smoke": [
+      {
+        "id": "alarm_smoke",
+        "number": 63
+      }
+    ],
+    "fallback": [
+      {
+        "id": "main",
+        "number": 65
+      }
+    ],
+    "heatpump": [
+      {
+        "id": "main",
+        "number": 67
+      },
+      {
+        "id": "measure_humidity",
+        "number": 68
+      }
+    ],
+    "heater": [
+      {
+        "id": "main",
+        "number": 70
+      },
+      {
+        "id": "measure_humidity",
+        "number": 71
+      }
+    ],
+    "airconditioning": [
+      {
+        "id": "main",
+        "number": 73
+      },
+      {
+        "id": "measure_humidity",
+        "number": 74
+      }
+    ],
+    "blinds": [
+      {
+        "id": "main",
+        "number": 76
+      }
+    ],
+    "shutterblinds": [
+      {
+        "id": "main",
+        "number": 78
+      }
+    ],
+    "curtain": [
+      {
+        "id": "main",
+        "number": 80
+      }
+    ],
+    "virtual-light": [
+      {
+        "id": "main",
+        "number": 82
+      }
+    ],
+    "light-with-sensors": [
+      {
+        "id": "main",
+        "number": 84
+      }
+    ]
+  },
+  "files": {
+    "mapping-controller/certificates.nextCertificateId": "\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"1\\\"}\"",
+    "mapping-controller/certificates.rootCertBytes": "\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"15300101002402013703241400182604208f5a302605a0c507453706241400182407012408013009410406271660e5cd1d6045cd3799124522cb850cc386664664a1cf1424028e555eb57aad3ea3a9c266b439e39fdb3aed2ab3002f4253573095bfbf3bc70c54dbd14f370a35012901182402603004142bbf1cc597fa961d8f11d7f6735a79cf8a45b1743005142bbf1cc597fa961d8f11d7f6735a79cf8a45b17418300b40fac1e8ef3cb756529b00d7ac244516e409e9998ec2c3878952c28f5fca7edecb2a691cf0007da407a5dc27f9803576c7a525435ed3d5ff760ba2d5a3258c162618\\\"}\"",
+    "mapping-controller/certificates.rootCertId": "\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"0\\\"}\"",
+    "mapping-controller/certificates.rootKeyIdentifier": "\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"2bbf1cc597fa961d8f11d7f6735a79cf8a45b174\\\"}\"",
+    "mapping-controller/certificates.rootKeyPair": "{\"publicKey\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"0406271660e5cd1d6045cd3799124522cb850cc386664664a1cf1424028e555eb57aad3ea3a9c266b439e39fdb3aed2ab3002f4253573095bfbf3bc70c54dbd14f\\\"}\",\"privateKey\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"11c159f1b32b2d91996ab3b4269a6593df2d68be38f674918145ab66936ffb87\\\"}\"}",
+    "mapping-controller/driver.json": "{\n  \"kind\": \"file\",\n  \"type\": \"kv\"\n}",
+    "mapping-controller/events.lastEventNumber": "\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"1001\\\"}\"",
+    "mapping-controller/fabrics.fabrics": "[{\"fabricIndex\":1,\"fabricId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"6568106527588148412\\\"}\",\"nodeId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"12297919457919079623\\\"}\",\"rootNodeId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"12297919457919079623\\\"}\",\"globalId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"9885003216863267520\\\"}\",\"rootPublicKey\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"0406271660e5cd1d6045cd3799124522cb850cc386664664a1cf1424028e555eb57aad3ea3a9c266b439e39fdb3aed2ab3002f4253573095bfbf3bc70c54dbd14f\\\"}\",\"keyPair\":{\"publicKey\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"04ec78816653138028aedf245d9325b683996d4f811d95c24fc725ebb9ef9f146b06b3b6da5b52e722260978ed9007c5050b20188de16678bc49393e974617d332\\\"}\",\"privateKey\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"016965efbd46f1419a71c654ed4b9db4331eca09685b2f98556c22c59d6bfcba\\\"}\"},\"rootVendorId\":65521,\"rootCert\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"15300101002402013703241400182604208f5a302605a0c507453706241400182407012408013009410406271660e5cd1d6045cd3799124522cb850cc386664664a1cf1424028e555eb57aad3ea3a9c266b439e39fdb3aed2ab3002f4253573095bfbf3bc70c54dbd14f370a35012901182402603004142bbf1cc597fa961d8f11d7f6735a79cf8a45b1743005142bbf1cc597fa961d8f11d7f6735a79cf8a45b17418300b40fac1e8ef3cb756529b00d7ac244516e409e9998ec2c3878952c28f5fca7edecb2a691cf0007da407a5dc27f9803576c7a525435ed3d5ff760ba2d5a3258c162618\\\"}\",\"identityProtectionKey\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"fa2156c21b93eb75550f268cae6488c7\\\"}\",\"operationalIdentityProtectionKey\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"7fe6edd8f681a818f21933f0b8d6c36f\\\"}\",\"intermediateCACert\":\"{\\\"__object__\\\":\\\"Undefined\\\"}\",\"operationalCert\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"15300101012402013703241400182604218f5a302605a1c5074537062715bce4d067169a265b2711c794a1fd96fcaaaa1824070124080130094104ec78816653138028aedf245d9325b683996d4f811d95c24fc725ebb9ef9f146b06b3b6da5b52e722260978ed9007c5050b20188de16678bc49393e974617d332370a3501280118240201360304020401183004143d3d9f2bb15702c8d4644e7b623d6f2bfe198c563005142bbf1cc597fa961d8f11d7f6735a79cf8a45b17418300b40e79d3625ed74d1a447a5a3ba13f5d55d43a83e9e5caa89acb1e4e9a7eb65a138920b5130c89e38a5d3ef9b2eebc06e7e2a7bc00ad98fc21c885b6fd628ea8a7918\\\"}\",\"vidVerificationStatement\":\"{\\\"__object__\\\":\\\"Undefined\\\"}\",\"label\":\"Mapping tests\",\"operationalId\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"892e960d80ba8ac0\\\"}\"}]",
+    "mapping-controller/fabrics.nextFabricIndex": "2",
+    "mapping-controller/root.__number__": "0",
+    "mapping-controller/root.basicInformation.configurationVersion": "1",
+    "mapping-controller/root.basicInformation.nodeLabel": "\"Matter.js Test Product\"",
+    "mapping-controller/root.basicInformation.uniqueId": "\"L8oxo2w1MZvoeGmRCTPrYpeXRIUIjzab\"",
+    "mapping-controller/root.commissioning.discriminator": "2090",
+    "mapping-controller/root.commissioning.passcode": "2162180",
+    "mapping-controller/root.generalDiagnostics.__features__": "\"DMTEST\"",
+    "mapping-controller/root.generalDiagnostics.rebootCount": "1",
+    "mapping-controller/root.generalDiagnostics.totalOperationalHoursCounter": "2050",
+    "mapping-controller/root.operationalCredentials.commissionedFabrics": "1",
+    "mapping-controller/root.operationalCredentials.fabrics": "[{\"fabricId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"6568106527588148412\\\"}\",\"label\":\"Mapping tests\",\"nodeId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"12297919457919079623\\\"}\",\"rootPublicKey\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"0406271660e5cd1d6045cd3799124522cb850cc386664664a1cf1424028e555eb57aad3ea3a9c266b439e39fdb3aed2ab3002f4253573095bfbf3bc70c54dbd14f\\\"}\",\"vendorId\":65521,\"vidVerificationStatement\":\"{\\\"__object__\\\":\\\"Undefined\\\"}\",\"fabricIndex\":1}]",
+    "mapping-controller/root.operationalCredentials.nocs": "[{\"noc\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"15300101012402013703241400182604218f5a302605a1c5074537062715bce4d067169a265b2711c794a1fd96fcaaaa1824070124080130094104ec78816653138028aedf245d9325b683996d4f811d95c24fc725ebb9ef9f146b06b3b6da5b52e722260978ed9007c5050b20188de16678bc49393e974617d332370a3501280118240201360304020401183004143d3d9f2bb15702c8d4644e7b623d6f2bfe198c563005142bbf1cc597fa961d8f11d7f6735a79cf8a45b17418300b40e79d3625ed74d1a447a5a3ba13f5d55d43a83e9e5caa89acb1e4e9a7eb65a138920b5130c89e38a5d3ef9b2eebc06e7e2a7bc00ad98fc21c885b6fd628ea8a7918\\\"}\",\"icac\":null,\"vvsc\":\"{\\\"__object__\\\":\\\"Undefined\\\"}\",\"fabricIndex\":1}]",
+    "mapping-controller/root.operationalCredentials.trustedRootCertificates": "[\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"15300101002402013703241400182604208f5a302605a0c507453706241400182407012408013009410406271660e5cd1d6045cd3799124522cb850cc386664664a1cf1424028e555eb57aad3ea3a9c266b439e39fdb3aed2ab3002f4253573095bfbf3bc70c54dbd14f370a35012901182402603004142bbf1cc597fa961d8f11d7f6735a79cf8a45b1743005142bbf1cc597fa961d8f11d7f6735a79cf8a45b17418300b40fac1e8ef3cb756529b00d7ac244516e409e9998ec2c3878952c28f5fca7edecb2a691cf0007da407a5dc27f9803576c7a525435ed3d5ff760ba2d5a3258c162618\\\"}\"]",
+    "mapping-controller/sessions.groupDataCounter": "36797324",
+    "mapping-controller/sessions.resumptionRecords": "[{\"nodeId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"1\\\"}\",\"sharedSecret\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"0717e5ea008e042116515be9b3d4ed2a7785fece617b79416bd216dfbf8abaaf\\\"}\",\"resumptionId\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"ffc5736ddc2bd931c2bb8861ab0613e1\\\"}\",\"fabricId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"6568106527588148412\\\"}\",\"fabricIndex\":1,\"peerNodeId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"1\\\"}\",\"sessionParameters\":{\"idleInterval\":500,\"activeInterval\":300,\"activeThreshold\":4000,\"dataModelRevision\":21,\"interactionModelRevision\":12,\"specificationVersion\":17170432,\"maxPathsPerInvoke\":10,\"supportedTransports\":0,\"maxTcpMessageSize\":\"{\\\"__object__\\\":\\\"Undefined\\\"}\"},\"caseAuthenticatedTags\":\"{\\\"__object__\\\":\\\"Undefined\\\"}\"}]",
+    "mapping-bridge/driver.json": "{\n  \"kind\": \"file\",\n  \"type\": \"kv\"\n}",
+    "mapping-bridge/events.lastEventNumber": "\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"1001\\\"}\"",
+    "mapping-bridge/fabrics.fabrics": "[{\"fabricIndex\":1,\"fabricId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"6568106527588148412\\\"}\",\"nodeId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"1\\\"}\",\"rootNodeId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"12297919457919079623\\\"}\",\"globalId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"9885003216863267520\\\"}\",\"rootPublicKey\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"0406271660e5cd1d6045cd3799124522cb850cc386664664a1cf1424028e555eb57aad3ea3a9c266b439e39fdb3aed2ab3002f4253573095bfbf3bc70c54dbd14f\\\"}\",\"keyPair\":{\"publicKey\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"04a18376ed39e5c5b57b83b48d94b6b807bbcb86b1477d4defa3115bc1ffd5cdc54df3b90bec6be167f5baec3bc8a7dbd70cdc3a08e679f9d395c916182021d0c3\\\"}\",\"privateKey\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"4cecce686274c32bae7f9bd962462f3f436b1f131a5f15d9f7da11417b795735\\\"}\"},\"rootVendorId\":65521,\"rootCert\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"15300101002402013703241400182604208f5a302605a0c507453706241400182407012408013009410406271660e5cd1d6045cd3799124522cb850cc386664664a1cf1424028e555eb57aad3ea3a9c266b439e39fdb3aed2ab3002f4253573095bfbf3bc70c54dbd14f370a35012901182402603004142bbf1cc597fa961d8f11d7f6735a79cf8a45b1743005142bbf1cc597fa961d8f11d7f6735a79cf8a45b17418300b40fac1e8ef3cb756529b00d7ac244516e409e9998ec2c3878952c28f5fca7edecb2a691cf0007da407a5dc27f9803576c7a525435ed3d5ff760ba2d5a3258c162618\\\"}\",\"identityProtectionKey\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"fa2156c21b93eb75550f268cae6488c7\\\"}\",\"operationalIdentityProtectionKey\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"7fe6edd8f681a818f21933f0b8d6c36f\\\"}\",\"intermediateCACert\":\"{\\\"__object__\\\":\\\"Undefined\\\"}\",\"operationalCert\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"15300101022402013703241400182604218f5a302605a1c5074537062715bce4d067169a265b2411011824070124080130094104a18376ed39e5c5b57b83b48d94b6b807bbcb86b1477d4defa3115bc1ffd5cdc54df3b90bec6be167f5baec3bc8a7dbd70cdc3a08e679f9d395c916182021d0c3370a3501280118240201360304020401183004142e8586e5971c2eb144fa4068d1ec6bf212564fa73005142bbf1cc597fa961d8f11d7f6735a79cf8a45b17418300b4023b233c9e4a89c18342d3faca4c5594b239dfff29310a145feacc4b27b6ed1eb96ae3ec17e9b9abee1db1c296227d1edd362c872087a2567092713b1a6282a2118\\\"}\",\"vidVerificationStatement\":\"{\\\"__object__\\\":\\\"Undefined\\\"}\",\"label\":\"Mapping tests\",\"operationalId\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"892e960d80ba8ac0\\\"}\"}]",
+    "mapping-bridge/fabrics.nextFabricIndex": "2",
+    "mapping-bridge/root.__nextNumber__": "85",
+    "mapping-bridge/root.__number__": "0",
+    "mapping-bridge/root.accessControl.__features__": "\"EXTS\"",
+    "mapping-bridge/root.accessControl.acl": "[{\"fabricIndex\":1,\"privilege\":5,\"authMode\":2,\"subjects\":[\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"12297919457919079623\\\"}\"],\"targets\":null}]",
+    "mapping-bridge/root.basicInformation.configurationVersion": "1",
+    "mapping-bridge/root.generalCommissioning.__features__": "\"\"",
+    "mapping-bridge/root.generalCommissioning.breadcrumb": "\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"0\\\"}\"",
+    "mapping-bridge/root.generalDiagnostics.__features__": "\"DMTEST\"",
+    "mapping-bridge/root.generalDiagnostics.rebootCount": "1",
+    "mapping-bridge/root.generalDiagnostics.totalOperationalHoursCounter": "3846",
+    "mapping-bridge/root.operationalCredentials.commissionedFabrics": "1",
+    "mapping-bridge/root.operationalCredentials.fabrics": "[{\"fabricId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"6568106527588148412\\\"}\",\"label\":\"Mapping tests\",\"nodeId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"1\\\"}\",\"rootPublicKey\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"0406271660e5cd1d6045cd3799124522cb850cc386664664a1cf1424028e555eb57aad3ea3a9c266b439e39fdb3aed2ab3002f4253573095bfbf3bc70c54dbd14f\\\"}\",\"vendorId\":65521,\"vidVerificationStatement\":\"{\\\"__object__\\\":\\\"Undefined\\\"}\",\"fabricIndex\":1}]",
+    "mapping-bridge/root.operationalCredentials.nocs": "[{\"noc\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"15300101022402013703241400182604218f5a302605a1c5074537062715bce4d067169a265b2411011824070124080130094104a18376ed39e5c5b57b83b48d94b6b807bbcb86b1477d4defa3115bc1ffd5cdc54df3b90bec6be167f5baec3bc8a7dbd70cdc3a08e679f9d395c916182021d0c3370a3501280118240201360304020401183004142e8586e5971c2eb144fa4068d1ec6bf212564fa73005142bbf1cc597fa961d8f11d7f6735a79cf8a45b17418300b4023b233c9e4a89c18342d3faca4c5594b239dfff29310a145feacc4b27b6ed1eb96ae3ec17e9b9abee1db1c296227d1edd362c872087a2567092713b1a6282a2118\\\"}\",\"icac\":null,\"vvsc\":\"{\\\"__object__\\\":\\\"Undefined\\\"}\",\"fabricIndex\":1}]",
+    "mapping-bridge/root.operationalCredentials.trustedRootCertificates": "[\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"15300101002402013703241400182604208f5a302605a0c507453706241400182407012408013009410406271660e5cd1d6045cd3799124522cb850cc386664664a1cf1424028e555eb57aad3ea3a9c266b439e39fdb3aed2ab3002f4253573095bfbf3bc70c54dbd14f370a35012901182402603004142bbf1cc597fa961d8f11d7f6735a79cf8a45b1743005142bbf1cc597fa961d8f11d7f6735a79cf8a45b17418300b40fac1e8ef3cb756529b00d7ac244516e409e9998ec2c3878952c28f5fca7edecb2a691cf0007da407a5dc27f9803576c7a525435ed3d5ff760ba2d5a3258c162618\\\"}\"]",
+    "mapping-bridge/root.parts.aggregator.__number__": "1",
+    "mapping-bridge/root.parts.aggregator.parts.airconditioning.__number__": "72",
+    "mapping-bridge/root.parts.aggregator.parts.airconditioning.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.airconditioning.bridgedDeviceBasicInformation.uniqueId": "\"N6KPkZjavLYf11ThP3mVA7QDTzb0ebkb\"",
+    "mapping-bridge/root.parts.aggregator.parts.airconditioning.parts.main.__number__": "73",
+    "mapping-bridge/root.parts.aggregator.parts.airconditioning.parts.main.thermostat.__features__": "\"HEAT,COOL,AUTO\"",
+    "mapping-bridge/root.parts.aggregator.parts.airconditioning.parts.main.thermostat.occupiedCoolingSetpoint": "3000",
+    "mapping-bridge/root.parts.aggregator.parts.airconditioning.parts.main.thermostat.occupiedHeatingSetpoint": "3000",
+    "mapping-bridge/root.parts.aggregator.parts.airconditioning.parts.measure_humidity.__number__": "74",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_contact.__number__": "56",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_contact.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_contact.bridgedDeviceBasicInformation.uniqueId": "\"hImasXaBPHXVdp7tTv6xNirHGGsxw9ms\"",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_contact.parts.alarm_contact.__number__": "57",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_motion.__number__": "58",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_motion.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_motion.bridgedDeviceBasicInformation.uniqueId": "\"vZgMeesNdNkEZ4ZNs3uvEQ9KdcYnB4qB\"",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_motion.parts.alarm_motion.__number__": "59",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_occupancy.__number__": "60",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_occupancy.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_occupancy.bridgedDeviceBasicInformation.uniqueId": "\"t7ZkxWk5ei0kGeZw0uCmFIF5P41ER2e7\"",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_occupancy.parts.alarm_occupancy.__number__": "61",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_smoke.__number__": "62",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_smoke.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_smoke.bridgedDeviceBasicInformation.uniqueId": "\"mTBhcz3CVMNgzbZJTmr9mqAmnuWFqQ8E\"",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_smoke.parts.alarm_smoke.__number__": "63",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_smoke.parts.alarm_smoke.smokeCoAlarm.__features__": "\"SMOKE\"",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_smoke.parts.alarm_smoke.smokeCoAlarm.batteryAlert": "0",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_smoke.parts.alarm_smoke.smokeCoAlarm.endOfServiceAlert": "0",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_smoke.parts.alarm_smoke.smokeCoAlarm.expressedState": "0",
+    "mapping-bridge/root.parts.aggregator.parts.alarm_smoke.parts.alarm_smoke.smokeCoAlarm.smokeState": "2",
+    "mapping-bridge/root.parts.aggregator.parts.blinds.__number__": "75",
+    "mapping-bridge/root.parts.aggregator.parts.blinds.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.blinds.bridgedDeviceBasicInformation.uniqueId": "\"zAZKrFfo8waDQBoC147bhliDwne30ItC\"",
+    "mapping-bridge/root.parts.aggregator.parts.blinds.parts.main.__number__": "76",
+    "mapping-bridge/root.parts.aggregator.parts.blinds.parts.main.windowCovering.__features__": "\"LF,PA_LF\"",
+    "mapping-bridge/root.parts.aggregator.parts.blinds.parts.main.windowCovering.configStatus": "{\"operational\":true,\"liftPositionAware\":true}",
+    "mapping-bridge/root.parts.aggregator.parts.blinds.parts.main.windowCovering.currentPositionLiftPercent100ths": "0",
+    "mapping-bridge/root.parts.aggregator.parts.blinds.parts.main.windowCovering.currentPositionLiftPercentage": "0",
+    "mapping-bridge/root.parts.aggregator.parts.curtain.__number__": "79",
+    "mapping-bridge/root.parts.aggregator.parts.curtain.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.curtain.bridgedDeviceBasicInformation.uniqueId": "\"Z1CQ0zVXlBSN3yAXPDzclRi0smJkWWyw\"",
+    "mapping-bridge/root.parts.aggregator.parts.curtain.parts.main.__number__": "80",
+    "mapping-bridge/root.parts.aggregator.parts.curtain.parts.main.windowCovering.__features__": "\"LF\"",
+    "mapping-bridge/root.parts.aggregator.parts.curtain.parts.main.windowCovering.configStatus": "{\"operational\":true}",
+    "mapping-bridge/root.parts.aggregator.parts.fallback.__number__": "64",
+    "mapping-bridge/root.parts.aggregator.parts.fallback.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.fallback.bridgedDeviceBasicInformation.uniqueId": "\"kwTOwtANiH2K8md3Kk66j8r0OKFRK74r\"",
+    "mapping-bridge/root.parts.aggregator.parts.fallback.parts.main.__number__": "65",
+    "mapping-bridge/root.parts.aggregator.parts.fallback.parts.main.onOff.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.fallback.parts.main.onOff.onOff": "true",
+    "mapping-bridge/root.parts.aggregator.parts.heater.__number__": "69",
+    "mapping-bridge/root.parts.aggregator.parts.heater.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.heater.bridgedDeviceBasicInformation.uniqueId": "\"3tTAi9qYoh2tW1scKRGu4CicKQGvpCcU\"",
+    "mapping-bridge/root.parts.aggregator.parts.heater.parts.main.__number__": "70",
+    "mapping-bridge/root.parts.aggregator.parts.heater.parts.main.thermostat.__features__": "\"HEAT\"",
+    "mapping-bridge/root.parts.aggregator.parts.heater.parts.main.thermostat.occupiedHeatingSetpoint": "3000",
+    "mapping-bridge/root.parts.aggregator.parts.heater.parts.measure_humidity.__number__": "71",
+    "mapping-bridge/root.parts.aggregator.parts.heatpump.__number__": "66",
+    "mapping-bridge/root.parts.aggregator.parts.heatpump.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.heatpump.bridgedDeviceBasicInformation.uniqueId": "\"u0nQ5AGVvPb957RQ0JlbuSaNWsaJC4jH\"",
+    "mapping-bridge/root.parts.aggregator.parts.heatpump.parts.main.__number__": "67",
+    "mapping-bridge/root.parts.aggregator.parts.heatpump.parts.main.thermostat.__features__": "\"HEAT\"",
+    "mapping-bridge/root.parts.aggregator.parts.heatpump.parts.main.thermostat.occupiedHeatingSetpoint": "3000",
+    "mapping-bridge/root.parts.aggregator.parts.heatpump.parts.measure_humidity.__number__": "68",
+    "mapping-bridge/root.parts.aggregator.parts.light-color.__number__": "8",
+    "mapping-bridge/root.parts.aggregator.parts.light-color.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-color.bridgedDeviceBasicInformation.uniqueId": "\"5VKuFYqb4VcaO5X3xNONiBCPFcMblqMh\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-color.parts.main.__number__": "9",
+    "mapping-bridge/root.parts.aggregator.parts.light-color.parts.main.colorControl.__features__": "\"HS\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-color.parts.main.colorControl.currentHue": "63.5",
+    "mapping-bridge/root.parts.aggregator.parts.light-color.parts.main.colorControl.currentSaturation": "63.5",
+    "mapping-bridge/root.parts.aggregator.parts.light-color.parts.main.levelControl.__features__": "\"OO,LT\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-color.parts.main.levelControl.currentLevel": "64.25",
+    "mapping-bridge/root.parts.aggregator.parts.light-color.parts.main.onOff.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-color.parts.main.onOff.onOff": "true",
+    "mapping-bridge/root.parts.aggregator.parts.light-dimmable.__number__": "6",
+    "mapping-bridge/root.parts.aggregator.parts.light-dimmable.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-dimmable.bridgedDeviceBasicInformation.uniqueId": "\"HmGULOcZ0QUtAkeEn5nvBRVIC1RJB9Sw\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-dimmable.parts.main.__number__": "7",
+    "mapping-bridge/root.parts.aggregator.parts.light-dimmable.parts.main.levelControl.__features__": "\"OO,LT\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-dimmable.parts.main.levelControl.currentLevel": "64.25",
+    "mapping-bridge/root.parts.aggregator.parts.light-dimmable.parts.main.onOff.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-dimmable.parts.main.onOff.onOff": "true",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-color.__number__": "12",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-color.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-color.bridgedDeviceBasicInformation.uniqueId": "\"5Vo3WTKAB8VaLeqtlVL9YlcCgw4VwSD4\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-color.parts.main.__number__": "13",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-color.parts.main.colorControl.__features__": "\"HS,CT\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-color.parts.main.colorControl.colorMode": "2",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-color.parts.main.colorControl.colorTemperatureMireds": "300",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-color.parts.main.colorControl.currentHue": "63.5",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-color.parts.main.colorControl.currentSaturation": "63.5",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-color.parts.main.levelControl.__features__": "\"OO,LT\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-color.parts.main.levelControl.currentLevel": "64.25",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-color.parts.main.onOff.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-color.parts.main.onOff.onOff": "true",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-temperature.__number__": "14",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-temperature.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-temperature.bridgedDeviceBasicInformation.uniqueId": "\"FdiwiUc3Cu7PxxMKsFVwn5ZXkU8VxBtx\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-temperature.parts.main.__number__": "15",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-temperature.parts.main.colorControl.__features__": "\"HS,CT\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-temperature.parts.main.colorControl.colorTemperatureMireds": "300",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-temperature.parts.main.colorControl.currentHue": "63.5",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-temperature.parts.main.colorControl.currentSaturation": "63.5",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-temperature.parts.main.levelControl.__features__": "\"OO,LT\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-temperature.parts.main.levelControl.currentLevel": "64.25",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-temperature.parts.main.onOff.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-extended-temperature.parts.main.onOff.onOff": "true",
+    "mapping-bridge/root.parts.aggregator.parts.light-onoff.__number__": "4",
+    "mapping-bridge/root.parts.aggregator.parts.light-onoff.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-onoff.bridgedDeviceBasicInformation.uniqueId": "\"3awvyC561DK6nh1Pkn9R4HTbgdIh0RZP\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-onoff.parts.main.__number__": "5",
+    "mapping-bridge/root.parts.aggregator.parts.light-onoff.parts.main.onOff.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-onoff.parts.main.onOff.onOff": "true",
+    "mapping-bridge/root.parts.aggregator.parts.light-temperature.__number__": "10",
+    "mapping-bridge/root.parts.aggregator.parts.light-temperature.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-temperature.bridgedDeviceBasicInformation.uniqueId": "\"526mh9GdTHlCk9tKbOvk5lv0HD0qRVfO\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-temperature.parts.main.__number__": "11",
+    "mapping-bridge/root.parts.aggregator.parts.light-temperature.parts.main.colorControl.__features__": "\"CT\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-temperature.parts.main.colorControl.colorTemperatureMireds": "300",
+    "mapping-bridge/root.parts.aggregator.parts.light-temperature.parts.main.levelControl.__features__": "\"OO,LT\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-temperature.parts.main.levelControl.currentLevel": "64.25",
+    "mapping-bridge/root.parts.aggregator.parts.light-temperature.parts.main.onOff.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-temperature.parts.main.onOff.onOff": "true",
+    "mapping-bridge/root.parts.aggregator.parts.light-with-sensors.__number__": "83",
+    "mapping-bridge/root.parts.aggregator.parts.light-with-sensors.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-with-sensors.bridgedDeviceBasicInformation.uniqueId": "\"tWIIFlEuoz1Vk8Vr0lkW5CYNz74FDvlZ\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-with-sensors.parts.main.__number__": "84",
+    "mapping-bridge/root.parts.aggregator.parts.light-with-sensors.parts.main.colorControl.__features__": "\"HS\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-with-sensors.parts.main.colorControl.currentHue": "63.5",
+    "mapping-bridge/root.parts.aggregator.parts.light-with-sensors.parts.main.colorControl.currentSaturation": "63.5",
+    "mapping-bridge/root.parts.aggregator.parts.light-with-sensors.parts.main.levelControl.__features__": "\"OO,LT\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-with-sensors.parts.main.levelControl.currentLevel": "64.25",
+    "mapping-bridge/root.parts.aggregator.parts.light-with-sensors.parts.main.onOff.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.light-with-sensors.parts.main.onOff.onOff": "true",
+    "mapping-bridge/root.parts.aggregator.parts.lock-false.__number__": "34",
+    "mapping-bridge/root.parts.aggregator.parts.lock-false.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.lock-false.bridgedDeviceBasicInformation.uniqueId": "\"zweN1u2GZZrBQiwSLdP0ZnVmDPecLShU\"",
+    "mapping-bridge/root.parts.aggregator.parts.lock-false.parts.main.__number__": "35",
+    "mapping-bridge/root.parts.aggregator.parts.lock-false.parts.main.doorLock.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.lock-false.parts.main.doorLock.credentialKey": "\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"eb5549a2cab8c4a348305fec721b479e\\\"}\"",
+    "mapping-bridge/root.parts.aggregator.parts.lock-null.__number__": "36",
+    "mapping-bridge/root.parts.aggregator.parts.lock-null.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.lock-null.bridgedDeviceBasicInformation.uniqueId": "\"EkM5QoIfD8t3xYKxl6nnATv0TBEGRkpG\"",
+    "mapping-bridge/root.parts.aggregator.parts.lock-null.parts.main.__number__": "37",
+    "mapping-bridge/root.parts.aggregator.parts.lock-null.parts.main.doorLock.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.lock-null.parts.main.doorLock.credentialKey": "\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"2eb1ca899a0d1727926337bff5c494ac\\\"}\"",
+    "mapping-bridge/root.parts.aggregator.parts.lock-true.__number__": "32",
+    "mapping-bridge/root.parts.aggregator.parts.lock-true.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.lock-true.bridgedDeviceBasicInformation.uniqueId": "\"ZenbdjCo8hJgFjV3XtFomW7cZYwbEymO\"",
+    "mapping-bridge/root.parts.aggregator.parts.lock-true.parts.main.__number__": "33",
+    "mapping-bridge/root.parts.aggregator.parts.lock-true.parts.main.doorLock.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.lock-true.parts.main.doorLock.credentialKey": "\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"127c811052f071403b901004a772a577\\\"}\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_co.__number__": "46",
+    "mapping-bridge/root.parts.aggregator.parts.measure_co.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_co.bridgedDeviceBasicInformation.uniqueId": "\"YLngIdWvqJ5uuHjMPfTj14GDCLXRaYCy\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_co.parts.measure_co.__number__": "47",
+    "mapping-bridge/root.parts.aggregator.parts.measure_co2.__number__": "48",
+    "mapping-bridge/root.parts.aggregator.parts.measure_co2.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_co2.bridgedDeviceBasicInformation.uniqueId": "\"WdbxphmVdlMT1ijcf7hPyp8Fh6NXM4Kw\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_co2.parts.measure_co2.__number__": "49",
+    "mapping-bridge/root.parts.aggregator.parts.measure_humidity.__number__": "44",
+    "mapping-bridge/root.parts.aggregator.parts.measure_humidity.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_humidity.bridgedDeviceBasicInformation.uniqueId": "\"ErAfJ6AqiWTEjmGtT1k7aVBM28WjPFgv\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_humidity.parts.measure_humidity.__number__": "45",
+    "mapping-bridge/root.parts.aggregator.parts.measure_luminance.__number__": "54",
+    "mapping-bridge/root.parts.aggregator.parts.measure_luminance.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_luminance.bridgedDeviceBasicInformation.uniqueId": "\"Xs5q17kAefbruX8BuKTcPznO8ScY4H3Z\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_luminance.parts.measure_luminance.__number__": "55",
+    "mapping-bridge/root.parts.aggregator.parts.measure_pm10.__number__": "50",
+    "mapping-bridge/root.parts.aggregator.parts.measure_pm10.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_pm10.bridgedDeviceBasicInformation.uniqueId": "\"KuxhTRt3FxZGgpyP1qCji33IXKnxkjg4\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_pm10.parts.measure_pm10.__number__": "51",
+    "mapping-bridge/root.parts.aggregator.parts.measure_pm25.__number__": "52",
+    "mapping-bridge/root.parts.aggregator.parts.measure_pm25.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_pm25.bridgedDeviceBasicInformation.uniqueId": "\"PEsYXR6hicB44YR8jxcub7RVRKVsijSB\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_pm25.parts.measure_pm25.__number__": "53",
+    "mapping-bridge/root.parts.aggregator.parts.measure_temperature.__number__": "42",
+    "mapping-bridge/root.parts.aggregator.parts.measure_temperature.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_temperature.bridgedDeviceBasicInformation.uniqueId": "\"sSLd3abK2IISoYySU0uwgDv7eM1cr0o3\"",
+    "mapping-bridge/root.parts.aggregator.parts.measure_temperature.parts.measure_temperature.__number__": "43",
+    "mapping-bridge/root.parts.aggregator.parts.position-cover.__number__": "38",
+    "mapping-bridge/root.parts.aggregator.parts.position-cover.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.position-cover.bridgedDeviceBasicInformation.uniqueId": "\"vVJ4dzArk4pzyyZWkJLSOId8fAT91JUa\"",
+    "mapping-bridge/root.parts.aggregator.parts.position-cover.parts.main.__number__": "39",
+    "mapping-bridge/root.parts.aggregator.parts.position-cover.parts.main.windowCovering.__features__": "\"LF,PA_LF\"",
+    "mapping-bridge/root.parts.aggregator.parts.position-cover.parts.main.windowCovering.configStatus": "{\"operational\":true,\"liftPositionAware\":true}",
+    "mapping-bridge/root.parts.aggregator.parts.position-cover.parts.main.windowCovering.currentPositionLiftPercent100ths": "0",
+    "mapping-bridge/root.parts.aggregator.parts.position-cover.parts.main.windowCovering.currentPositionLiftPercentage": "0",
+    "mapping-bridge/root.parts.aggregator.parts.shutterblinds.__number__": "77",
+    "mapping-bridge/root.parts.aggregator.parts.shutterblinds.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.shutterblinds.bridgedDeviceBasicInformation.uniqueId": "\"3Djm24I4usCMcJvpMahmfXrcdQsIc0Il\"",
+    "mapping-bridge/root.parts.aggregator.parts.shutterblinds.parts.main.__number__": "78",
+    "mapping-bridge/root.parts.aggregator.parts.shutterblinds.parts.main.windowCovering.__features__": "\"LF,PA_LF\"",
+    "mapping-bridge/root.parts.aggregator.parts.shutterblinds.parts.main.windowCovering.configStatus": "{\"operational\":true,\"liftPositionAware\":true}",
+    "mapping-bridge/root.parts.aggregator.parts.shutterblinds.parts.main.windowCovering.currentPositionLiftPercent100ths": "0",
+    "mapping-bridge/root.parts.aggregator.parts.shutterblinds.parts.main.windowCovering.currentPositionLiftPercentage": "0",
+    "mapping-bridge/root.parts.aggregator.parts.socket.__number__": "2",
+    "mapping-bridge/root.parts.aggregator.parts.socket.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.socket.bridgedDeviceBasicInformation.uniqueId": "\"vF9RH3LyFXu8MmiSSuYfsPlqcts2FJ5t\"",
+    "mapping-bridge/root.parts.aggregator.parts.socket.parts.main.__number__": "3",
+    "mapping-bridge/root.parts.aggregator.parts.socket.parts.main.onOff.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.socket.parts.main.onOff.onOff": "true",
+    "mapping-bridge/root.parts.aggregator.parts.state-cover.__number__": "40",
+    "mapping-bridge/root.parts.aggregator.parts.state-cover.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.state-cover.bridgedDeviceBasicInformation.uniqueId": "\"ZdXVviTNY5flyLREf3j4rtnsCyN1D4S2\"",
+    "mapping-bridge/root.parts.aggregator.parts.state-cover.parts.main.__number__": "41",
+    "mapping-bridge/root.parts.aggregator.parts.state-cover.parts.main.windowCovering.__features__": "\"LF\"",
+    "mapping-bridge/root.parts.aggregator.parts.state-cover.parts.main.windowCovering.configStatus": "{\"operational\":true}",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-implicit.__number__": "16",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-implicit.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-implicit.bridgedDeviceBasicInformation.uniqueId": "\"jesYqPLUVoBNGsNBmI8G5J9ZdTBzK5Y8\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-implicit.parts.main.__number__": "17",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-implicit.parts.main.thermostat.__features__": "\"HEAT\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-implicit.parts.main.thermostat.occupiedHeatingSetpoint": "3000",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-implicit.parts.measure_humidity.__number__": "18",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-cool-separate.__number__": "24",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-cool-separate.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-cool-separate.bridgedDeviceBasicInformation.uniqueId": "\"aDgODIZm55ChzsApVHEOZW3476XK8TTL\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-cool-separate.parts.main.__number__": "25",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-cool.__number__": "22",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-cool.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-cool.bridgedDeviceBasicInformation.uniqueId": "\"xpV4zgjNu3gHJi5jwBuF8jHEr8AA9NzV\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-cool.parts.main.__number__": "23",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto-separate.__number__": "29",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto-separate.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto-separate.bridgedDeviceBasicInformation.uniqueId": "\"srH5tQKZLCaY61Y3tTuVzs6tx548WyVu\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto-separate.parts.main.__number__": "30",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto-separate.parts.main.thermostat.__features__": "\"HEAT,COOL,AUTO\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto-separate.parts.main.thermostat.occupiedCoolingSetpoint": "3000",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto-separate.parts.main.thermostat.occupiedHeatingSetpoint": "3000",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto-separate.parts.measure_humidity.__number__": "31",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto.__number__": "26",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto.bridgedDeviceBasicInformation.uniqueId": "\"rLHpNDmBSpEAuPlBDMwMRnGcajNTk8n9\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto.parts.main.__number__": "27",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto.parts.main.thermostat.__features__": "\"HEAT,COOL,AUTO\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto.parts.main.thermostat.occupiedCoolingSetpoint": "3000",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto.parts.main.thermostat.occupiedHeatingSetpoint": "3000",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat-cool-auto.parts.measure_humidity.__number__": "28",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat.__number__": "19",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat.bridgedDeviceBasicInformation.uniqueId": "\"HttZP2AQO6Rs50CboSUavT4nNGgamRHd\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat.parts.main.__number__": "20",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat.parts.main.thermostat.__features__": "\"HEAT\"",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat.parts.main.thermostat.occupiedHeatingSetpoint": "3000",
+    "mapping-bridge/root.parts.aggregator.parts.thermostat-off-heat.parts.measure_humidity.__number__": "21",
+    "mapping-bridge/root.parts.aggregator.parts.virtual-light.__number__": "81",
+    "mapping-bridge/root.parts.aggregator.parts.virtual-light.bridgedDeviceBasicInformation.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.virtual-light.bridgedDeviceBasicInformation.uniqueId": "\"hR4BENn863neduy97oMxPoydDveP8e1s\"",
+    "mapping-bridge/root.parts.aggregator.parts.virtual-light.parts.main.__number__": "82",
+    "mapping-bridge/root.parts.aggregator.parts.virtual-light.parts.main.levelControl.__features__": "\"OO,LT\"",
+    "mapping-bridge/root.parts.aggregator.parts.virtual-light.parts.main.levelControl.currentLevel": "64.25",
+    "mapping-bridge/root.parts.aggregator.parts.virtual-light.parts.main.onOff.__features__": "\"\"",
+    "mapping-bridge/root.parts.aggregator.parts.virtual-light.parts.main.onOff.onOff": "true",
+    "mapping-bridge/sessions.groupDataCounter": "236573581",
+    "mapping-bridge/sessions.resumptionRecords": "[{\"nodeId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"12297919457919079623\\\"}\",\"sharedSecret\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"0717e5ea008e042116515be9b3d4ed2a7785fece617b79416bd216dfbf8abaaf\\\"}\",\"resumptionId\":\"{\\\"__object__\\\":\\\"Uint8Array\\\",\\\"__value__\\\":\\\"ffc5736ddc2bd931c2bb8861ab0613e1\\\"}\",\"fabricId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"6568106527588148412\\\"}\",\"fabricIndex\":1,\"peerNodeId\":\"{\\\"__object__\\\":\\\"BigInt\\\",\\\"__value__\\\":\\\"12297919457919079623\\\"}\",\"sessionParameters\":{\"idleInterval\":500,\"activeInterval\":300,\"activeThreshold\":4000,\"dataModelRevision\":21,\"interactionModelRevision\":12,\"specificationVersion\":17170432,\"maxPathsPerInvoke\":10,\"supportedTransports\":0,\"maxTcpMessageSize\":\"{\\\"__object__\\\":\\\"Undefined\\\"}\"},\"caseAuthenticatedTags\":\"{\\\"__object__\\\":\\\"Undefined\\\"}\"}]"
+  }
+}
