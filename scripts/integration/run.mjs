@@ -166,9 +166,12 @@ async function worker(state, parameters, { log, quiet = false, timeout = 180000 
 async function start(state) {
   const labels = ['--label', `matter-bridge.integration=${owner}`];
 
-  if (!await inspect('image', state.image)) {
-    await run('docker', ['pull', state.image]);
-  }
+  // Refresh mutable tags, then keep every container in this run on the same image.
+  await run('docker', ['pull', state.imageReference], { log: join(state.directory, 'image.log') });
+  const images = JSON.parse(await run('docker', ['image', 'inspect', state.imageReference], { quiet: true }));
+  state.image = images[0].Id;
+  state.imageDigests = images[0].RepoDigests;
+  console.log(`SHS image: ${state.imageReference} resolved to ${state.image}`);
 
   createSeed(join(state.directory, 'seed'));
   await run('docker', ['volume', 'create', ...labels, state.volume], { quiet: true });
@@ -281,7 +284,7 @@ async function main() {
   const id = `matter-bridge-${owner}-${randomUUID().slice(0, 8)}`;
   const state = {
     container: id, network: id, volume: id, worker: `${id}-worker`, proxy: `${id}-proxy`,
-    directory: join(output, id), image: process.env.HOMEY_SHS_IMAGE ?? SHS_IMAGE,
+    directory: join(output, id), imageReference: process.env.HOMEY_SHS_IMAGE ?? SHS_IMAGE,
   };
   await mkdir(state.directory);
   const startedAt = new Date().toISOString();
@@ -338,7 +341,9 @@ async function main() {
     }
 
     await writeFile(join(state.directory, 'result.json'), `${JSON.stringify({
-      outcome, error: failure?.message, command, scenario, source: state.source, image: state.image, startedAt, finishedAt: new Date().toISOString(),
+      outcome, error: failure?.message, command, scenario, source: state.source,
+      imageReference: state.imageReference, image: state.image, imageDigests: state.imageDigests,
+      startedAt, finishedAt: new Date().toISOString(),
       cleanupErrors: cleanupErrors.map((error) => { return error.message; }),
     }, null, 2)}\n`);
     console.log(`Logs and results: ${state.directory}`);

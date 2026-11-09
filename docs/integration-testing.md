@@ -12,7 +12,7 @@ npm install --global homey@4.4.4
 npm run test:integration
 ```
 
-No Athom account, Homey CLI login, physical Homey, real devices, activation backup, private repository, or repository secrets are needed. The first run pulls the pinned public SHS image. Subsequent runs reuse the image cache. Each run builds the current working tree, including local source edits and untracked source files not excluded by Git, in a temporary staging directory. The production checkout and its dependencies are not modified by packaging.
+No Athom account, Homey CLI login, physical Homey, real devices, activation backup, private repository, or repository secrets are needed. Every test run and lab startup pulls the public `ghcr.io/athombv/homey-shs:latest` image, including when it is already cached. A failed pull stops the run. Each run builds the current working tree, including local source edits and untracked source files not excluded by Git, in a temporary staging directory. The production checkout and its dependencies are not modified by packaging.
 
 The default smoke scenario checks:
 
@@ -77,12 +77,13 @@ Stored initial state after recreation is a separate concern from live updates (s
 
 Each run prints its directory under ignored `output/integration/`. It contains:
 
-- `result.json`: outcome, source commit/ref, dirty-worktree flag, image digest and timestamps.
+- `result.json`: outcome, source commit/ref, dirty-worktree flag, requested image reference, resolved image ID/repository digests and timestamps.
 - `results.xml` and `tests.log`: JUnit and TAP results, including assertion failures.
 - `build.log` and `setup.log`: packaging and installation output.
+- `image.log`: image pull output, including the registry digest.
 - `homey-shs.log`: complete timestamped SHS and app stdout/stderr, including startup.
 
-The `SHS Integration` GitHub workflow runs `smoke`, `fixtures`, and `devices` in separate fresh environments on relevant pull requests and manual dispatch, and uploads reports/logs even on failure. It uses the same runner and image as local testing. CI needs no secrets. The initial smoke workflow has passed in GitHub; changes to the broader matrix need their own hosted run.
+The `SHS Integration` GitHub workflow runs `smoke`, `fixtures`, and `devices` in separate fresh environments on relevant pull requests and manual dispatch, and uploads reports/logs even on failure. It uses the same runner and pulls `:latest` for each scenario, just like local testing. CI needs no secrets. Compare recorded image digests when comparing runs: a new release can change the backend between runs.
 
 SHS logs may include failed cloud, weather, update and outbound-IP requests because the backend is deliberately offline. Test success is based on device and protocol assertions, not an empty error log. Logs and protocol artifacts may contain ephemeral test tokens or pairing codes; keep them in ignored output or short-lived CI artifacts.
 
@@ -120,6 +121,8 @@ The app and controller currently use the same pinned Matter.js version. Tests es
 
 `seed.mjs` creates five bootstrap records from literals: synthetic Homey identity, a synthetic local owner, a root zone, and the power-user/virtual-device flags. The test password hash is generated locally. Nothing is copied from an activated Homey database or the private web-app/backend repositories. Device and pairing records are generated during each run.
 
-Only source scripts, synthetic fixture definitions, the image digest and documentation belong in Git. `output/` is ignored; `tests/`, `scripts/`, `docs/` and `output/` are excluded from Homey app packages. Runtime device data lives in owned Docker volumes and controller storage in the temporary controller container.
+Only source scripts, synthetic fixture definitions, image configuration and documentation belong in Git. `output/` is ignored; `tests/`, `scripts/`, `docs/` and `output/` are excluded from Homey app packages. Runtime device data lives in owned Docker volumes and controller storage in the temporary controller container.
 
-The default SHS 13.4.1 image is pinned in `scripts/integration/config.mjs`. Override `HOMEY_SHS_IMAGE` only for an intentional compatibility run. Update the pin and seed schema together when adopting a backend version that changes its bootstrap contract.
+The default image is `:latest` in `scripts/integration/config.mjs`, so new backend regressions surface without a pin update. After pulling, the runner uses the resolved immutable image ID for every container in that run. A retained lab keeps that image until `down` then `up`; device-control commands do not upgrade it midway through testing.
+
+To reproduce a failure against the same backend, set `HOMEY_SHS_IMAGE` to a repository digest recorded in `result.json` (for example, `ghcr.io/athombv/homey-shs@sha256:…`). Explicit overrides are also pulled before starting. Backend bootstrap changes may require updating the synthetic seed schema.
