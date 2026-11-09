@@ -1,0 +1,19 @@
+{
+  "id": "com.athom.matter-bridge-fixtures",
+  "version": "1.0.0",
+  "compatibility": ">=12.9.0",
+  "sdk": 3,
+  "platforms": ["local"],
+  "name": { "en": "Matter Bridge Fixtures" },
+  "description": { "en": "Simulated devices for local integration testing" },
+  "category": ["tools"],
+  "brandColor": "#4C6EF5",
+  "author": { "name": "Matter Bridge contributors" },
+  "permissions": [],
+  "images": { "small": "/assets/images/small.png", "large": "/assets/images/large.png" },
+  "api": {
+    "getState": { "method": "GET", "path": "/state" },
+    "getDevice": { "method": "GET", "path": "/devices/:profile/:id" },
+    "controlDevice": { "method": "POST", "path": "/devices/:profile/:id" }
+  }
+}
