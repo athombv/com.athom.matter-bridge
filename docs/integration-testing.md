@@ -58,8 +58,8 @@ The test harness remains from this checkout while `--ref` selects which version 
 # Run the smoke scenario against a Git ref.
 npm run test:integration -- --ref origin/master
 
-# The re-sharing regression should fail on master before #40.
-npm run test:integration -- --scenario reshare --ref origin/master
+# The re-sharing regression fails on this pre-fix framework baseline.
+npm run test:integration -- --scenario reshare --ref 3f488d8
 
 # Fetch #40, then run exactly the same scenario against its app code.
 git fetch origin pull/40/head:refs/remotes/origin/pr-40
@@ -69,7 +69,7 @@ npm run test:integration -- --scenario reshare --ref origin/pr-40
 npm run shs -- up --ref origin/pr-40
 ```
 
-`reshare` repeats removal/recreation three times, writes state while unshared, exercises repeated enable/disable calls, and verifies live updates, dimming, unchanged control-device identity, push reports on the original subscription, and commands back to SHS. It is explicit rather than part of the default smoke scenario because it reproduces the known failure on master before #40. It is not skipped or treated as an expected pass: a regression failure exits nonzero. Add it to the CI/default suite when that fix lands.
+`reshare` repeats removal/recreation three times, writes state while unshared, exercises repeated enable/disable calls, and verifies live updates, dimming, unchanged control-device identity, push reports on the original subscription, and commands back to SHS. It runs as a normal CI job alongside the other integration scenarios. Run it locally with `--scenario reshare`; the default local command still selects the smoke scenario. A regression failure exits nonzero.
 
 Stored initial state after recreation is a separate concern from live updates (see #33). The regression prints the observed initial state, synchronizes both sides, and then demands fresh subscription reports for actual value transitions. Matter does not owe a change report for writing a value it already has.
 
@@ -83,7 +83,7 @@ Each run prints its directory under ignored `output/integration/`. It contains:
 - `image.log`: image pull output, including the registry digest.
 - `homey-shs.log`: complete timestamped SHS and app stdout/stderr, including startup.
 
-The `SHS Integration` GitHub workflow runs `smoke`, `fixtures`, and `devices` in separate fresh environments on relevant pull requests and manual dispatch, and uploads reports/logs even on failure. It uses the same runner and pulls `:latest` for each scenario, just like local testing. CI needs no secrets. Compare recorded image digests when comparing runs: a new release can change the backend between runs.
+The `SHS Integration` GitHub workflow runs `smoke`, `fixtures`, `devices`, and `reshare` in separate fresh environments on relevant pull requests and manual dispatch, and uploads reports/logs even on failure. It uses the same runner and pulls `:latest` for each scenario, just like local testing. CI needs no secrets. Compare recorded image digests when comparing runs: a new release can change the backend between runs.
 
 SHS logs may include failed cloud, weather, update and outbound-IP requests because the backend is deliberately offline. Test success is based on device and protocol assertions, not an empty error log. Logs and protocol artifacts may contain ephemeral test tokens or pairing codes; keep them in ignored output or short-lived CI artifacts.
 
@@ -109,7 +109,7 @@ npm run test:integration -- --scenario devices
 - `fixtures` verifies all 27 SDK profiles through SHS: driver identity, class, capabilities, initial state, successful/rejected commands, read-only reports, declared temperature limits and valid boundary values, availability, and invalid-capability rejection. These checks establish simulator behavior independently of Matter mappings.
 - `devices` commissions all 27 profiles, checks 25 representative live reports against Matter reads and push subscriptions, and verifies a controller command reaching the SDK driver, including rejection and unchanged state after rejection.
 - `smoke` retains the small light/socket lifecycle check.
-- `reshare` remains an explicit regression for #40.
+- `reshare` guards the sharing lifecycle in normal CI, including the regression fixed by #40.
 
 This is representative mapping coverage, not every combination or command. Colour-temperature conversion, every thermostat mode, all reverse command paths, initial-state restoration after restart/re-sharing, and Matter reachability for unavailable devices still need dedicated scenarios. Fixture availability is currently asserted in Homey; do not infer bridge reachability coverage from it.
 
