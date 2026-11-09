@@ -79,5 +79,8 @@
   },
   "0.9.1": {
     "en": "Fixed Matter Bridge failing to start after a Homey restart or firmware update."
+  },
+  "0.9.2": {
+    "en": "Fixed thermostat state updates causing unintended temperature overrides. Temperature commands now preserve half-degree setpoints."
   }
 }
