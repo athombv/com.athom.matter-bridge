@@ -3,7 +3,6 @@ import { EventEmitter } from 'node:events';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { setTimeout as sleep } from 'node:timers/promises';
 import { test } from 'node:test';
 import { Environment, Logger } from '@matter/main';
 import MatterBridgeServer from '../lib/MatterBridgeServer.mjs';
@@ -17,7 +16,11 @@ async function startBridge(light, storageServiceLocation) {
   const errors = [];
   const bridge = new MatterBridgeServer({
     api: { devices, drivers: { connect: async () => {}, getDrivers: async () => { return {}; } } },
-    debug: (message) => { if (String(message).startsWith('Error')) errors.push(message); },
+    debug: (message) => {
+      if (String(message).startsWith('Error')) {
+        errors.push(message);
+      }
+    },
     deviceName: 'Test bridge', vendorName: 'Test', vendorId: 65521,
     productName: 'Test bridge', productId: 32768, uniqueId: 'restart-state-test', serialNumber: 'test',
     passcode: 20202021, discriminator: 1721, port: 0,
@@ -50,11 +53,22 @@ test('a device that changed while the bridge was stopped reports its current sta
 
   // While running, the light is turned off and dimmed in Homey
   const first = await startBridge(light, directory);
-  listeners.onoff(false);
-  listeners.dim(0.2);
-  await sleep(100);
-  assert.equal(first.endpoint.state.onOff.onOff, false);
-  await first.bridge.stop();
+  try {
+    const onOffChanged = new Promise((resolve) => {
+      first.endpoint.events.onOff.stateChanged.once(resolve);
+    });
+    const dimChanged = new Promise((resolve) => {
+      first.endpoint.events.levelControl.stateChanged.once(resolve);
+    });
+
+    listeners.onoff(false);
+    listeners.dim(0.2);
+    await Promise.all([onOffChanged, dimChanged]);
+    assert.equal(first.endpoint.state.onOff.onOff, false);
+    assert.equal(first.endpoint.state.levelControl.currentLevel, 51.6);
+  } finally {
+    await first.bridge.stop();
+  }
 
   // While the bridge is stopped, the light is turned on at 80% and renamed in Homey
   light.capabilitiesObj.onoff.value = true;
@@ -65,7 +79,7 @@ test('a device that changed while the bridge was stopped reports its current sta
   try {
     assert.deepEqual(second.errors, []);
     assert.equal(second.endpoint.state.onOff.onOff, true);
-    assert.ok(Math.abs(second.endpoint.state.levelControl.currentLevel - (1 + 0.8 * 253)) < 0.01);
+    assert.equal(second.endpoint.state.levelControl.currentLevel, 203.4);
     assert.equal(second.bridgedNode.state.bridgedDeviceBasicInformation.nodeLabel, 'Renamed light');
   } finally {
     await second.bridge.stop();

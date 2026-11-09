@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { setTimeout as delay } from 'node:timers/promises';
 import { APP_ID, FIXTURE_APP_ID, TEST_PASSWORD, TEST_USERNAME } from '../../../scripts/integration/config.mjs';
+import { eventually } from './eventually.mjs';
 import profiles from '../../fixtures/homey-app/profiles.json' with { type: 'json' };
 
 export class HomeyClient {
@@ -113,6 +114,30 @@ export class HomeyClient {
     }
 
     throw new Error(`Installed app ${appId} did not become ready`);
+  }
+
+  async stopBridge() {
+    await this.request(`/manager/apps/app/${APP_ID}/disable`, { method: 'PUT' });
+    await eventually('Bridge app must stop before changing device state', async () => {
+      const app = await this.request(`/manager/apps/app/${APP_ID}`);
+      return app.state;
+    }, 'stopped', 30000);
+  }
+
+  async startBridge() {
+    await this.request(`/manager/apps/app/${APP_ID}/enable`, { method: 'PUT' });
+    await eventually('Bridge app must restore its commissioned server', async () => {
+      try {
+        const state = await this.state();
+        return state.commissioned === true && state.pairing !== null;
+      } catch (error) {
+        if (error.status === 401 || error.status === 403) {
+          throw error;
+        }
+
+        return false;
+      }
+    }, true, 60000);
   }
 
   async state() {

@@ -71,7 +71,7 @@ npm run shs -- up --ref origin/pr-40
 
 `reshare` repeats removal/recreation three times, writes state while unshared, exercises repeated enable/disable calls, and verifies live updates, dimming, unchanged control-device identity, push reports on the original subscription, and commands back to SHS. It runs as a normal CI job alongside the other integration scenarios. Run it locally with `--scenario reshare`; the default local command still selects the smoke scenario. A regression failure exits nonzero.
 
-Stored initial state after recreation is a separate concern from live updates (see #33). The regression prints the observed initial state, synchronizes both sides, and then demands fresh subscription reports for actual value transitions. Matter does not owe a change report for writing a value it already has.
+The re-sharing regression also asserts the first on/off and dim reads after recreation, before sending further source updates. This guards against stale persisted Matter values overriding the current Homey state (#33). Sharing explicitly fetches a fresh Homey device snapshot because capability subscriptions were detached while unshared.
 
 ## Reports and troubleshooting
 
@@ -83,7 +83,7 @@ Each run prints its directory under ignored `output/integration/`. It contains:
 - `image.log`: image pull output, including the registry digest.
 - `homey-shs.log`: complete timestamped SHS and app stdout/stderr, including startup.
 
-The `SHS Integration` GitHub workflow runs `smoke`, `fixtures`, `devices`, `reshare`, and `power` in separate fresh environments on relevant pull requests and manual dispatch, and uploads reports/logs even on failure. It uses the same runner and pulls `:latest` for each scenario, just like local testing. CI needs no secrets. Compare recorded image digests when comparing runs: a new release can change the backend between runs.
+The `SHS Integration` GitHub workflow runs `smoke`, `fixtures`, `devices`, `reshare`, `power`, and `restart` in separate fresh environments on relevant pull requests and manual dispatch, and uploads reports/logs even on failure. It uses the same runner and pulls `:latest` for each scenario, just like local testing. CI needs no secrets. Compare recorded image digests when comparing runs: a new release can change the backend between runs.
 
 SHS logs may include failed cloud, weather, update and outbound-IP requests because the backend is deliberately offline. Test success is based on device and protocol assertions, not an empty error log. Logs and protocol artifacts may contain ephemeral test tokens or pairing codes; keep them in ignored output or short-lived CI artifacts.
 
@@ -99,7 +99,9 @@ Fixture startup pairs and initializes the catalogue **before installing Matter B
 
 The `power` regression checks the first Matter read before any source update: 12 W must be reported as 12000 mW. Unknown power remains `null`; zero remains zero. Live reports also cover fractional watt readings, negative/exported power, returning to unknown and recovering to a numeric reading. Run `npm run test:integration -- --scenario power --ref ccac276` to reproduce the original unit-conversion and unknown-power initialization failures against the pre-fix app.
 
-The re-sharing regression observed Homey `false` versus initial Matter `true` on its first cycle against #40, consistent with the stored-state concern described above. Restoring fresh values over persisted Matter state remains a separate production follow-up; the power scenario uses new endpoints.
+The `restart` regression disables the bridge through Homey's app API, waits until it is stopped, and changes fixture values and the light's name while the separate fixture app remains running. It enables the same bridge installation with its existing storage, reconnects the already commissioned Matter peer without opening a pairing window, and checks the first on/off, dim, power and thermostat setpoint reads at their original endpoint paths. Two cycles cover unknown and numeric power, renamed labels, no unintended commands to Homey, resumed subscription reports and commands back to SHS. This tests Homey-managed app shutdown/startup; it does not simulate a host crash or assert uninterrupted subscriptions across a process restart.
+
+Run `npm run test:integration -- --scenario restart --ref 15821682` or `--scenario reshare --ref 15821682` to reproduce stale state against the pre-#33 app. The current checkout supplies the regression tests while that ref supplies the installed app.
 
 Run each suite explicitly:
 
@@ -107,15 +109,17 @@ Run each suite explicitly:
 npm run test:integration -- --scenario fixtures
 npm run test:integration -- --scenario devices
 npm run test:integration -- --scenario power
+npm run test:integration -- --scenario restart
 ```
 
 - `fixtures` verifies all 28 SDK profiles through SHS: driver identity, class, capabilities, initial state, successful/rejected commands, read-only reports, declared temperature limits and valid boundary values, availability, and invalid-capability rejection. These checks establish simulator behavior independently of Matter mappings.
 - `devices` commissions all 28 profiles, checks 25 representative live reports against Matter reads and push subscriptions, and verifies a controller command reaching the SDK driver, including rejection and unchanged state after rejection.
 - `smoke` retains the small light/socket lifecycle check.
 - `reshare` guards the sharing lifecycle in normal CI, including the regression fixed by #40.
+- `restart` guards current device state and labels after a Homey-managed app restart while preserving pairing and endpoint identity.
 - `power` verifies initial power conversion and a newly paired socket with an unknown reading, including live reports and an on/off command over the existing controller connection.
 
-This is representative mapping coverage, not every combination or command. Colour-temperature conversion, every thermostat mode, all reverse command paths, initial-state restoration after restart/re-sharing, and Matter reachability for unavailable devices still need dedicated scenarios. Fixture availability is currently asserted in Homey; do not infer bridge reachability coverage from it.
+This is representative mapping coverage, not every combination or command. Colour-temperature conversion, every thermostat mode, all reverse command paths, restart restoration for the remaining device classes, and Matter reachability for unavailable devices still need dedicated scenarios. Fixture availability is currently asserted in Homey; do not infer bridge reachability coverage from it.
 
 `createBridge(t)` selects prepared fixtures, owns sharing and controller/device teardown, and accepts a profile list. `HomeyClient` separates commands (`set`) from device reports (`report`). `MatterController` discovers the child endpoint serving the requested cluster, including multi-endpoint HVAC devices. Add protocol assertions to `devices.test.mjs` or a new scenario when introducing a profile: automatic seeding alone does not verify its Matter mapping.
 

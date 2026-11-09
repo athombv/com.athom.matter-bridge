@@ -216,7 +216,7 @@ async function main() {
     console.log('npm run shs -- availability <name> <true|false>');
     console.log('npm run shs -- reject <name> <capability> <true|false>');
     console.log('npm run shs -- commands <name>');
-    console.log('npm run test:integration -- [--scenario smoke|reshare|fixtures|devices|power] [--ref <git-ref>]');
+    console.log('npm run test:integration -- [--scenario smoke|reshare|fixtures|devices|power|restart] [--ref <git-ref>]');
     console.log('up also accepts --ref. Test runs are fresh and always cleaned up; up retains a separate lab.');
     return;
   }
@@ -264,7 +264,7 @@ async function main() {
     }
   }
 
-  if (!['smoke', 'reshare', 'fixtures', 'devices', 'power'].includes(scenario)) {
+  if (!['smoke', 'reshare', 'fixtures', 'devices', 'power', 'restart'].includes(scenario)) {
     throw new Error(`Unknown scenario: ${scenario}`);
   }
 
