@@ -313,6 +313,16 @@
     },
     "commands": {}
   },
+  "socket-power-unset": {
+    "class": "socket",
+    "values": {
+      "onoff": false,
+      "measure_power": null
+    },
+    "commands": {
+      "onoff": true
+    }
+  },
   "socket-power": {
     "class": "socket",
     "values": {

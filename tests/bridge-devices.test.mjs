@@ -12,6 +12,11 @@ Logger.level = 'error';
 test('all supported Homey device mappings initialize with the current Matter model', { timeout: 30000 }, async (t) => {
   const definitions = [
     ['socket', 'socket', { onoff: true, measure_power: 12 }],
+    ['socket-power-null', 'socket', { onoff: false, measure_power: null }],
+    ['socket-power-undefined', 'socket', { onoff: false, measure_power: undefined }],
+    ['socket-power-zero', 'socket', { onoff: false, measure_power: 0 }],
+    ['socket-power-fractional', 'socket', { onoff: false, measure_power: 12.3456 }],
+    ['socket-power-export', 'socket', { onoff: false, measure_power: -1.25 }],
     ['light', 'light', { onoff: true }],
     ['dimmable', 'light', { onoff: true, dim: 0.5 }],
     ['color', 'light', { onoff: true, dim: 0.5, light_hue: 0.5, light_saturation: 0.5 }],
@@ -83,5 +88,13 @@ test('all supported Homey device mappings initialize with the current Matter mod
     for (const endpoint of endpoints) {
       assert.equal(endpoint.lifecycle.isReady, true, `${id}/${endpoint.id} is ready`);
     }
+  }
+
+  for (const [id, expected] of [
+    ['socket', 12000], ['socket-power-null', null], ['socket-power-undefined', null],
+    ['socket-power-zero', 0], ['socket-power-fractional', 12346], ['socket-power-export', -1250],
+  ]) {
+    const [endpoint] = bridge.deviceEndpointInstances[id];
+    assert.equal(endpoint.state.electricalPowerMeasurement.activePower, expected, `${id} initializes power in mW`);
   }
 });

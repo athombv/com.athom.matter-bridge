@@ -44,7 +44,7 @@ npm run shs -- logs
 npm run shs -- down
 ```
 
-`up` installs the fixture app, pairs the complete 27-profile catalogue, installs the current bridge app, and shares the fixtures. Device names are `Lab <profile>`, for example `Lab light`, `Lab thermostat`, and `Lab alarm-motion`. It prints a dynamically allocated loopback HTTP address. The synthetic local login is `bridge-test` / `bridge-test`; these are public test-only credentials. CLI commands reuse an ephemeral session in ignored `output/integration/<run>/session.json` to avoid repeated-login rate limits. The session file is excluded from CI artifact uploads. A web app supporting local SHS login can use that address. The runner does not include or require the private Homey web app.
+`up` installs the fixture app, pairs the complete 28-profile catalogue, installs the current bridge app, and shares the fixtures. Device names are `Lab <profile>`, for example `Lab light`, `Lab thermostat`, and `Lab alarm-motion`. It prints a dynamically allocated loopback HTTP address. The synthetic local login is `bridge-test` / `bridge-test`; these are public test-only credentials. CLI commands reuse an ephemeral session in ignored `output/integration/<run>/session.json` to avoid repeated-login rate limits. The session file is excluded from CI artifact uploads. A web app supporting local SHS login can use that address. The runner does not include or require the private Homey web app.
 
 `set` sends a user/controller command through Homey to the fixture driver. `report` emits a simulated device update through SDK `setCapabilityValue`, including read-only sensors. `availability` changes SDK availability, `reject` controls rejection for a command capability, and `commands` shows the last 100 driver command attempts with their acceptance status. Controls accept a device name or ID and JSON values. They talk only to this runner's disposable backend. `logs` follows complete timestamped SHS/app stdout and stderr. `down` saves the logs and removes the lab and its data. A second `up` refuses to overwrite a running lab; use `down` then `up` to install new source changes.
 
@@ -83,7 +83,7 @@ Each run prints its directory under ignored `output/integration/`. It contains:
 - `image.log`: image pull output, including the registry digest.
 - `homey-shs.log`: complete timestamped SHS and app stdout/stderr, including startup.
 
-The `SHS Integration` GitHub workflow runs `smoke`, `fixtures`, `devices`, and `reshare` in separate fresh environments on relevant pull requests and manual dispatch, and uploads reports/logs even on failure. It uses the same runner and pulls `:latest` for each scenario, just like local testing. CI needs no secrets. Compare recorded image digests when comparing runs: a new release can change the backend between runs.
+The `SHS Integration` GitHub workflow runs `smoke`, `fixtures`, `devices`, `reshare`, and `power` in separate fresh environments on relevant pull requests and manual dispatch, and uploads reports/logs even on failure. It uses the same runner and pulls `:latest` for each scenario, just like local testing. CI needs no secrets. Compare recorded image digests when comparing runs: a new release can change the backend between runs.
 
 SHS logs may include failed cloud, weather, update and outbound-IP requests because the backend is deliberately offline. Test success is based on device and protocol assertions, not an empty error log. Logs and protocol artifacts may contain ephemeral test tokens or pairing codes; keep them in ignored output or short-lived CI artifacts.
 
@@ -93,23 +93,27 @@ SIGKILL or host failure cannot run cleanup. Docker resources are labeled `matter
 
 Device definitions live in `tests/fixtures/homey-app/profiles.json`. Each entry declares the Homey class, initial capability values, supported command capabilities with example command values, and capability options. The fixture app builder generates a distinct SDK driver entry for each profile. The same catalogue drives lab seeding and automated fixture checks; adding a profile automatically adds it to both.
 
-The catalogue includes six light variants, plain and power-reporting sockets, a generic on/off device, thermostat/heater/heat-pump/air-conditioning profiles, a lock, position/state coverings, and eleven measurement/alarm sensors. The fixture app implements driver reports, recorded commands, availability and explicit rejection controls using the [Homey SDK Device API](https://apps-sdk-v3.developer.homey.app/Device.html). It runs as a separately installed app, with no bridge internals or native virtual driver shortcuts.
+The catalogue includes six light variants, plain and power-reporting sockets (including an unknown initial reading), a generic on/off device, thermostat/heater/heat-pump/air-conditioning profiles, a lock, position/state coverings, and eleven measurement/alarm sensors. The fixture app implements driver reports, recorded commands, availability and explicit rejection controls using the [Homey SDK Device API](https://apps-sdk-v3.developer.homey.app/Device.html). It runs as a separately installed app, with no bridge internals or native virtual driver shortcuts.
 
-Fixture startup pairs and initializes the catalogue **before installing Matter Bridge**. This establishes a stable baseline of existing Homey devices. A separate live-pairing case remains to be covered: pairing a power socket while the current bridge is running exposed cached `null` capability values and an endpoint initialization failure. This setup order does not establish live-pairing correctness.
+Fixture startup pairs and initializes the catalogue **before installing Matter Bridge**. This establishes a stable baseline of existing Homey devices. The `power` scenario additionally pairs an unknown-power socket while the bridge and Matter controller are running, shares it, and verifies discovery, commands and subsequent reports. Live pairing for other device classes remains outside this scenario.
 
-An additional Matter read against the retained lab exposed incorrect initial power units: the fixture reported 12 W in Homey, but Matter `activePower` returned 12 mW instead of 12000 mW. The live-report test verifies conversion after an update; it does not assert the initial power value. The re-sharing regression also observed Homey `false` versus initial Matter `true` on its first cycle against #40, consistent with the stored-state concern described above. These observations remain production follow-ups; the passing baseline suites do not establish correct initial state.
+The `power` regression checks the first Matter read before any source update: 12 W must be reported as 12000 mW. Unknown power remains `null`; zero remains zero. Live reports also cover fractional watt readings, negative/exported power, returning to unknown and recovering to a numeric reading. Run `npm run test:integration -- --scenario power --ref ccac276` to reproduce the original unit-conversion and unknown-power initialization failures against the pre-fix app.
+
+The re-sharing regression observed Homey `false` versus initial Matter `true` on its first cycle against #40, consistent with the stored-state concern described above. Restoring fresh values over persisted Matter state remains a separate production follow-up; the power scenario uses new endpoints.
 
 Run each suite explicitly:
 
 ```sh
 npm run test:integration -- --scenario fixtures
 npm run test:integration -- --scenario devices
+npm run test:integration -- --scenario power
 ```
 
-- `fixtures` verifies all 27 SDK profiles through SHS: driver identity, class, capabilities, initial state, successful/rejected commands, read-only reports, declared temperature limits and valid boundary values, availability, and invalid-capability rejection. These checks establish simulator behavior independently of Matter mappings.
-- `devices` commissions all 27 profiles, checks 25 representative live reports against Matter reads and push subscriptions, and verifies a controller command reaching the SDK driver, including rejection and unchanged state after rejection.
+- `fixtures` verifies all 28 SDK profiles through SHS: driver identity, class, capabilities, initial state, successful/rejected commands, read-only reports, declared temperature limits and valid boundary values, availability, and invalid-capability rejection. These checks establish simulator behavior independently of Matter mappings.
+- `devices` commissions all 28 profiles, checks 25 representative live reports against Matter reads and push subscriptions, and verifies a controller command reaching the SDK driver, including rejection and unchanged state after rejection.
 - `smoke` retains the small light/socket lifecycle check.
 - `reshare` guards the sharing lifecycle in normal CI, including the regression fixed by #40.
+- `power` verifies initial power conversion and a newly paired socket with an unknown reading, including live reports and an on/off command over the existing controller connection.
 
 This is representative mapping coverage, not every combination or command. Colour-temperature conversion, every thermostat mode, all reverse command paths, initial-state restoration after restart/re-sharing, and Matter reachability for unavailable devices still need dedicated scenarios. Fixture availability is currently asserted in Homey; do not infer bridge reachability coverage from it.
 
