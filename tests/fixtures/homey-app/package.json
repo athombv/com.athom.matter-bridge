@@ -1,0 +1,6 @@
+{
+  "name": "matter-bridge-fixtures",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Device simulation for isolated Matter Bridge integration tests"
+}
