@@ -5,3 +5,5 @@
 # Standalone
 /.envrc
 /.matter*
+# Disposable SHS data, packages and integration reports
+/output/
