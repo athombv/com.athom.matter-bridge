@@ -1,6 +1,6 @@
 # Testing the installed app against Homey SHS
 
-This suite packages and installs the app in a disposable Homey Self-Hosted Server (SHS), creates backend-managed devices through Homey's pairing API, and commissions a Matter.js controller over UDP/mDNS. It exercises the Homey SDK, homey-api subscriptions, app HTTP routes, persisted Matter endpoints, and the protocol in both directions. No bridge internals or mocked capability subscriptions are used.
+This suite packages and installs the app in a disposable Homey Self-Hosted Server (SHS), installs a dedicated fixture app and pairs its SDK devices through Homey's pairing API, and commissions a Matter.js controller over UDP/mDNS. It exercises the Homey SDK, homey-api subscriptions, app HTTP routes, persisted Matter endpoints, and the protocol in both directions. No bridge internals or mocked capability subscriptions are used.
 
 ## Requirements and first run
 
@@ -16,7 +16,7 @@ No Athom account, Homey CLI login, physical Homey, real devices, activation back
 
 The default smoke scenario checks:
 
-- Native SHS virtual light and socket creation and sharing through the installed app.
+- SDK light and socket fixtures shared through the installed bridge app.
 - Homey on/off and dim updates arriving as Matter reads and subscription reports.
 - A Matter command updating the actual Homey device state.
 - Unsharing removing a Matter endpoint while the other device keeps working.
@@ -31,13 +31,22 @@ npm run shs -- devices
 npm run shs -- set 'Lab light' onoff true
 npm run shs -- set 'Lab light' dim 0.25
 npm run shs -- set 'Lab socket' onoff true
+# Simulate an incoming measurement or alarm through the device SDK.
+npm run shs -- report 'Lab measure-temperature' measure_temperature 23.5
+npm run shs -- report 'Lab alarm-motion' alarm_motion true
+# Control availability and command failures.
+npm run shs -- availability 'Lab thermostat' false
+npm run shs -- availability 'Lab thermostat' true
+npm run shs -- reject 'Lab light' onoff true
+npm run shs -- commands 'Lab light'
+npm run shs -- reject 'Lab light' onoff false
 npm run shs -- logs
 npm run shs -- down
 ```
 
-`up` installs the current app and creates two shared devices, `Lab light` and `Lab socket`. It prints a dynamically allocated loopback HTTP address. The synthetic local login is `bridge-test` / `bridge-test`; these are public test-only credentials. CLI commands reuse an ephemeral session in ignored `output/integration/<run>/session.json` to avoid repeated-login rate limits. The session file is excluded from CI artifact uploads. A web app supporting local SHS login can use that address. The runner does not include or require the private Homey web app.
+`up` installs the fixture app, pairs the complete 27-profile catalogue, installs the current bridge app, and shares the fixtures. Device names are `Lab <profile>`, for example `Lab light`, `Lab thermostat`, and `Lab alarm-motion`. It prints a dynamically allocated loopback HTTP address. The synthetic local login is `bridge-test` / `bridge-test`; these are public test-only credentials. CLI commands reuse an ephemeral session in ignored `output/integration/<run>/session.json` to avoid repeated-login rate limits. The session file is excluded from CI artifact uploads. A web app supporting local SHS login can use that address. The runner does not include or require the private Homey web app.
 
-`set` accepts a device name or ID and a JSON capability value. It talks only to this runner's disposable backend. `logs` follows complete timestamped SHS/app stdout and stderr. `down` saves the logs and removes the lab and its data. A second `up` refuses to overwrite a running lab; use `down` then `up` to install new source changes.
+`set` sends a user/controller command through Homey to the fixture driver. `report` emits a simulated device update through SDK `setCapabilityValue`, including read-only sensors. `availability` changes SDK availability, `reject` controls rejection for a command capability, and `commands` shows the last 100 driver command attempts with their acceptance status. Controls accept a device name or ID and JSON values. They talk only to this runner's disposable backend. `logs` follows complete timestamped SHS/app stdout and stderr. `down` saves the logs and removes the lab and its data. A second `up` refuses to overwrite a running lab; use `down` then `up` to install new source changes.
 
 The HTTP port is loopback-only. SHS remains on an internal Docker network with no outbound route; a fixed-destination proxy exposes only its HTTP service. The Matter controller used by tests shares the SHS network namespace. This lab is intended for local software testing; it does not advertise a bridge to physical controllers on the household LAN.
 
@@ -73,7 +82,7 @@ Each run prints its directory under ignored `output/integration/`. It contains:
 - `build.log` and `setup.log`: packaging and installation output.
 - `homey-shs.log`: complete timestamped SHS and app stdout/stderr, including startup.
 
-The `SHS Integration` GitHub workflow runs the default scenario on relevant pull requests and manual dispatch, and uploads reports/logs even on failure. It uses the same runner and image as local testing. CI needs no secrets. The workflow itself must run in GitHub before its hosted execution can be considered verified.
+The `SHS Integration` GitHub workflow runs `smoke`, `fixtures`, and `devices` in separate fresh environments on relevant pull requests and manual dispatch, and uploads reports/logs even on failure. It uses the same runner and image as local testing. CI needs no secrets. The initial smoke workflow has passed in GitHub; changes to the broader matrix need their own hosted run.
 
 SHS logs may include failed cloud, weather, update and outbound-IP requests because the backend is deliberately offline. Test success is based on device and protocol assertions, not an empty error log. Logs and protocol artifacts may contain ephemeral test tokens or pairing codes; keep them in ignored output or short-lived CI artifacts.
 
@@ -81,9 +90,29 @@ SIGKILL or host failure cannot run cleanup. Docker resources are labeled `matter
 
 ## Extend the suite
 
-Device definitions live in `tests/integration/support/devices.mjs`. They specify Homey class, capabilities and initial values; `HomeyClient.createDevice()` creates real backend state using the native virtual driver. Add an appropriate fixture definition when testing another mapping. Hardware-specific driver behavior still requires physical-device testing.
+Device definitions live in `tests/fixtures/homey-app/profiles.json`. Each entry declares the Homey class, initial capability values, supported command capabilities with example command values, and capability options. The fixture app builder generates a distinct SDK driver entry for each profile. The same catalogue drives lab seeding and automated fixture checks; adding a profile automatically adds it to both.
 
-`createBridge(t)` owns device and controller teardown. `HomeyClient` handles backend operations; `MatterController` handles discovery, wire reads, push reports and commands. Scenarios use Node's built-in test runner. Register a new scenario name in `scripts/integration/run.mjs` and add `tests/integration/<name>.test.mjs`; keep cases independent and use bounded condition polling instead of fixed sleeps.
+The catalogue includes six light variants, plain and power-reporting sockets, a generic on/off device, thermostat/heater/heat-pump/air-conditioning profiles, a lock, position/state coverings, and eleven measurement/alarm sensors. The fixture app implements driver reports, recorded commands, availability and explicit rejection controls using the [Homey SDK Device API](https://apps-sdk-v3.developer.homey.app/Device.html). It runs as a separately installed app, with no bridge internals or native virtual driver shortcuts.
+
+Fixture startup pairs and initializes the catalogue **before installing Matter Bridge**. This establishes a stable baseline of existing Homey devices. A separate live-pairing case remains to be covered: pairing a power socket while the current bridge is running exposed cached `null` capability values and an endpoint initialization failure. This setup order does not establish live-pairing correctness.
+
+An additional Matter read against the retained lab exposed incorrect initial power units: the fixture reported 12 W in Homey, but Matter `activePower` returned 12 mW instead of 12000 mW. The live-report test verifies conversion after an update; it does not assert the initial power value. The re-sharing regression also observed Homey `false` versus initial Matter `true` on its first cycle against #40, consistent with the stored-state concern described above. These observations remain production follow-ups; the passing baseline suites do not establish correct initial state.
+
+Run each suite explicitly:
+
+```sh
+npm run test:integration -- --scenario fixtures
+npm run test:integration -- --scenario devices
+```
+
+- `fixtures` verifies all 27 SDK profiles through SHS: driver identity, class, capabilities, initial state, successful/rejected commands, read-only reports, declared temperature limits and valid boundary values, availability, and invalid-capability rejection. These checks establish simulator behavior independently of Matter mappings.
+- `devices` commissions all 27 profiles, checks 25 representative live reports against Matter reads and push subscriptions, and verifies a controller command reaching the SDK driver, including rejection and unchanged state after rejection.
+- `smoke` retains the small light/socket lifecycle check.
+- `reshare` remains an explicit regression for #40.
+
+This is representative mapping coverage, not every combination or command. Colour-temperature conversion, every thermostat mode, all reverse command paths, initial-state restoration after restart/re-sharing, and Matter reachability for unavailable devices still need dedicated scenarios. Fixture availability is currently asserted in Homey; do not infer bridge reachability coverage from it.
+
+`createBridge(t)` selects prepared fixtures, owns sharing and controller/device teardown, and accepts a profile list. `HomeyClient` separates commands (`set`) from device reports (`report`). `MatterController` discovers the child endpoint serving the requested cluster, including multi-endpoint HVAC devices. Add protocol assertions to `devices.test.mjs` or a new scenario when introducing a profile: automatic seeding alone does not verify its Matter mapping.
 
 The app and controller currently use the same pinned Matter.js version. Tests establish protocol behavior with that implementation, not Apple Home, Google Home, Home Assistant UI behavior, or compatibility with physical devices.
 

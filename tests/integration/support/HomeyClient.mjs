@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { setTimeout as delay } from 'node:timers/promises';
-import { APP_ID, TEST_PASSWORD, TEST_USERNAME } from '../../../scripts/integration/config.mjs';
-import { deviceTypes } from './devices.mjs';
+import { APP_ID, FIXTURE_APP_ID, TEST_PASSWORD, TEST_USERNAME } from '../../../scripts/integration/config.mjs';
+import profiles from '../../fixtures/homey-app/profiles.json' with { type: 'json' };
 
 export class HomeyClient {
   #token;
@@ -83,7 +83,7 @@ export class HomeyClient {
     return text.length === 0 ? null : JSON.parse(text);
   }
 
-  async install(archive) {
+  async install(archive, { appId = APP_ID, readyProperty = 'manualPairingCode' } = {}) {
     const form = new FormData();
     form.set('app', new Blob([await readFile(archive)]), 'app.tar.gz');
     form.set('debug', 'false');
@@ -100,9 +100,9 @@ export class HomeyClient {
 
     for (let attempt = 0; attempt < 120; attempt += 1) {
       try {
-        const state = await this.state();
+        const state = await this.request(`/app/${appId}/state`);
 
-        if (state.manualPairingCode) {
+        if (state[readyProperty]) {
           return;
         }
       } catch {
@@ -112,7 +112,7 @@ export class HomeyClient {
       await delay(500);
     }
 
-    throw new Error('Installed bridge did not become ready');
+    throw new Error(`Installed app ${appId} did not become ready`);
   }
 
   async state() {
@@ -120,7 +120,7 @@ export class HomeyClient {
   }
 
   async createDevice(type, name) {
-    const definition = deviceTypes[type];
+    const definition = profiles[type];
 
     if (!definition) {
       throw new Error(`Unknown device fixture: ${type}`);
@@ -129,30 +129,87 @@ export class HomeyClient {
     const zones = await this.request('/manager/zones/zone');
     const root = Object.values(zones).find((zone) => { return zone.parent == null; });
     const session = await this.request('/manager/drivers/pairsession', {
-      method: 'POST', body: { type: 'pair', driverId: 'homey:virtualdrivervirtualsocket:driver', zoneId: root.id },
+      method: 'POST', body: { type: 'pair', driverId: `homey:app:${FIXTURE_APP_ID}:${type}`, zoneId: root.id },
     });
     let device;
 
     try {
       device = await this.request(`/manager/drivers/pairsession/${session.id}/device`, {
         method: 'POST',
-        body: { name, data: { id: randomUUID() }, zone: root.id, store: {}, settings: {}, class: definition.class, capabilities: definition.capabilities },
+        body: { name, data: { id: randomUUID() }, zone: root.id, store: {}, settings: {} },
       });
 
-      for (const [capability, value] of Object.entries(definition.values)) {
-        await this.set(device.id, capability, value);
+      for (let attempt = 0; attempt < 100; attempt += 1) {
+        const snapshot = await this.fixture(device);
+
+        if (snapshot.initialized) {
+          return device;
+        }
+
+        await delay(100);
       }
 
-      return device;
+      throw new Error(`Fixture ${type} did not initialize`);
     } catch (error) {
       if (device) {
-        await this.removeDevice(device.id);
+        await this.request(`/manager/devices/device/${device.id}`, { method: 'DELETE' });
       }
 
       throw error;
     } finally {
       await this.request(`/manager/drivers/pairsession/${session.id}`, { method: 'DELETE' });
     }
+  }
+
+  async fixtureDevices() {
+    const devices = await this.request('/manager/devices/device');
+    const byType = {};
+    const prefix = `homey:app:${FIXTURE_APP_ID}:`;
+
+    for (const device of Object.values(devices)) {
+      if (device.driverId.startsWith(prefix)) {
+        const type = device.driverId.slice(prefix.length);
+
+        if (byType[type]) {
+          throw new Error(`Multiple fixtures for profile ${type}`);
+        }
+
+        byType[type] = device;
+      }
+    }
+
+    return byType;
+  }
+
+  static fixturePath(device) {
+    const prefix = `homey:app:${FIXTURE_APP_ID}:`;
+
+    if (!device.driverId.startsWith(prefix)) {
+      throw new Error('This device is not owned by the fixture app');
+    }
+
+    const profile = device.driverId.slice(prefix.length);
+    return `/app/${FIXTURE_APP_ID}/devices/${encodeURIComponent(profile)}/${encodeURIComponent(device.data.id)}`;
+  }
+
+  async fixture(device) {
+    return await this.request(HomeyClient.fixturePath(device));
+  }
+
+  async control(device, body) {
+    return await this.request(HomeyClient.fixturePath(device), { method: 'POST', body });
+  }
+
+  async report(device, values) {
+    return await this.control(device, { operation: 'report', values });
+  }
+
+  async availability(device, available) {
+    return await this.control(device, { operation: 'availability', available });
+  }
+
+  async reject(device, capability, rejected) {
+    return await this.control(device, { operation: 'reject', capability, rejected });
   }
 
   async removeDevice(id) {

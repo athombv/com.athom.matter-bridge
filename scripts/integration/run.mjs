@@ -6,6 +6,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SHS_IMAGE } from './config.mjs';
 import { createSeed } from './seed.mjs';
+import { prepareFixtureApp } from './fixture-app.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const output = join(root, 'output/integration');
@@ -146,14 +147,20 @@ async function build(state, ref) {
     dirty: ref ? false : (await run('git', ['status', '--porcelain'], { quiet: true })).length > 0,
   };
   await rm(staging, { recursive: true });
+
+  const fixtureDirectory = join(state.directory, 'fixture-source');
+  await prepareFixtureApp(fixtureDirectory);
+  await run('homey', ['app', 'build'], { cwd: fixtureDirectory, log, quiet: true });
+  await run('tar', ['-czf', join(state.directory, 'fixtures.tar.gz'), '-C', join(fixtureDirectory, '.homeybuild'), '.'], { quiet: true });
+  await rm(fixtureDirectory, { recursive: true });
 }
 
-async function worker(state, parameters, { log, quiet = false } = {}) {
+async function worker(state, parameters, { log, quiet = false, timeout = 180000 } = {}) {
   await run('docker', ['run', '--rm', '--name', state.worker,
     '--label', `matter-bridge.integration=${owner}`, '--network', `container:${state.container}`,
     '--volume', `${root}:/workspace:ro`, '--volume', `${state.directory}:/output`,
     '--workdir', '/workspace', state.image, 'node', ...parameters,
-  ], { log, quiet });
+  ], { log, quiet, timeout });
 }
 
 async function start(state) {
@@ -175,7 +182,7 @@ async function start(state) {
     '--env', 'HOMEY_LOCAL_ADDRESS=127.0.0.1', '--env', 'HOMEY_APP_LOG_TO_CONSOLE=1',
     state.image], { quiet: true });
   console.log('Starting isolated SHS and installing the packaged app…');
-  await worker(state, ['scripts/integration/backend.mjs', 'install'], { log: join(state.directory, 'setup.log') });
+  await worker(state, ['scripts/integration/backend.mjs', 'install'], { log: join(state.directory, 'setup.log'), timeout: 300000 });
 }
 
 async function exposeLab(state) {
@@ -201,13 +208,17 @@ async function loadLab() {
 
 async function main() {
   if (command === 'help' || command === '--help') {
-    console.log('npm run shs -- up|down|logs|devices|set <name> <capability> <JSON>');
-    console.log('npm run test:integration -- [--scenario smoke|reshare] [--ref <git-ref>]');
+    console.log('npm run shs -- up|down|logs|devices');
+    console.log('npm run shs -- set|report <name> <capability> <JSON>');
+    console.log('npm run shs -- availability <name> <true|false>');
+    console.log('npm run shs -- reject <name> <capability> <true|false>');
+    console.log('npm run shs -- commands <name>');
+    console.log('npm run test:integration -- [--scenario smoke|reshare|fixtures|devices] [--ref <git-ref>]');
     console.log('up also accepts --ref. Test runs are fresh and always cleaned up; up retains a separate lab.');
     return;
   }
 
-  if (['down', 'logs', 'devices', 'set'].includes(command)) {
+  if (['down', 'logs', 'devices', 'set', 'report', 'availability', 'reject', 'commands'].includes(command)) {
     const state = await loadLab();
 
     if (command === 'down') {
@@ -250,7 +261,7 @@ async function main() {
     }
   }
 
-  if (!['smoke', 'reshare'].includes(scenario)) {
+  if (!['smoke', 'reshare', 'fixtures', 'devices'].includes(scenario)) {
     throw new Error(`Unknown scenario: ${scenario}`);
   }
 
@@ -288,7 +299,7 @@ async function main() {
       await exposeLab(state);
       await writeFile(labFile, `${JSON.stringify(state, null, 2)}\n`);
       retained = true;
-      console.log(`Lab ready at ${state.url}; devices: Lab light, Lab socket`);
+      console.log(`Lab ready at ${state.url}; driver-backed fixture devices are shared`);
     } else {
       console.log(`Running ${scenario} integration scenario…`);
       await worker(state, ['--test', '--test-reporter=tap', '--test-reporter-destination=stdout',

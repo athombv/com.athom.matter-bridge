@@ -2,10 +2,11 @@ import { HomeyClient } from './HomeyClient.mjs';
 import { MatterController } from './MatterController.mjs';
 import { eventually } from './eventually.mjs';
 
-export async function createBridge(t) {
+export async function createBridge(t, { types = ['light', 'socket'], commission = true } = {}) {
   const homey = new HomeyClient();
   const matter = new MatterController();
   const devices = [];
+  const byType = {};
   t.after(async () => {
     try {
       await matter.close();
@@ -22,12 +23,26 @@ export async function createBridge(t) {
   });
 
   await homey.connect();
-  const light = await homey.createDevice('light', 'Integration light');
-  devices.push(light);
-  const socket = await homey.createDevice('socket', 'Integration socket');
-  devices.push(socket);
-  await homey.share(light.id, true);
-  await homey.share(socket.id, true);
+  const fixtures = await homey.fixtureDevices();
+
+  for (const type of types) {
+    const device = fixtures[type];
+
+    if (!device) {
+      throw new Error(`Missing prepared fixture: ${type}`);
+    }
+    devices.push(device);
+    byType[type] = device;
+
+    if (commission) {
+      await homey.share(device.id, true);
+    }
+  }
+
+  if (!commission) {
+    return { homey, devices, byType };
+  }
+
   await matter.connect(homey);
 
   for (const device of devices) {
@@ -36,6 +51,6 @@ export async function createBridge(t) {
     }, true);
   }
 
-  t.diagnostic(`SHS ${homey.version}; installed app; native virtual light and socket; Matter UDP subscription`);
-  return { homey, matter, light, socket };
+  t.diagnostic(`SHS ${homey.version}; installed fixture drivers; ${devices.length} devices; Matter UDP subscription`);
+  return { homey, matter, devices, byType, light: byType.light, socket: byType.socket };
 }

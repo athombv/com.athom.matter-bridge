@@ -67,7 +67,7 @@ export class MatterController {
     return values;
   }
 
-  async endpoint(name) {
+  async endpoint(name, clusterId) {
     const cluster = BridgedDeviceBasicInformation.Cluster;
     const labels = await this.read([{ clusterId: cluster.id, attributeId: cluster.attributes.nodeLabel.id }]);
     const parent = labels.find((entry) => { return entry.value === name; });
@@ -77,11 +77,25 @@ export class MatterController {
     }
 
     const parts = await this.read([{ endpointId: parent.path.endpointId, clusterId: Descriptor.Cluster.id, attributeId: Descriptor.Cluster.attributes.partsList.id }]);
-    return parts[0]?.value[0];
+    const children = parts[0]?.value ?? [];
+
+    if (clusterId === undefined) {
+      return children[0];
+    }
+
+    for (const endpointId of children) {
+      const servers = await this.read([{ endpointId, clusterId: Descriptor.Cluster.id, attributeId: Descriptor.Cluster.attributes.serverList.id }]);
+
+      if (servers[0]?.value.includes(clusterId)) {
+        return endpointId;
+      }
+    }
+
+    return undefined;
   }
 
   async path(device, cluster, attribute) {
-    const endpointId = await this.endpoint(device.name);
+    const endpointId = await this.endpoint(device.name, cluster.id);
     assert.notEqual(endpointId, undefined, `${device.name} must be discoverable over Matter`);
     return { endpointId, clusterId: cluster.id, attributeId: cluster.attributes[attribute].id };
   }
@@ -90,24 +104,28 @@ export class MatterController {
     return (await this.read([path]))[0]?.value;
   }
 
-  async expectUpdate(homey, device, capability, value, cluster, attribute, expected) {
+  async expectUpdate(homey, device, capability, value, cluster, attribute, expected, { report = false, project = (value) => { return value; } } = {}) {
     const path = await this.path(device, cluster, attribute);
-    assert.notEqual(await this.value(path), expected, 'Push verification must exercise an actual value change');
+    assert.notEqual(project(await this.value(path)), expected, 'Push verification must exercise an actual value change');
     this.reports.delete(MatterController.key(path));
-    await homey.set(device.id, capability, value);
+    if (report) {
+      await homey.report(device, { [capability]: value });
+    } else {
+      await homey.set(device.id, capability, value);
+    }
     await eventually(`${device.name}/${capability}: backend update must reach Matter`, async () => {
-      return await this.value(path);
+      return project(await this.value(path));
     }, expected);
     await eventually(`${device.name}/${capability}: update must arrive on the existing subscription`, async () => {
-      return this.reports.get(MatterController.key(path));
+      return project(this.reports.get(MatterController.key(path)));
     }, expected);
   }
 
-  async command(device, cluster, command) {
-    const endpoint = await this.endpoint(device.name);
+  async command(device, cluster, command, fields) {
+    const endpoint = await this.endpoint(device.name, cluster.id);
     let successes = 0;
 
-    for await (const chunk of this.interaction.invoke(Invoke({ commands: [{ endpoint, cluster, command }] }))) {
+    for await (const chunk of this.interaction.invoke(Invoke({ commands: [{ endpoint, cluster, command, fields }] }))) {
       for await (const entry of chunk) {
         if (entry.kind === 'cmd-status') {
           assert.equal(entry.status, 0, 'Matter command must succeed');
