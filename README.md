@@ -104,3 +104,7 @@ Scan the QR Code in the terminal with e.g. Apple Home to perform the initial pai
 ## Specification
 
 Download the latest *Matter Application Cluster Specification* from https://csa-iot.org/developer-resource/specifications-download-request/.
+
+## Backend integration tests
+
+Run the installed app against disposable Homey SHS devices and a Matter controller with `npm run test:integration`. For a persistent local backend, device controls, focused regressions, and reports, see [the integration testing guide](docs/integration-testing.md).
