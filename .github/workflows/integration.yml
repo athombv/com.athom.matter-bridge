@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scenario: [smoke, fixtures, devices, reshare]
+        scenario: [smoke, fixtures, devices, reshare, power]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
