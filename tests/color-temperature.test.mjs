@@ -3,7 +3,6 @@ import { EventEmitter } from 'node:events';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { setTimeout as sleep } from 'node:timers/promises';
 import { test } from 'node:test';
 import { Endpoint, Environment, Logger, ServerNode, VendorId } from '@matter/main';
 import { AggregatorEndpoint } from '@matter/main/endpoints';
@@ -60,36 +59,57 @@ test('color temperature', { timeout: 60000 }, async (t) => {
     await rm(directory, { recursive: true, force: true });
   });
 
-  await t.test('light_temperature maps onto 6500 K to 2000 K in both directions', async () => {
+  await t.test('light_temperature maps onto 6500 K to 2500 K in both directions', async () => {
     const light = makeLight('11111111-1111-4111-8111-111111111111', { onoff: true, dim: 0.5, light_temperature: 0.75 });
     const { bridge, endpoint, errors } = await startBridge(light, directory);
     try {
       assert.deepEqual(errors, []);
       assert.equal(endpoint.state.colorControl.colorTempPhysicalMinMireds, 153); // 6500 K
-      assert.equal(endpoint.state.colorControl.colorTempPhysicalMaxMireds, 500); // 2000 K
+      assert.equal(endpoint.state.colorControl.colorTempPhysicalMaxMireds, 400); // 2500 K
       assert.equal(endpoint.state.colorControl.coupleColorTempToLevelMinMireds, 153);
-      assert.equal(endpoint.state.colorControl.colorTemperatureMireds, 413); // 0.75 is warm
+      assert.equal(endpoint.state.colorControl.colorTemperatureMireds, 338); // 0.75 is warm
 
-      // Homey to Matter
-      light.listeners.light_temperature(0);
-      await sleep(50);
-      assert.equal(endpoint.state.colorControl.colorTemperatureMireds, 153);
-      light.listeners.light_temperature(null);
-      await sleep(50);
-      assert.equal(endpoint.state.colorControl.colorTemperatureMireds, 250);
-
-      // Matter to Homey: 2700 K is 370 mireds
-      await endpoint.act((agent) => {
-        return agent.colorControl.moveToColorTemperature({
-          colorTemperatureMireds: 370, transitionTime: 0, optionsMask: {}, optionsOverride: {},
+      // Source reports cover both boundaries, rounding and an unknown reading.
+      for (const [value, expected] of [[0, 153], [1, 400], [0.5, 277], [null, 250]]) {
+        const changed = new Promise((resolve) => {
+          endpoint.events.colorControl.stateChanged.once(resolve);
         });
-      });
-      const [, temperature] = light.values.find(([capabilityId]) => { return capabilityId === 'light_temperature'; });
-      assert.ok(Math.abs(temperature - (370 - 153) / (500 - 153)) < 0.0001, `light_temperature ${temperature}`);
+
+        light.listeners.light_temperature(value);
+        await changed;
+        assert.equal(endpoint.state.colorControl.colorTemperatureMireds, expected);
+      }
+
+      for (const [mireds, expected] of [[153, 0], [370, 217 / 247], [400, 1]]) {
+        light.values.length = 0;
+        await endpoint.act(async (agent) => {
+          await agent.colorControl.moveToColorTemperature({
+            colorTemperatureMireds: mireds, transitionTime: 0, optionsMask: {}, optionsOverride: {},
+          });
+        });
+        const [, temperature] = light.values.find(([capabilityId]) => {
+          return capabilityId === 'light_temperature';
+        });
+        assert.ok(Math.abs(temperature - expected) < 0.0001, `light_temperature ${temperature}`);
+      }
     } finally {
       await bridge.stop();
     }
   });
+
+  for (const [index, value] of [null, undefined].entries()) {
+    await t.test(`unknown initial temperature (${String(value)}) uses an in-range fallback`, async () => {
+      const light = makeLight(`unknown-temperature-${index}`, { onoff: true, dim: 0.5, light_temperature: value });
+      const { bridge, endpoint, errors } = await startBridge(light, directory);
+
+      try {
+        assert.deepEqual(errors, []);
+        assert.equal(endpoint.state.colorControl.colorTemperatureMireds, 250);
+      } finally {
+        await bridge.stop();
+      }
+    });
+  }
 
   await t.test('a color temperature stored with the earlier 1–300 mired range doesn\'t break the light', async () => {
     const id = '22222222-2222-4222-8222-222222222222';
@@ -124,6 +144,7 @@ test('color temperature', { timeout: 60000 }, async (t) => {
     await bridged.add(old);
     await node.start();
     await old.set({ colorControl: { colorTemperatureMireds: 1 } });
+    const originalEndpointNumber = old.number;
     await node.close();
 
     // The light is now in color mode, which doesn't set a color temperature itself
@@ -134,6 +155,8 @@ test('color temperature', { timeout: 60000 }, async (t) => {
     try {
       assert.deepEqual(errors, []);
       assert.equal(endpoint.lifecycle.isReady, true);
+      assert.equal(endpoint.number, originalEndpointNumber);
+      assert.deepEqual(light.values, [], 'Migration must not command the source device');
       // The stored 1 mired is kept within the range; without a stored value it would be the default of 250
       assert.equal(endpoint.state.colorControl.colorTemperatureMireds, 153);
       await endpoint.act((agent) => { return agent.onOff.off(); });
