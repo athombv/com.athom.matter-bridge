@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scenario: [smoke, fixtures, devices, reshare, power, restart, color-temperature]
+        scenario: [smoke, fixtures, devices, reshare, power, restart, color-temperature, roundtrip]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

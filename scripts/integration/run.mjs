@@ -216,7 +216,7 @@ async function main() {
     console.log('npm run shs -- availability <name> <true|false>');
     console.log('npm run shs -- reject <name> <capability> <true|false>');
     console.log('npm run shs -- commands <name>');
-    console.log('npm run test:integration -- [--scenario smoke|reshare|fixtures|devices|power|restart|color-temperature] [--ref <git-ref>]');
+    console.log('npm run test:integration -- [--scenario smoke|reshare|fixtures|devices|power|restart|color-temperature|roundtrip] [--ref <git-ref>]');
     console.log('up also accepts --ref. Test runs are fresh and always cleaned up; up retains a separate lab.');
     return;
   }
@@ -264,7 +264,7 @@ async function main() {
     }
   }
 
-  if (!['smoke', 'reshare', 'fixtures', 'devices', 'power', 'restart', 'color-temperature'].includes(scenario)) {
+  if (!['smoke', 'reshare', 'fixtures', 'devices', 'power', 'restart', 'color-temperature', 'roundtrip'].includes(scenario)) {
     throw new Error(`Unknown scenario: ${scenario}`);
   }
 
@@ -308,7 +308,7 @@ async function main() {
       await worker(state, ['--test', '--test-reporter=tap', '--test-reporter-destination=stdout',
         '--test-reporter=junit', '--test-reporter-destination=/output/results.xml',
         `tests/integration/${scenario}.test.mjs`,
-      ], { log: join(state.directory, 'tests.log') });
+      ], { log: join(state.directory, 'tests.log'), timeout: scenario === 'roundtrip' ? 360000 : 180000 });
     }
 
     if (interrupted) {
