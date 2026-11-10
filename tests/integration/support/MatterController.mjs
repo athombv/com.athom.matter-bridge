@@ -31,6 +31,27 @@ export class MatterController {
     });
     await this.peer.set({ network: { autoSubscribe: false } });
     await this.peer.start();
+    await this.subscribe();
+  }
+
+  async disconnect() {
+    await this.subscription?.close();
+    this.subscription = undefined;
+    await this.interaction?.close();
+    this.interaction = undefined;
+    await this.peer.disable();
+    const protocolPeer = this.node.env.get(PeerSet).for(this.peer.state.commissioning.peerAddress);
+    await protocolPeer.disconnect(new Error('Bridge restart test closes the old transport session'));
+  }
+
+  async reconnect() {
+    // Reuse the commissioned peer and fabric; never open a new pairing window.
+    await this.peer.enable();
+    await this.subscribe();
+  }
+
+  async subscribe() {
+    this.reports.clear();
     const protocolPeer = this.node.env.get(PeerSet).for(this.peer.state.commissioning.peerAddress);
 
     // Read wire values directly; the client endpoint cache can lag topology changes.

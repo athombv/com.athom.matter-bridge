@@ -25,15 +25,14 @@ test('re-sharing restores live updates without replacing the controller subscrip
       return (await matter.endpoint(light.name)) !== undefined;
     }, true);
 
-    // Stored Matter values may win during recreation (the separate #33 issue).
-    // First synchronize both sides, then demand push reports for real transitions.
     const onOff = await matter.path(light, OnOff.Cluster, 'onOff');
-    t.diagnostic(`Cycle ${cycle}: initial backend=false, Matter=${await matter.value(onOff)}`);
+    const level = await matter.path(light, LevelControl.Cluster, 'currentLevel');
+    assert.equal(await matter.value(onOff), false, 'Re-sharing must restore current Homey on/off state');
+    assert.equal(await matter.value(level), 127, 'Re-sharing must restore current Homey dim level');
     await homey.set(light.id, 'onoff', true);
     await eventually('Re-shared light must receive new Homey on/off updates', async () => {
       return await matter.value(onOff);
     }, true);
-    const level = await matter.path(light, LevelControl.Cluster, 'currentLevel');
     await homey.set(light.id, 'dim', 1);
     await eventually('Re-shared light must receive new Homey dim updates', async () => {
       return await matter.value(level);
