@@ -1,0 +1,336 @@
+{
+  "light-onoff": {
+    "class": "light",
+    "values": {
+      "onoff": false
+    },
+    "commands": {
+      "onoff": true
+    }
+  },
+  "light": {
+    "class": "light",
+    "values": {
+      "onoff": false,
+      "dim": 0.5
+    },
+    "commands": {
+      "onoff": true,
+      "dim": 0.75
+    }
+  },
+  "light-color": {
+    "class": "light",
+    "values": {
+      "onoff": false,
+      "dim": 0.5,
+      "light_hue": 0.1,
+      "light_saturation": 0.5
+    },
+    "commands": {
+      "onoff": true,
+      "dim": 0.75,
+      "light_hue": 0.6,
+      "light_saturation": 0.8
+    }
+  },
+  "light-temperature": {
+    "class": "light",
+    "values": {
+      "onoff": false,
+      "dim": 0.5,
+      "light_temperature": 0.5
+    },
+    "commands": {
+      "onoff": true,
+      "dim": 0.75,
+      "light_temperature": 0.8
+    }
+  },
+  "light-extended": {
+    "class": "light",
+    "values": {
+      "onoff": false,
+      "dim": 0.5,
+      "light_hue": 0.1,
+      "light_saturation": 0.5,
+      "light_temperature": 0.5,
+      "light_mode": "color"
+    },
+    "commands": {
+      "onoff": true,
+      "dim": 0.75,
+      "light_hue": 0.6,
+      "light_saturation": 0.8,
+      "light_temperature": 0.8,
+      "light_mode": "temperature"
+    }
+  },
+  "light-extended-temperature": {
+    "class": "light",
+    "values": {
+      "onoff": false,
+      "dim": 0.5,
+      "light_hue": 0.1,
+      "light_saturation": 0.5,
+      "light_temperature": 0.5,
+      "light_mode": "temperature"
+    },
+    "commands": {
+      "onoff": true,
+      "dim": 0.75,
+      "light_hue": 0.6,
+      "light_saturation": 0.8,
+      "light_temperature": 0.8,
+      "light_mode": "color"
+    }
+  },
+  "socket": {
+    "class": "socket",
+    "values": {
+      "onoff": false
+    },
+    "commands": {
+      "onoff": true
+    }
+  },
+  "switch-other": {
+    "class": "other",
+    "values": {
+      "onoff": false
+    },
+    "commands": {
+      "onoff": true
+    }
+  },
+  "thermostat": {
+    "class": "thermostat",
+    "values": {
+      "target_temperature": 21,
+      "measure_temperature": 20
+    },
+    "commands": {
+      "target_temperature": 22
+    },
+    "options": {
+      "target_temperature": {
+        "min": 10,
+        "max": 30,
+        "step": 0.5
+      }
+    }
+  },
+  "heater": {
+    "class": "heater",
+    "values": {
+      "target_temperature": 21,
+      "measure_temperature": 20
+    },
+    "commands": {
+      "target_temperature": 22
+    },
+    "options": {
+      "target_temperature": {
+        "min": 10,
+        "max": 30,
+        "step": 0.5
+      }
+    }
+  },
+  "heatpump": {
+    "class": "heatpump",
+    "values": {
+      "target_temperature": 21,
+      "measure_temperature": 20
+    },
+    "commands": {
+      "target_temperature": 22
+    },
+    "options": {
+      "target_temperature": {
+        "min": 10,
+        "max": 30,
+        "step": 0.5
+      }
+    }
+  },
+  "airconditioning": {
+    "class": "airconditioning",
+    "values": {
+      "thermostat_mode": "heat",
+      "target_temperature": 21,
+      "target_temperature.cool": 24,
+      "measure_temperature": 20,
+      "measure_humidity": 50
+    },
+    "commands": {
+      "thermostat_mode": "cool",
+      "target_temperature": 22,
+      "target_temperature.cool": 25
+    },
+    "options": {
+      "thermostat_mode": {
+        "values": [
+          {
+            "id": "off",
+            "title": {
+              "en": "Off"
+            }
+          },
+          {
+            "id": "heat",
+            "title": {
+              "en": "Heat"
+            }
+          },
+          {
+            "id": "cool",
+            "title": {
+              "en": "Cool"
+            }
+          },
+          {
+            "id": "auto",
+            "title": {
+              "en": "Auto"
+            }
+          }
+        ]
+      },
+      "target_temperature": {
+        "min": 10,
+        "max": 30,
+        "step": 0.5
+      },
+      "target_temperature.cool": {
+        "min": 16,
+        "max": 32,
+        "step": 0.5
+      }
+    }
+  },
+  "lock": {
+    "class": "lock",
+    "values": {
+      "locked": false
+    },
+    "commands": {
+      "locked": true
+    }
+  },
+  "cover-position": {
+    "class": "windowcoverings",
+    "values": {
+      "windowcoverings_set": 0.5
+    },
+    "commands": {
+      "windowcoverings_set": 0.75
+    }
+  },
+  "cover-state": {
+    "class": "windowcoverings",
+    "values": {
+      "windowcoverings_state": "idle"
+    },
+    "commands": {
+      "windowcoverings_state": "up"
+    }
+  },
+  "measure-temperature": {
+    "class": "sensor",
+    "values": {
+      "measure_temperature": 20
+    },
+    "commands": {}
+  },
+  "measure-humidity": {
+    "class": "sensor",
+    "values": {
+      "measure_humidity": 50
+    },
+    "commands": {}
+  },
+  "measure-co": {
+    "class": "sensor",
+    "values": {
+      "measure_co": 0
+    },
+    "commands": {}
+  },
+  "measure-co2": {
+    "class": "sensor",
+    "values": {
+      "measure_co2": 400
+    },
+    "commands": {}
+  },
+  "measure-pm10": {
+    "class": "sensor",
+    "values": {
+      "measure_pm10": 10
+    },
+    "commands": {}
+  },
+  "measure-pm25": {
+    "class": "sensor",
+    "values": {
+      "measure_pm25": 5
+    },
+    "commands": {}
+  },
+  "measure-luminance": {
+    "class": "sensor",
+    "values": {
+      "measure_luminance": 100
+    },
+    "commands": {}
+  },
+  "alarm-motion": {
+    "class": "sensor",
+    "values": {
+      "alarm_motion": false
+    },
+    "commands": {}
+  },
+  "alarm-occupancy": {
+    "class": "sensor",
+    "values": {
+      "alarm_occupancy": false
+    },
+    "commands": {}
+  },
+  "alarm-contact": {
+    "class": "sensor",
+    "values": {
+      "alarm_contact": false
+    },
+    "commands": {}
+  },
+  "alarm-smoke": {
+    "class": "sensor",
+    "values": {
+      "alarm_smoke": false
+    },
+    "commands": {}
+  },
+  "socket-power-unset": {
+    "class": "socket",
+    "values": {
+      "onoff": false,
+      "measure_power": null
+    },
+    "commands": {
+      "onoff": true
+    }
+  },
+  "socket-power": {
+    "class": "socket",
+    "values": {
+      "onoff": false,
+      "measure_power": 12
+    },
+    "commands": {
+      "onoff": true
+    }
+  }
+}

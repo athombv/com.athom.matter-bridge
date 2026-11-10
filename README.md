@@ -46,8 +46,16 @@ controller credentials still allow control without pairing again. Device mapping
 tests initialize lights, sockets, thermostats, air conditioners, locks, covers,
 and sensors against the current Matter model. They also test the settings panel with mocked Homey responses
 and `homey-api` loading, `createAppAPI`, discovery, capability subscriptions, and
-reconnection against a local HTTP/Socket.IO fixture. Allow local multicast for the
+reconnection against a local HTTP/Socket.IO fixture. A storage-lock test starts the
+bridge over a lock left behind by a killed process. Allow local multicast for the
 Matter integration test. No physical devices or existing Homey pairings are used.
+
+On Homey, the app removes Matter.js's storage lock (`matter.lock`, `matter.pid`)
+before starting. A lock left behind by a killed process (for example when Homey
+reboots for a firmware update) would otherwise block every start: Matter.js only
+reclaims a lock whose PID is reported as gone, and inside Homey's app container the
+recorded PID can look alive. Homey runs a single instance of the app, so a lock found
+at startup is always stale. Standalone mode keeps Matter.js's default lock handling.
 
 The upgrade configures storage through `storage.path`; existing file storage is
 detected automatically at the same location. Device mappings supply newly required
@@ -96,3 +104,7 @@ Scan the QR Code in the terminal with e.g. Apple Home to perform the initial pai
 ## Specification
 
 Download the latest *Matter Application Cluster Specification* from https://csa-iot.org/developer-resource/specifications-download-request/.
+
+## Backend integration tests
+
+Run the installed app against disposable Homey SHS devices and a Matter controller with `npm run test:integration`. For a persistent local backend, device controls, focused regressions, and reports, see [the integration testing guide](docs/integration-testing.md).

@@ -1,0 +1,40 @@
+name: SHS Integration
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '**.js'
+      - '**.mjs'
+      - '**.json'
+      - '.homeycompose/**'
+      - '.homeyignore'
+      - '.github/workflows/integration.yml'
+permissions:
+  contents: read
+jobs:
+  integration:
+    name: SHS ${{ matrix.scenario }}
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario: [smoke, fixtures, devices, reshare, power, restart]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.20.0'
+          cache: npm
+      - run: npm ci
+      - run: npm install --global homey@4.4.4
+      - run: npm run test:integration -- --scenario ${{ matrix.scenario }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shs-integration-${{ matrix.scenario }}
+          retention-days: 7
+          path: |
+            output/integration/**/result.json
+            output/integration/**/results.xml
+            output/integration/**/*.log
