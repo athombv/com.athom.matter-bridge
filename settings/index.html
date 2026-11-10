@@ -286,6 +286,11 @@
             }
           }
 
+          // Sort names alphabetically, with numbers compared numerically and ignoring case and accents
+          const compareNames = (a, b) => {
+            return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+          };
+
           // Create Zones
           const $zones = document.createElement('div');
           $zones.className = 'zones';
@@ -300,7 +305,7 @@
           }
 
           const zonesArray = Array.from(zones);
-          zonesArray.sort();
+          zonesArray.sort(compareNames);
           for (const zone of zonesArray) {
             const $zone = document.createElement('div');
             $zone.className = 'zone';
@@ -319,7 +324,10 @@
             $zone_devices_by_name[zone] = $zoneDevices;
           }
 
-          // Add Devices to Zones
+          // Add Devices to Zones, sorted by name
+          devices.sort((a, b) => {
+            return compareNames(a.name, b.name);
+          });
           for (const device of devices) {
             const $device = $templateDevice.content.cloneNode(true);
 
