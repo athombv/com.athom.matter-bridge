@@ -4,13 +4,18 @@ import { mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { mappingCoverage } from './coverage.mjs';
 import { mappings } from './manifest.mjs';
+import { TestEvidence } from './TestEvidence.mjs';
+
+if (process.env.MAPPING_CASE) {
+  throw new Error('The acceptance report requires every mapping; unset MAPPING_CASE.');
+}
 
 const directory = new URL('./artifacts/', import.meta.url);
 const surfaceFile = new URL('surface.json', directory);
 await mkdir(directory, { recursive: true });
 await rm(surfaceFile, { force: true });
 
-const results = new Map();
+const evidence = new TestEvidence();
 let failed = false;
 const stream = run({
   files: [
@@ -26,17 +31,16 @@ const stream = run({
     fileURLToPath(new URL('../mapping-light-controls.test.mjs', import.meta.url)),
     fileURLToPath(new URL('../mapping-command-reliability.test.mjs', import.meta.url)),
     fileURLToPath(new URL('../mapping-matter18.test.mjs', import.meta.url)),
+    fileURLToPath(new URL('../mapping-review.test.mjs', import.meta.url)),
+    fileURLToPath(new URL('../mapping-evidence.test.mjs', import.meta.url)),
     fileURLToPath(new URL('../mapping-power.test.mjs', import.meta.url)),
   ],
 });
 stream.on('test:pass', (result) => {
-  if (results.get(result.name) !== 'FAIL') {
-    results.set(result.name, 'PASS');
-  }
+  evidence.record('test:pass', result);
 });
 stream.on('test:fail', (result) => {
-  results.set(result.name, 'FAIL');
-  failed = true;
+  evidence.record('test:fail', result);
 });
 stream.compose(spec).pipe(process.stdout);
 await new Promise((resolve, reject) => {
@@ -45,7 +49,7 @@ await new Promise((resolve, reject) => {
 });
 
 const summary = mappings.map((fixture) => {
-  return `| ${fixture.id} | ${results.get(fixture.id) ?? 'NOT RUN'} |`;
+  return `| ${fixture.id} | ${evidence.require(fixture.id)} |`;
 });
 const coverage = await mappingCoverage();
 let surface = { counts: {}, entries: [] };
@@ -87,18 +91,27 @@ const phases = [
   'lighting feature commands control the source and preserve rejection behavior',
   '0.17.9 pairing, controller cache, groups and scenes survive the 0.18 upgrade',
   'lock commands retain Homey control while honoring the SDK operating-mode checks',
+  'lock state changes only after Homey confirms physical completion',
+  'lighting timers respect manual control and command rejection on every mapping',
+  'dim-only light channels switch their own source and retain paired endpoints',
+  'read-only fan speed still permits writable Off controls',
+  'auto thermostat forwards both targets when a command crosses the deadband',
+  'shutdown attempts every subscription and closes Matter despite cleanup failures',
+  'disable cleans remaining resources after a rejected destroy and allows re-enabling',
+  'acceptance evidence rejects skipped, todo, missing and failing tests',
+  'filtered acceptance reports fail before running or replacing full-report artifacts',
+  'historical fixture generators refuse the current SDK without replacing evidence',
+  'backend reverse control enforces the declared channel-specific quantization allowance',
 ].map((name) => {
-  if (results.get(name) !== 'PASS') {
-    failed = true;
-  }
-  return `| ${name} | ${results.get(name) ?? 'NOT RUN'} |`;
+  return `| ${name} | ${evidence.require(name)} |`;
 });
 const surfaceRows = surface.entries.map((entry) => {
-  if (entry.test && results.get(entry.test) !== 'PASS') {
-    failed = true;
+  if (entry.test) {
+    evidence.require(entry.test);
   }
   return `| ${entry.cluster}.${entry.name} | ${entry.kind} | ${entry.status} | ${entry.reason} |`;
 });
+failed ||= evidence.failed;
 const report = [
   `# Mapping test report`,
   '',

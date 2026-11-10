@@ -25,6 +25,9 @@ it does not claim to test upgrading a controller application's endpoint cache.
 `node tests/mappings/generate-upgrade-fixture.mjs` reads that revision's actual server implementation
 from Git, runs it with the synthetic mapping devices, commissions a disposable controller, and
 persists source updates before shutdown. Public CI reads the saved fixture and needs no Git history.
+Both this generator and `generate-fan-upgrade-fixture.mjs` require Matter.js 0.17.9 and refuse
+to run against the current SDK before writing any artifacts. Run them in a disposable checkout
+with that dependency version; never regenerate historical storage using the upgraded dependency.
 
 The fixture records its full source revision, endpoint numbers, peer address, and original storage
 file contents. Its keys and certificates belong exclusively to disposable test nodes. It contains

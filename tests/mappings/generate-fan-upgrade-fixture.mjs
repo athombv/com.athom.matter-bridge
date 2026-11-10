@@ -13,6 +13,9 @@ const mappings = [{
   },
 }];
 
+const matter = JSON.parse(await readFile(new URL('../../node_modules/@matter/main/package.json', import.meta.url)));
+assert.equal(matter.version, '0.17.9', 'Generate historical storage with Matter.js 0.17.9');
+
 const revision = '5b95e303fed23ca401e2d59b999fb0d60b0c44f0';
 const fullRevision = execFileSync('git', ['rev-parse', revision], { encoding: 'utf8' }).trim();
 const original = execFileSync('git', ['show', `${fullRevision}:lib/MatterBridgeServer.mjs`], {
@@ -60,7 +63,7 @@ try {
   await writeFile(
     new URL('../fixtures/fan-policy-upgrade.json', import.meta.url),
     JSON.stringify(
-      { revision: fullRevision, matterJsVersion: '0.17.9', peerAddress, endpoints, files },
+      { revision: fullRevision, matterJsVersion: matter.version, peerAddress, endpoints, files },
       null,
       2,
     ) + '\n',

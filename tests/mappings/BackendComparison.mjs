@@ -126,10 +126,12 @@ export class BackendComparison {
         return;
       }
 
-      const target = input;
+      const { tolerance } = BackendComparison.#expectedValue(
+        expected.backendCapability ?? expected.capabilityId, input,
+      );
       assert.ok(
-        Math.abs(actual - target) <= 0.01,
-        `Backend requested ${actual}, expected ${target}`,
+        Math.abs(actual - input) <= tolerance + 1e-9,
+        `Backend requested ${actual}, expected ${input} ± ${tolerance}`,
       );
     }, `${fixture.id}: backend control ${expected.capabilityId}`);
   }

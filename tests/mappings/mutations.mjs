@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process';
 import { cp, mkdtemp, readFile, writeFile, mkdir, rm, symlink } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { TestEvidence } from './TestEvidence.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const artifacts = fileURLToPath(new URL('./artifacts/', import.meta.url));
@@ -50,7 +51,7 @@ const mutations = [
     file: 'lib/mappings/CapabilityGroups.mjs',
     from: 'source.setCapabilityValue({ ...write, capabilityId })',
     to: 'source.setCapabilityValue(write)',
-    evidence: 'controller commands report their complete outcomes',
+    testName: 'controller commands report their complete outcomes',
   },
   {
     id: 'unrealistic-color-temperature-range',
@@ -198,10 +199,16 @@ for (const mutation of mutations) {
       await writeFile(server, source);
     }
 
+    const failuresFile = join(directory, 'failures.jsonl');
     const result = await new Promise((resolve, reject) => {
       const child = spawn(
         process.execPath,
-        ['--test', join(directory, 'tests', mutation.suite ?? 'mapping-behavior.test.mjs')],
+        [
+          '--test', '--test-reporter=tap', '--test-reporter-destination=stdout',
+          `--test-reporter=${join(directory, 'tests/mappings/mutation-reporter.mjs')}`,
+          `--test-reporter-destination=${failuresFile}`,
+          join(directory, 'tests', mutation.suite ?? 'mapping-behavior.test.mjs'),
+        ],
         {
           cwd: directory,
           env: { ...process.env, MAPPING_CASE: mutation.mapping },
@@ -226,10 +233,12 @@ for (const mutation of mutations) {
         resolve({ code, signal, output });
       });
     });
-    const detected =
-      result.code === 1 && result.signal === null && result.output.includes(mutation.evidence);
+    const failures = (await readFile(failuresFile, 'utf8')).split('\n').filter(Boolean).map((line) => {
+      return JSON.parse(line);
+    });
+    const detected = TestEvidence.detectsMutation(result, mutation, failures);
     await writeFile(join(artifacts, `mutation-${mutation.id}.log`), result.output);
-    results.push({ id: mutation.id, detected, evidence: mutation.evidence });
+    results.push({ id: mutation.id, detected, evidence: mutation.evidence ?? mutation.testName });
     console.log(`${detected ? 'DETECTED' : 'NOT DETECTED'} ${mutation.id}`);
   } finally {
     await rm(directory, { recursive: true, force: true });

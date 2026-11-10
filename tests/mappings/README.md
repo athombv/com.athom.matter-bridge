@@ -19,11 +19,13 @@ npm run test:mappings:mutations
 ```
 
 The report command runs the tests and writes `tests/mappings/artifacts/report.md`, including actual
-PASS/FAIL/NOT RUN results and the capability inventory. Generated artifacts are ignored by Git.
+PASS/FAIL/SKIP/TODO/NOT RUN results and the capability inventory. Every required phase and variant
+must actually execute successfully; skipped or missing results fail acceptance. Generated artifacts are ignored by Git.
 `npm test` also includes pairing, migration, settings, and Homey API tests.
 
 For a focused diagnostic run, set `MAPPING_CASE=socket` or a comma-separated list of fixture IDs.
-Normal CI and acceptance runs must leave this variable unset.
+Normal CI and acceptance runs must leave this variable unset. The acceptance report rejects
+`MAPPING_CASE` before running tests or replacing artifacts; use `npm run test:mappings` for filtered diagnostics.
 
 Run the optional backend comparison from this repository:
 
@@ -178,7 +180,8 @@ saved values into synthetic paired storage, then checks retained endpoint number
 updates and working controls. Pairing state alone is not evidence that every endpoint initialized.
 
 The optional mutation command creates disposable source copies, seeds specific defects, and
-requires a test failure with the expected assertion evidence. Syntax errors, timeouts, and unrelated
+requires a structured failing test result with the expected assertion evidence (or the exact failing
+command-contract test). A title printed by a passing test is never evidence. Syntax errors, timeouts, and unrelated
 failures do not count as detection. Cases cover an unclassified attribute, a removed command contract,
 power scaling, lock polarity, fractional setpoints, a missing subscription callback, stale restored
 state, contradictory color modes, unknown booleans presented as known, inverted water alarms, and energy/battery/fan scaling. Logs and `mutations.json` stay in ignored artifacts. Run the
