@@ -108,3 +108,5 @@ Download the latest *Matter Application Cluster Specification* from https://csa-
 ## Backend integration tests
 
 Run the installed app against disposable Homey SHS devices and a Matter controller with `npm run test:integration`. For a persistent local backend, device controls, focused regressions, and reports, see [the integration testing guide](docs/integration-testing.md).
+
+Run `npm run test:integration -- --scenario roundtrip` to automatically pair the bridge back into the same SHS and test imported Homey devices against their original fixture drivers. Pairing and assertions use APIs; no UI is needed. The existing Matter.js controller scenarios remain separate.

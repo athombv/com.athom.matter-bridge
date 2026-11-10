@@ -1,6 +1,6 @@
 # Testing the installed app against Homey SHS
 
-This suite packages and installs the app in a disposable Homey Self-Hosted Server (SHS), installs a dedicated fixture app and pairs its SDK devices through Homey's pairing API, and commissions a Matter.js controller over UDP/mDNS. It exercises the Homey SDK, homey-api subscriptions, app HTTP routes, persisted Matter endpoints, and the protocol in both directions. No bridge internals or mocked capability subscriptions are used.
+This suite packages and installs the app in a disposable Homey Self-Hosted Server (SHS), installs a dedicated fixture app and pairs its SDK devices through Homey's pairing API, and commissions a Matter.js controller over UDP/mDNS. The additional `roundtrip` scenario commissions SHS's own Matter controller and imports the shared devices back into the same Homey. It exercises the Homey SDK, homey-api subscriptions, app HTTP routes, persisted Matter endpoints, and the protocol in both directions. No bridge internals or mocked capability subscriptions are used.
 
 ## Requirements and first run
 
@@ -83,7 +83,7 @@ Each run prints its directory under ignored `output/integration/`. It contains:
 - `image.log`: image pull output, including the registry digest.
 - `homey-shs.log`: complete timestamped SHS and app stdout/stderr, including startup.
 
-The `SHS Integration` GitHub workflow runs `smoke`, `fixtures`, `devices`, `reshare`, `power`, `restart`, and `color-temperature` in separate fresh environments on relevant pull requests and manual dispatch, and uploads reports/logs even on failure. It uses the same runner and pulls `:latest` for each scenario, just like local testing. CI needs no secrets. Compare recorded image digests when comparing runs: a new release can change the backend between runs.
+The `SHS Integration` GitHub workflow runs `smoke`, `fixtures`, `devices`, `reshare`, `power`, `restart`, `color-temperature`, and `roundtrip` in separate fresh environments on relevant pull requests and manual dispatch, and uploads reports/logs even on failure. It uses the same runner and pulls `:latest` for each scenario, just like local testing. CI needs no secrets. Compare recorded image digests when comparing runs: a new release can change the backend between runs.
 
 SHS logs may include failed cloud, weather, update and outbound-IP requests because the backend is deliberately offline. Test success is based on device and protocol assertions, not an empty error log. Logs and protocol artifacts may contain ephemeral test tokens or pairing codes; keep them in ignored output or short-lived CI artifacts.
 
@@ -115,6 +115,7 @@ npm run test:integration -- --scenario devices
 npm run test:integration -- --scenario power
 npm run test:integration -- --scenario restart
 npm run test:integration -- --scenario color-temperature
+npm run test:integration -- --scenario roundtrip
 ```
 
 - `fixtures` verifies all 28 SDK profiles through SHS: driver identity, class, capabilities, initial state, successful/rejected commands, read-only reports, declared temperature limits and valid boundary values, availability, and invalid-capability rejection. These checks establish simulator behavior independently of Matter mappings.
@@ -124,12 +125,27 @@ npm run test:integration -- --scenario color-temperature
 - `restart` guards current device state and labels after a Homey-managed app restart while preserving pairing and endpoint identity.
 - `color-temperature` guards the fallback range, source reports and controller commands for white and combined-color lights.
 - `power` verifies initial power conversion and a newly paired socket with an unknown reading, including live reports and an on/off command over the existing controller connection.
+- `roundtrip` pairs the bridge into SHS itself, imports all 28 fixture devices plus the root bridge device, and exercises 28 source-report contracts and 17 command paths through Homey's native Matter importer. The known smoke-report mismatch is explicitly reported as TODO (see below). It also checks driver rejection/recovery, exclusion of imported devices from the sharing list, and control/report recovery with unchanged imported device IDs after an app restart.
 
 This is representative mapping coverage, not every combination or command. Every thermostat mode, all reverse command paths, restart restoration for the remaining device classes, and Matter reachability for unavailable devices still need dedicated scenarios. Fixture availability is currently asserted in Homey; do not infer bridge reachability coverage from it.
 
 `createBridge(t)` selects prepared fixtures, owns sharing and controller/device teardown, and accepts a profile list. `HomeyClient` separates commands (`set`) from device reports (`report`). `MatterController` discovers the child endpoint serving the requested cluster, including multi-endpoint HVAC devices. Add protocol assertions to `devices.test.mjs` or a new scenario when introducing a profile: automatic seeding alone does not verify its Matter mapping.
 
-The app and controller currently use the same pinned Matter.js version. Tests establish protocol behavior with that implementation, not Apple Home, Google Home, Home Assistant UI behavior, or compatibility with physical devices.
+The existing protocol scenarios retain their independent Matter.js controller and protocol assertions. `roundtrip` instead uses the real Homey Matter daemon bundled in the public SHS image. Together they test two controller implementations; they do not establish Apple Home, Google Home, Home Assistant UI behavior, or compatibility with physical devices.
+
+## Automated Homey round trip
+
+`HomeyMatterController` reads the bridge's pairing payload from `/app/com.athom.matter-bridge/state` (or opens `/pairing/start` when the bridge is already commissioned). This is the string encoded by the settings QR image, so there is no camera, image decoding, or browser step. It opens the normal `homey:virtualdrivermatter:driver` pairing session, subscribes to `pair.message` events before commissioning, sends `commissionDevice` with the payload, maintains heartbeats, and requires a successful `done` event. Errors, unexpected interaction requests, and timeouts fail the test; session deletion and realtime disconnection run during teardown.
+
+The helper answers Homey's uncertified-device prompt only for the development bridge inside this disposable environment. It chooses Homey's generic Matter driver if an app-selection step is requested. Normal discovery, commissioning, interview, device creation, commands, and subscriptions still run through the actual daemon. The internal IPv6 Docker network needs no Bluetooth, phone, cloud account, or access to the household network.
+
+Pairing completion can precede the initial subscription report. The test waits for the imported power socket's initial 12 W reading before starting its assertions. Source reports and controller commands are separate phases: reports must reach the imported capability without producing source-driver commands; commands must appear in the fixture driver's accepted-command log and update its state. This avoids counting Homey's optimistic imported-device state as proof of a completed command. Rapid opposing commands/reports during commissioning are outside this scenario.
+
+After restarting the app, the test allows up to three minutes for Homey's native subscription to recover with the existing pairing. Homey negotiates a reporting interval of roughly two minutes; an immediate command can still encounter a stale session. Recovery requires a changed power reading reported while the bridge was stopped, followed by a successful command through an unchanged imported device ID. The runner gives this scenario a six-minute test-worker deadline, in addition to packaging and startup.
+
+The expectations explicitly account for Homey importing the bridge itself, mapping `alarm_occupancy` to `alarm_motion`, and numeric color/level quantization. The suite uses representative capabilities for each fixture; it does not assume every original capability is reproduced unchanged (for example, separate HVAC cooling targets). The original Matter.js scenarios remain responsible for their numeric protocol contracts.
+
+The smoke round trip exposes a missing `expressedState` update in the existing bridge: changing `smokeState` alone leaves Homey's imported alarm clear. This testing-only change does not alter production behavior. The smoke assertion still runs; only the observed `false` instead of `true` assertion is marked TODO. API errors and other mismatches fail normally. Once a separate production fix makes that assertion pass, the same test checks clearing the alarm too and passes without TODO. Pairing/importing the smoke device is always required, but a TODO smoke report is not counted as passing report coverage. Existing Matter.js tests remain unchanged.
 
 ## Synthetic data and publication boundary
 

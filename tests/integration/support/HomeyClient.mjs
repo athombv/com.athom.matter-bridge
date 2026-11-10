@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { setTimeout as delay } from 'node:timers/promises';
+import { HomeyAPI } from 'homey-api';
 import { APP_ID, FIXTURE_APP_ID, TEST_PASSWORD, TEST_USERNAME } from '../../../scripts/integration/config.mjs';
 import { eventually } from './eventually.mjs';
 import profiles from '../../fixtures/homey-app/profiles.json' with { type: 'json' };
@@ -142,6 +143,10 @@ export class HomeyClient {
 
   async state() {
     return await this.request(`/app/${APP_ID}/state`);
+  }
+
+  async realtime() {
+    return await HomeyAPI.createLocalAPI({ address: this.baseUrl, token: this.#token });
   }
 
   async createDevice(type, name) {
