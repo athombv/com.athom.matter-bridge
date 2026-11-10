@@ -83,7 +83,7 @@ Each run prints its directory under ignored `output/integration/`. It contains:
 - `image.log`: image pull output, including the registry digest.
 - `homey-shs.log`: complete timestamped SHS and app stdout/stderr, including startup.
 
-The `SHS Integration` GitHub workflow runs `smoke`, `fixtures`, `devices`, `reshare`, `power`, and `restart` in separate fresh environments on relevant pull requests and manual dispatch, and uploads reports/logs even on failure. It uses the same runner and pulls `:latest` for each scenario, just like local testing. CI needs no secrets. Compare recorded image digests when comparing runs: a new release can change the backend between runs.
+The `SHS Integration` GitHub workflow runs `smoke`, `fixtures`, `devices`, `reshare`, `power`, `restart`, and `color-temperature` in separate fresh environments on relevant pull requests and manual dispatch, and uploads reports/logs even on failure. It uses the same runner and pulls `:latest` for each scenario, just like local testing. CI needs no secrets. Compare recorded image digests when comparing runs: a new release can change the backend between runs.
 
 SHS logs may include failed cloud, weather, update and outbound-IP requests because the backend is deliberately offline. Test success is based on device and protocol assertions, not an empty error log. Logs and protocol artifacts may contain ephemeral test tokens or pairing codes; keep them in ignored output or short-lived CI artifacts.
 
@@ -103,6 +103,10 @@ The `restart` regression disables the bridge through Homey's app API, waits unti
 
 Run `npm run test:integration -- --scenario restart --ref 15821682` or `--scenario reshare --ref 15821682` to reproduce stale state against the pre-#33 app. The current checkout supplies the regression tests while that ref supplies the installed app.
 
+The `color-temperature` scenario verifies the 153–400 mired fallback range for temperature-only lights and combined color/temperature lights starting in either mode. It checks live source readings and subscription reports at both bounds, unknown/recovered values, and Matter commands at the bounds and a warm-white setting. Driver command assertions account for SHS rounding `light_temperature` to two decimals. This range matches Homey's fallback (approximately 6500–2500 K); without per-device limits in the standard capability contract, it is not a physical calibration.
+
+Run `npm run test:integration -- --scenario color-temperature --ref 3141726` to reproduce the old advertised range against the pre-#31 app. The persisted-state migration is covered separately by `tests/color-temperature.test.mjs`.
+
 Run each suite explicitly:
 
 ```sh
@@ -110,6 +114,7 @@ npm run test:integration -- --scenario fixtures
 npm run test:integration -- --scenario devices
 npm run test:integration -- --scenario power
 npm run test:integration -- --scenario restart
+npm run test:integration -- --scenario color-temperature
 ```
 
 - `fixtures` verifies all 28 SDK profiles through SHS: driver identity, class, capabilities, initial state, successful/rejected commands, read-only reports, declared temperature limits and valid boundary values, availability, and invalid-capability rejection. These checks establish simulator behavior independently of Matter mappings.
@@ -117,9 +122,10 @@ npm run test:integration -- --scenario restart
 - `smoke` retains the small light/socket lifecycle check.
 - `reshare` guards the sharing lifecycle in normal CI, including the regression fixed by #40.
 - `restart` guards current device state and labels after a Homey-managed app restart while preserving pairing and endpoint identity.
+- `color-temperature` guards the fallback range, source reports and controller commands for white and combined-color lights.
 - `power` verifies initial power conversion and a newly paired socket with an unknown reading, including live reports and an on/off command over the existing controller connection.
 
-This is representative mapping coverage, not every combination or command. Colour-temperature conversion, every thermostat mode, all reverse command paths, restart restoration for the remaining device classes, and Matter reachability for unavailable devices still need dedicated scenarios. Fixture availability is currently asserted in Homey; do not infer bridge reachability coverage from it.
+This is representative mapping coverage, not every combination or command. Every thermostat mode, all reverse command paths, restart restoration for the remaining device classes, and Matter reachability for unavailable devices still need dedicated scenarios. Fixture availability is currently asserted in Homey; do not infer bridge reachability coverage from it.
 
 `createBridge(t)` selects prepared fixtures, owns sharing and controller/device teardown, and accepts a profile list. `HomeyClient` separates commands (`set`) from device reports (`report`). `MatterController` discovers the child endpoint serving the requested cluster, including multi-endpoint HVAC devices. Add protocol assertions to `devices.test.mjs` or a new scenario when introducing a profile: automatic seeding alone does not verify its Matter mapping.
 
