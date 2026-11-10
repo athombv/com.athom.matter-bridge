@@ -188,7 +188,13 @@ export class SurfaceAudit {
             return a - b;
           }),
         );
-        return ['deviceTypeList', 'serverList', 'clientList', 'partsList'];
+        if (endpoint.features.Descriptor?.tagList) {
+          const tags = read('tagList');
+          assert.ok(tags.some((tag) => {
+            return tag.mfgCode === 65521 && tag.label === endpoint.id.slice(0, 64);
+          }), 'The tag identifies the original endpoint');
+        }
+        return ['deviceTypeList', 'serverList', 'clientList', 'partsList', 'tagList'];
       }
       case 'BridgedDeviceBasicInformation': {
         assert.equal(read('vendorName'), 'Test');
@@ -223,6 +229,10 @@ export class SurfaceAudit {
             .sort();
         };
         assert.deepEqual(enabled(read('colorCapabilities')), enabled(read(65532)));
+        if (features.xy) {
+          assert.ok(read('currentX') >= 0 && read('currentX') <= 65279);
+          assert.ok(read('currentY') >= 0 && read('currentY') <= 65279);
+        }
         if (features.colorTemperature) {
           assert.equal(read('colorTempPhysicalMinMireds'), 153);
           assert.equal(read('colorTempPhysicalMaxMireds'), 400);
@@ -230,6 +240,8 @@ export class SurfaceAudit {
           assert.ok(read('colorTemperatureMireds') >= 153 && read('colorTemperatureMireds') <= 400);
         }
         return [
+          'currentX',
+          'currentY',
           'colorMode',
           'enhancedColorMode',
           'colorCapabilities',

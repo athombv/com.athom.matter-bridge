@@ -25,6 +25,7 @@ const stream = run({
     fileURLToPath(new URL('../mapping-channels.test.mjs', import.meta.url)),
     fileURLToPath(new URL('../mapping-light-controls.test.mjs', import.meta.url)),
     fileURLToPath(new URL('../mapping-command-reliability.test.mjs', import.meta.url)),
+    fileURLToPath(new URL('../mapping-matter18.test.mjs', import.meta.url)),
     fileURLToPath(new URL('../mapping-power.test.mjs', import.meta.url)),
   ],
 });
@@ -81,6 +82,11 @@ const phases = [
   'a cover with position and movement capabilities preserves its endpoint and can stop',
   'brightness limits couple on/off through Homey and honor execution while off',
   'an unchanged hue target still switches the physical color mode and preserves rejected state',
+  'Matter 1.6.1 validates every mapping without hiding conformance warnings',
+  'XY color commands preserve existing light identity and control the source',
+  'lighting feature commands control the source and preserve rejection behavior',
+  '0.17.9 pairing, controller cache, groups and scenes survive the 0.18 upgrade',
+  'lock commands retain Homey control while honoring the SDK operating-mode checks',
 ].map((name) => {
   if (results.get(name) !== 'PASS') {
     failed = true;

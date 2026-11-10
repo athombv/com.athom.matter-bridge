@@ -97,7 +97,7 @@ export async function mappingCoverage() {
     '',
     '## Feature follow-ups',
     '',
-    '- Custom OnOff handlers currently advertise no feature bits. Lighting for light/plug endpoints and DeadFrontBehavior for room AC remain conformance follow-ups; basic on/off behavior is covered. Reference: Matter.js 0.17.9 device requirements and backend general/OnOffCluster.mts.',
+    '- Matter 0.18 conformance is checked explicitly. Smoke alarms without verified supply metadata retain their existing mapping with the documented Power Source composition exception. Lighting, room AC DeadFrontBehavior and Level Control features are selected explicitly.',
     '- The command reliability suite covers move/step/stop and scene recall. IdentifyType None has no physical effect; optional timed unlocking is omitted; cover commands without source support fail explicitly. Native fade-stop accuracy depends on source value reporting. See README.md for the exact boundaries.',
   );
 

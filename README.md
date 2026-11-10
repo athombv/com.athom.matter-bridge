@@ -25,8 +25,8 @@ established connections and selected devices.
 ## Runtime and tests
 
 Requires Homey **12.9.0 or later**, the [Node.js 22 app baseline](https://apps.developer.homey.app/upgrade-guides/node-22).
-`homey-api` is pinned to **3.19.4** and Matter.js to **0.17.9**. Matter.js supports
-Node.js **22.13.0 or later** on the Node 22 release line; verification uses **22.23.2**.
+`homey-api` is pinned to **3.19.4** and Matter.js to **0.18.0**. Matter.js supports
+Node.js **22.13.0 or later** on the Node 22 release line; this upgrade was verified with **22.20.0**.
 `homey-api` declares Node.js 24 or later; using it on Node.js 22 is a deliberate,
 tested compatibility exception. Accept the npm engine warning without changing
 dependency metadata or npm engine settings. Recheck this exception when upgrading.
@@ -45,6 +45,12 @@ existing fabrics and endpoint identities survive the upgrade and that both origi
 controller credentials still allow control without pairing again. Device mapping
 tests verify discovery, values, subscriptions, commands, rejection, and lifecycle behavior
 for lights, sockets, thermostats, air conditioners, locks, covers, and sensors.
+The 0.18 upgrade retains endpoint IDs and device types. Additional 0.17.9 storage tests preserve
+controller caches, group membership, saved scenes and credentials, with no physical writes during
+startup. Conformance is checked explicitly; smoke alarms without verified power-source metadata
+retain their existing mapping and the documented Power Source composition warning.
+Regression checks keep lock and on/off reports tied to Homey confirmation and verify that manual
+off actions and rejected timed commands cannot leave an unexpected switch-off scheduled.
 Run `npm run test:mappings` for these tests, or `npm run test:mappings:report` to generate
 a coverage report. The optional Node 24 backend comparison and its pinned Homey OS reference
 are documented in [the mapping test guide](tests/mappings/README.md).

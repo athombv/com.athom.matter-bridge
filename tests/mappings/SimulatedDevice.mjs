@@ -12,6 +12,7 @@ export class SimulatedDevice {
     this.listeners = new Map();
     this.writes = [];
     this.rejectWrites = false;
+    this.reportWrites = true;
     this.attempts = 0;
   }
 
@@ -39,6 +40,10 @@ export class SimulatedDevice {
     }
     assert.ok(this.capabilitiesObj[write.capabilityId], `Unknown capability ${write.capabilityId}`);
     this.writes.push(write);
+
+    if (!this.reportWrites) {
+      return;
+    }
 
     // A driver reports state asynchronously after accepting a command.
     setImmediate(() => {

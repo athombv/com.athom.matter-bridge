@@ -126,10 +126,20 @@ When updating the reference, inspect the backend cluster and fixture changes, up
 and inventory deliberately, and rerun both suites. Do not automatically accept new expected values.
 Missing features such as fan modes/oscillation, tariff/phase breakdowns, tamper alarms, and
 robot-vacuum controls remain follow-up work; they are not silently marked supported by an endpoint smoke test.
-The report also records feature gaps: custom OnOff handlers advertise basic on/off without the
-Lighting or room AC DeadFrontBehavior bits. Continuous level/color movement, scenes, and timed
-lighting need their own command contracts before support is claimed. Passing this suite does not
-establish complete device-type conformance.
+Light/plug OnOff servers select Lighting explicitly, room AC selects DeadFrontBehavior, and
+Level Control selects OnOff and Lighting. The reliability and Matter 0.18 suites exercise timed
+lighting, scenes, XY commands, source rejections and existing controls. XY uses the SDK's wide-RGB
+conversion because Homey has no lamp gamut metadata; it does not claim physical color calibration.
+Electrical measurements support both AC and DC representation and retain Unknown power mode rather
+than guessing the source supply type.
+
+`mapping-matter18.test.mjs` explicitly validates every fixture with `DeviceTypeConformanceService`.
+The sole accepted mapping violation is SmokeCoAlarm's required Power Source component when the
+alarm has no verified supply metadata. `alarm_smoke` alone cannot establish battery or wired power;
+we preserve its existing endpoint and working alarm reporting rather than inventing power data or
+removing a paired device. This exception is asserted by exact requirement/kind and fixture paths,
+not by disabling validation. Upstream root-assertion diagnostics are excluded as documented by
+matter.js. Passing these checks is not Matter certification or physical controller validation.
 
 ## Independent protocol audit
 

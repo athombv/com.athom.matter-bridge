@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { MatterBridgeServer } from '../lib/MatterBridgeServer.mjs';
 import { SimulatedDevice } from './mappings/SimulatedDevice.mjs';
 import { BridgeHarness } from './mappings/BridgeHarness.mjs';
+import { DeviceTypeConformanceService } from '@matter/main';
 
 const writable = (value) => {
   return { value, getable: true, setable: true, type: typeof value };
@@ -55,6 +56,23 @@ test('independent light channels route full capability IDs and retain identity a
   const right = harness.endpoint(device.id, 'channel:right:main');
   const probe = harness.endpoint(device.id, 'channel:probe:measure_temperature');
   assert.equal(new Set([main, left, right, probe]).size, 4);
+  const tags = new Map();
+  for (const number of [main, left, right, probe]) {
+    tags.set(number, await harness.read(number, 'Descriptor', 'tagList'));
+  }
+  const labels = [...tags.values()].map((list) => {
+    return list.find((tag) => {
+      return tag.mfgCode === 65521;
+    }).label;
+  });
+  assert.equal(new Set(labels).size, 4, 'Channel tags must distinguish sibling endpoints');
+  const node = harness.bridge.serverNode;
+  const verdict = node.env.get(DeviceTypeConformanceService).validateNodeScope(node, { refuse: false });
+  for (const violations of verdict.values()) {
+    assert.deepEqual(violations.filter((violation) => {
+      return !violation.assertedAtRoot;
+    }), []);
+  }
   assert.equal(await harness.read(main, 'LevelControl', 'currentLevel'), 254);
   assert.equal(await harness.read(left, 'LevelControl', 'currentLevel'), 128);
   assert.equal(await harness.read(right, 'LevelControl', 'currentLevel'), 64);
@@ -90,6 +108,9 @@ test('independent light channels route full capability IDs and retain identity a
   assert.equal(harness.endpoint(device.id, 'channel:left:main'), left);
   assert.equal(harness.endpoint(device.id, 'channel:right:main'), right);
   assert.equal(harness.endpoint(device.id, 'channel:probe:measure_temperature'), probe);
+  for (const [number, expected] of tags) {
+    assert.deepEqual(await harness.read(number, 'Descriptor', 'tagList'), expected);
+  }
   await harness.expectReport(left, 'LevelControl', 'currentLevel', 64);
   device.emit('measure_temperature.probe', 0);
   await harness.expectReport(probe, 'TemperatureMeasurement', 'measuredValue', 0);

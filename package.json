@@ -13,7 +13,7 @@
     "test:mappings:mutations": "node tests/mappings/mutations.mjs"
   },
   "dependencies": {
-    "@matter/main": "0.17.9",
+    "@matter/main": "0.18.0",
     "homey-api": "3.19.4",
     "p-queue": "^9.0.0"
   },

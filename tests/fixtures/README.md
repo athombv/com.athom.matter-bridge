@@ -35,3 +35,24 @@ credentials and rediscover endpoints; they do not model Google Home's own cached
 Upgrade assertions change Homey values while the bridge is offline, then check controller values,
 subscriptions, commands, and retained endpoint numbers. Sensor endpoints newly exposed on mixed
 capability devices may be added; the original endpoint numbers must remain unchanged.
+
+
+## Matter 0.17.9 retained groups, scenes and controller cache
+
+`matter-0179-retained.json` was written by the unchanged bridge at
+`b4f2d1406bd03bb5fa7a6c1c23cbc9a096312a02`, running its pinned Matter.js 0.17.9 under
+Node 22.20.0. It contains only synthetic test nodes. Unlike the earlier mapping fixture, it
+includes the controller's persisted endpoint cache as well as its credentials. It records
+parent/child endpoint numbers and device types for a socket, extended-color light, lock,
+smoke alarm and battery water sensor. The light belongs to group 31 and has scene 7 stored.
+
+To reproduce, archive that revision into a disposable directory, run `npm ci` there, copy
+`tests/mappings/generate-matter18-fixture.mjs` from the upgraded checkout to the same relative
+path in the archive, and run it with Node 22. Copy the resulting fixture back only after
+reviewing its provenance. The generator refuses any SDK other than 0.17.9.
+
+The upgrade test restores these files unchanged, reconnects with the original controller
+credentials and cache, verifies all original identities, reads the retained group, recalls
+the saved scene, and controls the same light after a further restart. It also asserts that
+upgrading alone does not write any Homey capabilities. Physical ecosystem caches and UIs
+remain covered by the separate release checks rather than this synthetic controller.

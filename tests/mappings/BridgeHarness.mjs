@@ -131,6 +131,7 @@ export class BridgeHarness {
 
       harness.bridge = new serverClass(harness.options);
       await harness.bridge.start();
+      assert.deepEqual(harness.errors, [], 'Every shared device must initialize');
 
       const environment = new Environment('mapping-controller', Environment.default);
       environment.vars.set('storage.path', harness.directory);

@@ -148,6 +148,7 @@ for (const variant of [
       }
     }
     type = 0x10d;
+    features.ColorControl.xy = true;
   }
   let source = 'lighting/ColorControlCluster.mts';
   if (variant === 'onoff') {
@@ -886,6 +887,10 @@ for (const fixture of mappings) {
   for (const endpoint of fixture.endpoints) {
     endpoint.features ??= {};
     endpoint.values = {};
+    endpoint.features.Descriptor = { tagList: true };
+    if (endpoint.features.ElectricalPowerMeasurement) {
+      endpoint.features.ElectricalPowerMeasurement = { alternatingCurrent: true, directCurrent: true };
+    }
     const clusters = new Set([0x11, 0x510].includes(endpoint.type) ? [29] : [3, 29]); // Identify and Descriptor
     for (const check of fixture.attributes) {
       if (check.endpoint !== endpoint.id) {
@@ -958,10 +963,19 @@ for (const fixture of mappings) {
         Groups: { groupNames: true },
         ScenesManagement: { sceneNames: true },
         BooleanState: { changeEvent: true },
-        // Custom OnOff handlers currently advertise basic on/off; extended features are tracked gaps.
         OnOff: {},
         LevelControl: { onOff: true, lighting: true },
       };
+      if (cluster === 'OnOff') {
+        if ([0x100, 0x101, 0x10a, 0x10c, 0x10d].includes(endpoint.type)) {
+          defaults.OnOff = { lighting: true };
+        } else if (endpoint.type === 0x72) {
+          defaults.OnOff = { deadFrontBehavior: true };
+        }
+      }
+      if (cluster === 'ElectricalPowerMeasurement') {
+        defaults.ElectricalPowerMeasurement = { alternatingCurrent: true, directCurrent: true };
+      }
       endpoint.features[cluster] = defaults[cluster] ?? {};
     }
   }

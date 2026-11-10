@@ -155,6 +155,11 @@
           "partsList",
           "tested",
           "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "4": [
+          "tagList",
+          "tested",
+          "Stable endpoint labels disambiguate channels; SurfaceAudit and retained-pairing tests check them."
         ]
       },
       "commands": {}
@@ -222,6 +227,26 @@
           "onOff",
           "tested",
           "Mapping contract covers initial values and source subscription updates."
+        ],
+        "16384": [
+          "globalSceneControl",
+          "delegated",
+          "Matter.js owns lighting scene/timer state; physical on/off commands are exercised through the Homey mapping."
+        ],
+        "16385": [
+          "onTime",
+          "delegated",
+          "Matter.js owns lighting scene/timer state; physical on/off commands are exercised through the Homey mapping."
+        ],
+        "16386": [
+          "offWaitTime",
+          "delegated",
+          "Matter.js owns lighting scene/timer state; physical on/off commands are exercised through the Homey mapping."
+        ],
+        "16387": [
+          "startUpOnOff",
+          "delegated",
+          "Matter.js owns lighting scene/timer state; physical on/off commands are exercised through the Homey mapping."
         ]
       },
       "commands": {
@@ -239,6 +264,24 @@
           "toggle",
           "tested",
           "Controller command contracts verify Homey writes, reported outcomes and failures."
+        ],
+        "64": [
+          "offWithEffect",
+          "tested",
+          "Lighting commands route through Homey and propagate rejected writes.",
+          "lighting feature commands control the source and preserve rejection behavior"
+        ],
+        "65": [
+          "onWithRecallGlobalScene",
+          "tested",
+          "Lighting commands route through Homey and propagate rejected writes.",
+          "lighting feature commands control the source and preserve rejection behavior"
+        ],
+        "66": [
+          "onWithTimedOff",
+          "tested",
+          "Lighting commands route through Homey and propagate rejected writes.",
+          "lighting feature commands control the source and preserve rejection behavior"
         ]
       }
     },
@@ -385,6 +428,26 @@
           "coupleColorTempToLevelMinMireds",
           "tested",
           "SurfaceAudit checks descriptor, feature, bounds or related-attribute invariants."
+        ],
+        "2": [
+          "remainingTime",
+          "delegated",
+          "Matter.js owns transition countdowns; driver-managed fades do not expose physical progress."
+        ],
+        "16400": [
+          "startUpColorTemperatureMireds",
+          "delegated",
+          "Matter.js persists startup configuration; actual Homey readings remain authoritative when the bridge restarts."
+        ],
+        "3": [
+          "currentX",
+          "tested",
+          "XY conversion is checked against independent color vectors and Homey updates."
+        ],
+        "4": [
+          "currentY",
+          "tested",
+          "XY conversion is checked against independent color vectors and Homey updates."
         ]
       },
       "commands": {
@@ -451,6 +514,24 @@
           "tested",
           "Command reliability tests verify source writes, reported state and rejected operations; movement tests also verify cancellation.",
           "step and individual color commands reach Homey and propagate source rejections"
+        ],
+        "7": [
+          "moveToColor",
+          "tested",
+          "XY commands write physical hue/saturation and propagate source rejections.",
+          "XY color commands preserve existing light identity and control the source"
+        ],
+        "8": [
+          "moveColor",
+          "tested",
+          "XY commands write physical hue/saturation and propagate source rejections.",
+          "XY color commands preserve existing light identity and control the source"
+        ],
+        "9": [
+          "stepColor",
+          "tested",
+          "XY commands write physical hue/saturation and propagate source rejections.",
+          "XY color commands preserve existing light identity and control the source"
         ]
       }
     },
