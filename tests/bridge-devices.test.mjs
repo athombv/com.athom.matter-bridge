@@ -28,6 +28,8 @@ test('all supported Homey device mappings initialize with the current Matter mod
     ['lock', 'lock', { locked: false }],
     ['position-cover', 'windowcoverings', { windowcoverings_set: 0.5 }],
     ['state-cover', 'windowcoverings', { windowcoverings_state: 'idle' }],
+    ['switchbot-tilt', 'blinds', { windowcoverings_tilt_set: 0.5 }],
+    ['switchbot-down', 'blinds', { windowcoverings_tilt_set: 0.5 }],
     ['other', 'other', { onoff: true }],
   ];
   const sensorValues = {
@@ -39,7 +41,10 @@ test('all supported Homey device mappings initialize with the current Matter mod
     definitions.push([capability, 'sensor', { [capability]: value }]);
   }
 
+  const commands = [];
   const devicesById = {};
+  const callbacks = {};
+  let rejectTiltCommand = false;
   for (const [id, deviceClass, values] of definitions) {
     const capabilitiesObj = {};
     for (const [capability, value] of Object.entries(values)) {
@@ -52,9 +57,14 @@ test('all supported Homey device mappings initialize with the current Matter mod
     }
     devicesById[id] = {
       id, name: id, class: deviceClass, ready: true, capabilitiesObj,
+      driverId: id.startsWith('switchbot-') ? 'homey:app:com.switchbot:blind_tilt_hub' : null,
+      settings: { closePosition: id === 'switchbot-tilt' ? 'up' : 'down' },
       getDriver: async () => { return { name: 'Test device', ownerName: 'Test app' }; },
-      makeCapabilityInstance: () => { return { destroy: () => {} }; },
-      setCapabilityValue: async () => {},
+      makeCapabilityInstance: (capability, callback) => { callbacks[`${id}:${capability}`] = callback; return { destroy: () => {} }; },
+      setCapabilityValue: async (command) => {
+        if (id === 'switchbot-tilt' && rejectTiltCommand) throw new Error('command rejected');
+        commands.push({ id, ...command });
+      },
     };
   }
 
@@ -89,6 +99,35 @@ test('all supported Homey device mappings initialize with the current Matter mod
       assert.equal(endpoint.lifecycle.isReady, true, `${id}/${endpoint.id} is ready`);
     }
   }
+
+  const [downEndpoint] = bridge.deviceEndpointInstances['switchbot-down'];
+  await downEndpoint.act((agent) => agent.windowCovering.downOrClose());
+  assert.equal(commands.find(command => command.id === 'switchbot-down').value, 0);
+
+  const [tiltEndpoint] = bridge.deviceEndpointInstances['switchbot-tilt'];
+  assert.equal(tiltEndpoint.state.windowCovering.currentPositionLiftPercent100ths, 0);
+  await tiltEndpoint.act((agent) => agent.windowCovering.downOrClose());
+  await tiltEndpoint.act((agent) => agent.windowCovering.upOrOpen());
+  await tiltEndpoint.act((agent) => agent.windowCovering.goToLiftPercentage({ liftPercent100thsValue: 5000 }));
+  assert.deepEqual(commands.filter(command => command.id === 'switchbot-tilt'), [
+    { id: 'switchbot-tilt', capabilityId: 'windowcoverings_tilt_set', value: 1 },
+    { id: 'switchbot-tilt', capabilityId: 'windowcoverings_tilt_set', value: 0.5 },
+    { id: 'switchbot-tilt', capabilityId: 'windowcoverings_tilt_set', value: 0.75 },
+  ]);
+
+
+  await callbacks['switchbot-tilt:windowcoverings_tilt_set'](0.75);
+  await new Promise(resolve => setTimeout(resolve, 50));
+  assert.equal(tiltEndpoint.state.windowCovering.currentPositionLiftPercent100ths, 5000);
+  await tiltEndpoint.act((agent) => agent.windowCovering.downOrClose());
+  assert.equal(commands.at(-1).value, 1);
+  await callbacks['switchbot-tilt:windowcoverings_tilt_set'](0.5);
+  await new Promise(resolve => setTimeout(resolve, 50));
+  await tiltEndpoint.act((agent) => agent.windowCovering.downOrClose());
+  assert.equal(commands.at(-1).value, 1);
+  await assert.rejects(tiltEndpoint.act((agent) => agent.windowCovering.stopMotion()), /not supported/);
+  rejectTiltCommand = true;
+  await assert.rejects(tiltEndpoint.act((agent) => agent.windowCovering.upOrOpen()), /command rejected/);
 
   for (const [id, expected] of [
     ['socket', 12000], ['socket-power-null', null], ['socket-power-undefined', null],
