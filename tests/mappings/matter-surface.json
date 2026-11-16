@@ -606,6 +606,11 @@
           "systemMode",
           "tested",
           "Mapping contract covers initial values and source subscription updates."
+        ],
+        "30": [
+          "thermostatRunningMode",
+          "delegated",
+          "Optional SDK-managed mode metadata exposed by 0.18.1. SurfaceAudit checks the enum and supported heating/cooling features; physical equipment activity is not reported by Homey's requested-mode capability."
         ]
       },
       "commands": {

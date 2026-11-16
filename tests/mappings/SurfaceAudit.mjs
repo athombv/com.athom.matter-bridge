@@ -286,6 +286,17 @@ export class SurfaceAudit {
         if (features.autoMode) {
           assert.equal(read('minSetpointDeadBand'), 0);
         }
+        if (read(65531).includes(30)) {
+          const runningMode = read('thermostatRunningMode');
+
+          assert.ok([0, 3, 4].includes(runningMode), 'Running mode must be Off, Cool or Heat');
+          if (runningMode === 3) {
+            assert.equal(features.cooling, true, 'Running mode must not advertise unsupported cooling');
+          }
+          if (runningMode === 4) {
+            assert.equal(features.heating, true, 'Running mode must not advertise unsupported heating');
+          }
+        }
         return [
           'absMinHeatSetpointLimit',
           'absMaxHeatSetpointLimit',

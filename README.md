@@ -25,7 +25,7 @@ established connections and selected devices.
 ## Runtime and tests
 
 Requires Homey **12.9.0 or later**, the [Node.js 22 app baseline](https://apps.developer.homey.app/upgrade-guides/node-22).
-`homey-api` is pinned to **3.19.4** and Matter.js to **0.18.0**. Matter.js supports
+`homey-api` is pinned to **3.19.4** and Matter.js to **0.18.1-alpha.0-20261115-f2ccf3e12**. Matter.js supports
 Node.js **22.13.0 or later** on the Node 22 release line; this upgrade was verified with **22.20.0**.
 `homey-api` declares Node.js 24 or later; using it on Node.js 22 is a deliberate,
 tested compatibility exception. Accept the npm engine warning without changing
@@ -51,6 +51,12 @@ startup. Conformance is checked explicitly; smoke alarms without verified power-
 retain their existing mapping and the documented Power Source composition warning.
 Regression checks keep lock and on/off reports tied to Homey confirmation and verify that manual
 off actions and rejected timed commands cannot leave an unexpected switch-off scheduled.
+Bridge metadata and Homey names are shortened to 32 UTF-8 bytes without splitting code points.
+Tests cover accented, CJK, emoji and combining-character names, plus encrypted group commands
+with message privacy enabled before and after restart.
+This branch pins the 0.18.1 alpha for upgrade verification. Stable 0.18.1 was not available on
+2026-11-16; keep this change in draft until the stable pin and lockfile are updated and validation
+is rerun. The mapping test guide documents the release checks.
 Run `npm run test:mappings` for these tests, or `npm run test:mappings:report` to generate
 a coverage report. The optional Node 24 backend comparison and its pinned Homey OS reference
 are documented in [the mapping test guide](tests/mappings/README.md).

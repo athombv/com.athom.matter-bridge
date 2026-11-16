@@ -143,6 +143,55 @@ removing a paired device. This exception is asserted by exact requirement/kind a
 not by disabling validation. Upstream root-assertion diagnostics are excluded as documented by
 matter.js. Passing these checks is not Matter certification or physical controller validation.
 
+## Preparing for Matter 0.18.1
+
+This draft upgrade pins `0.18.1-alpha.0-20261115-f2ccf3e12`. Keep it unmerged until stable
+0.18.1 is available. Name truncation uses `Bytes.utf8Length` and `Bytes.truncateUtf8`, preserving
+complete code points and reserving three bytes for the ellipsis. `mapping-names.test.mjs`
+checks boundary lengths, updates, bridge/driver metadata, and restart.
+
+`mapping-group-privacy.test.mjs` builds encrypted Matter group InvokeRequest packets with Node's
+crypto APIs, independently of matter.js's header encoder and decoder. It asserts the on-wire
+privacy flag, sends packets into the actual UDP receiver, and checks Homey writes and subscribed
+reports before and after restart. Nonmembers receive no writes, and a tampered MIC is rejected.
+Delivery uses local IPv4 UDP with a group-addressed Matter header, so this does not test LAN IPv6
+multicast routing or interoperability with a physical ecosystem controller.
+
+`mapping-storage-migration.test.mjs` restores the actual 0.18.0 fixture described in
+`../fixtures/README.md`. Migration assertions are mandatory on this branch: original credentials
+and subscription fields must survive, and the new per-peer representation must be present.
+
+When stable 0.18.1 is published, update the exact dependency and lockfile, then validate under
+Node 22 before marking the PR ready:
+
+```bash
+npm install --save-exact @matter/main@0.18.1
+npm ci
+npm test
+```
+
+Using the Homey CLI's supported Node version, also run `homey app validate --level verified`.
+After the parent mapping PR merges, rebase this branch onto `master`, retarget the PR, and
+resolve any integration changes before merging. Do not regenerate the historical fixture with 0.18.1 or accept changed
+migration expectations without inspecting the upstream storage contract.
+
+The candidate also exposes optional `Thermostat.thermostatRunningMode` on AutoMode endpoints.
+The surface inventory classifies this as SDK-managed metadata and checks that its value is a
+valid mode supported by the endpoint's features. It is not a claim of measured equipment activity;
+Homey's requested thermostat mode does not provide that feedback. Existing source mode and
+setpoint command contracts still apply.
+
+Initial verification on 2026-11-16 with Node 22.20.0, before pinning this branch to the alpha:
+the 0.18.0 baseline with the local UTF-8 helper passed 642 tests with one migration-specific skip;
+the isolated candidate passed all 643 tests without skips. The four
+affected thermostat mappings also passed all 27 focused checks on both SDK versions. Homey app
+validation passed at `verified` level. The new name tests failed before the truncation fix;
+disabling privacy decoding, legacy resumption migration, or legacy subscription loading in the
+disposable candidate each caused its corresponding regression test to fail. All SDK mutations
+were reverted before the final full candidate run. The final alpha-pinned branch using
+`Bytes.truncateUtf8` also passed all 643 tests without skips and Homey validation at `verified`
+level.
+
 ## Independent protocol audit
 
 `matter-surface.json` explicitly classifies attributes and accepted commands actually advertised by

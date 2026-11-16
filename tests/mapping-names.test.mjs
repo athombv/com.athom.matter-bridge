@@ -26,6 +26,14 @@ test('Homey renames reach the controller without replacing the device', { timeou
     ['Reading lamp', 'Reading lamp'],
     ['Café lamp ↗', 'Café lamp ↗'],
     ['A'.repeat(40), `${'A'.repeat(29)}…`],
+    ['é'.repeat(16), 'é'.repeat(16)],
+    ['é'.repeat(17), `${'é'.repeat(14)}…`],
+    ['日'.repeat(10), '日'.repeat(10)],
+    ['日'.repeat(11), `${'日'.repeat(9)}…`],
+    ['💡'.repeat(8), '💡'.repeat(8)],
+    ['💡'.repeat(9), `${'💡'.repeat(7)}…`],
+    [`${'a'.repeat(28)}💡b`, `${'a'.repeat(28)}…`],
+    ['e\u0301'.repeat(12), `${'e\u0301'.repeat(9)}e…`],
     ['Desk', 'Desk'],
   ];
 
@@ -34,6 +42,8 @@ test('Homey renames reach the controller without replacing the device', { timeou
     harness.manager.emit('device.update', device);
     await harness.expectReport(parent, 'BridgedDeviceBasicInformation', 'nodeLabel', expected);
     assert.equal(await harness.read(parent, 'BridgedDeviceBasicInformation', 'nodeLabel'), expected);
+    assert.ok(Buffer.byteLength(expected, 'utf8') <= 32);
+    assert.ok(expected.isWellFormed());
   }
 
   assert.equal(harness.bridge.deviceEndpoints[device.id].number, parent);
@@ -48,6 +58,54 @@ test('Homey renames reach the controller without replacing the device', { timeou
   await harness.expectReport(child, 'OnOff', 'onOff', false);
   assert.deepEqual(device.writes, [{ capabilityId: 'onoff', value: false }]);
   assert.deepEqual(harness.errors, []);
+});
+
+test('multibyte bridge and device metadata fit UTF-8 limits at startup and restart', { timeout: 30000 }, async (t) => {
+  const harness = await BridgeHarness.create([{
+    ...fixture,
+    name: '💡'.repeat(20),
+    driver: { name: '日'.repeat(20), ownerName: 'é'.repeat(40) },
+  }], {
+    bridgeOptions: {
+      productName: '日'.repeat(20),
+      vendorName: 'é'.repeat(40),
+      serialNumber: '💡'.repeat(20),
+    },
+  });
+  t.after(async () => {
+    await harness.close();
+  });
+  const parent = harness.bridge.deviceEndpoints[fixture.id].number;
+  const child = harness.endpoint(fixture.id);
+
+  for (const restart of [false, true]) {
+    if (restart) {
+      await harness.restart();
+    }
+
+    for (const [endpoint, cluster, attribute, expected] of [
+      [0, 'BasicInformation', 'productName', `${'日'.repeat(9)}…`],
+      [0, 'BasicInformation', 'productLabel', `${'日'.repeat(9)}…`],
+      [0, 'BasicInformation', 'nodeLabel', `${'日'.repeat(9)}…`],
+      [0, 'BasicInformation', 'vendorName', `${'é'.repeat(14)}…`],
+      [0, 'BasicInformation', 'serialNumber', `${'💡'.repeat(7)}…`],
+      [parent, 'BridgedDeviceBasicInformation', 'nodeLabel', `${'💡'.repeat(7)}…`],
+      [parent, 'BridgedDeviceBasicInformation', 'productName', `${'日'.repeat(9)}…`],
+      [parent, 'BridgedDeviceBasicInformation', 'vendorName', `${'é'.repeat(14)}…`],
+    ]) {
+      const actual = await harness.read(endpoint, cluster, attribute);
+
+      assert.equal(actual, expected, `${cluster}.${attribute}`);
+      assert.ok(Buffer.byteLength(actual, 'utf8') <= 32);
+      assert.ok(actual.isWellFormed());
+    }
+
+    assert.equal(harness.endpoint(fixture.id), child);
+    assert.equal(harness.bridge.deviceEndpoints[fixture.id].number, parent);
+    assert.equal(harness.bridge.serverNode.lifecycle.isCommissioned, true);
+    assert.equal(harness.devices[fixture.id].attempts, 0);
+    assert.deepEqual(harness.errors, []);
+  }
 });
 
 test('restart refreshes a persisted Matter name from Homey', { timeout: 30000 }, async (t) => {
