@@ -13,6 +13,9 @@ import { ControllerBehavior, Environment, fromJson, Logger, ServerNode } from '@
 import { ClientInteraction, Invoke, PeerSet, Read, Write, Subscribe } from '@matter/main/protocol';
 import { Identify } from '@matter/main/clusters/identify';
 import { Groups } from '@matter/main/clusters/groups';
+import { BasicInformation } from '@matter/main/clusters/basic-information';
+import { GroupKeyManagement } from '@matter/main/clusters/group-key-management';
+import { AccessControl } from '@matter/main/clusters/access-control';
 import { Descriptor } from '@matter/main/clusters/descriptor';
 import { BridgedDeviceBasicInformation } from '@matter/main/clusters/bridged-device-basic-information';
 import { ScenesManagement } from '@matter/main/clusters/scenes-management';
@@ -50,6 +53,9 @@ export class BridgeHarness {
     ElectricalEnergyMeasurement,
     Identify,
     Groups,
+    BasicInformation,
+    GroupKeyManagement,
+    AccessControl,
     Descriptor,
     BridgedDeviceBasicInformation,
     ScenesManagement,
@@ -74,7 +80,7 @@ export class BridgeHarness {
     SmokeCoAlarm,
   };
 
-  static async create(fixtures, { serverClass = MatterBridgeServer, storageFixture } = {}) {
+  static async create(fixtures, { serverClass = MatterBridgeServer, storageFixture, bridgeOptions = {} } = {}) {
     const harness = new BridgeHarness();
     harness.directory = await mkdtemp(join(tmpdir(), 'bridge-mappings-'));
     harness.devices = Object.fromEntries(
@@ -120,6 +126,7 @@ export class BridgeHarness {
       port: 0,
       storageServiceLocation: harness.directory,
       enabledDeviceIds: new Set(Object.keys(harness.devices)),
+      ...bridgeOptions,
     };
 
     try {

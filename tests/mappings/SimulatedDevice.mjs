@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 export class SimulatedDevice {
   constructor(fixture) {
     this.id = fixture.id;
-    this.name = fixture.id;
+    this.name = fixture.name ?? fixture.id;
+    this.driver = fixture.driver ?? { name: 'Synthetic mapping fixture', ownerName: 'Test' };
     this.class = fixture.class;
     this.virtualClass = fixture.virtualClass;
     this.ready = fixture.ready ?? true;
@@ -17,7 +18,7 @@ export class SimulatedDevice {
   }
 
   async getDriver() {
-    return { name: 'Synthetic mapping fixture', ownerName: 'Test' };
+    return this.driver;
   }
 
   makeCapabilityInstance(id, callback) {

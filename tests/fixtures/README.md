@@ -59,3 +59,31 @@ credentials and cache, verifies all original identities, reads the retained grou
 the saved scene, and controls the same light after a further restart. It also asserts that
 upgrading alone does not write any Homey capabilities. Physical ecosystem caches and UIs
 remain covered by the separate release checks rather than this synthetic controller.
+
+## Matter 0.18.0 subscriptions, resumption records and UTF-8 names
+
+`matter-0180-storage.json` was generated with Matter.js 0.18.0 and Node 22.20.0 using
+`tests/mappings/generate-matter181-fixture.mjs`. The recorded revision identifies the bridge
+baseline; the new generator and harness support were added during this work. All credentials
+belong to disposable synthetic nodes. No real Homey data is included.
+
+The fixture contains a commissioned socket, its controller cache, both sides' legacy session
+resumption arrays, and a real persisted server subscription. The generator stops the bridge
+before closing the controller so shutdown preserves that subscription. It also stores a root
+label of eleven CJK characters and a bridged label of nine emoji, accepted by 0.18.0 but over
+32 UTF-8 bytes. The generator asserts the SDK version and nonempty migration inputs.
+
+To regenerate, archive the fixture's recorded baseline revision into a disposable directory and
+run `npm ci` there to install 0.18.0. Copy the current `generate-matter181-fixture.mjs`,
+`BridgeHarness.mjs`, and `SimulatedDevice.mjs` into its `tests/mappings/` directory, retaining the
+baseline bridge implementation. Run `node tests/mappings/generate-matter181-fixture.mjs`.
+Review the generated fixture before
+replacing it. Do not regenerate it with 0.18.1: that would remove the legacy storage format
+the test needs to exercise.
+
+The migration test checks original session secrets before reconnecting, removal of the old
+array, per-peer persistence, a second storage load, and preservation of the original subscription
+ID, peer, paths and intervals. A separate bridge test reconnects with the original controller
+credentials, checks device identities and source names, receives reports, and controls the
+socket after restart. It establishes a new client subscription; it does not claim to resume
+a subscription handler from a controller process that no longer exists.
